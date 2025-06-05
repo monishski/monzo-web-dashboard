@@ -3,25 +3,36 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --turbopack -p 3001",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "drizzle:generate": "drizzle-kit generate --config drizzle.session.config.ts",
+    "drizzle:migrate": "drizzle-kit migrate --config drizzle.session.config.ts",
+    "drizzle:studio": "drizzle-kit studio --config drizzle.session.config.ts"
   },
   "dependencies": {
+    "better-auth": "^1.2.8",
+    "dotenv": "^16.5.0",
+    "drizzle-orm": "^0.44.1",
+    "next": "15.3.3",
+    "pg": "^8.16.0",
+    "postgres": "^3.4.7",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "next": "15.3.3"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.15.3",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
+    "drizzle-kit": "^0.31.1",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
-    "@eslint/eslintrc": "^3"
+    "tailwindcss": "^4",
+    "tsx": "^4.19.4",
+    "typescript": "^5"
   }
 }
