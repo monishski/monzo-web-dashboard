@@ -1,10 +1,11 @@
-import { auth } from "@/lib/auth/auth";
+import type { JSX } from "react";
 import { headers } from "next/headers";
 
-import { fetchTransactions } from "@/endpoints/transactions";
+import { auth } from "@/lib/auth/auth";
 import { fetchAccounts } from "@/endpoints/accounts";
+import { fetchTransactions } from "@/endpoints/transactions";
 
-async function TransactionsPage() {
+async function TransactionsPage(): Promise<JSX.Element> {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -18,9 +19,7 @@ async function TransactionsPage() {
 
   const { accounts } = await fetchAccounts(accessToken);
 
-  const retailAccount = accounts?.find(
-    (account) => account.type === "uk_retail"
-  );
+  const retailAccount = accounts?.find((account) => account.type === "uk_retail");
 
   const transactions = await fetchTransactions(accessToken, retailAccount?.id);
 

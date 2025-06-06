@@ -1,4 +1,4 @@
-import { MonzoTransaction } from "@/types/monzo/transaction";
+import type { MonzoTransaction } from "@/types/monzo/transaction";
 
 export const fetchTransactions = async (
   accessToken: string | undefined,

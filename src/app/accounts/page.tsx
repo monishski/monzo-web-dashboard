@@ -1,9 +1,10 @@
-import { fetchAccounts } from "@/endpoints/accounts";
-import { auth } from "@/lib/auth/auth";
-
+import type { JSX } from "react";
 import { headers } from "next/headers";
 
-async function AccountsPage() {
+import { auth } from "@/lib/auth/auth";
+import { fetchAccounts } from "@/endpoints/accounts";
+
+async function AccountsPage(): Promise<JSX.Element> {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
