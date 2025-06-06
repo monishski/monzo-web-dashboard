@@ -12,12 +12,13 @@ export default function Home() {
         Better Auth
       </h1>
 
+      <Link href="/transactions">Transactions</Link>
+
       <Link href="/accounts">Accounts</Link>
 
       <pre>{JSON.stringify(session, null, 2)}</pre>
       <button
         onClick={async (e) => {
-          console.log("Signing in with Monzo");
           e.preventDefault();
           await signIn.oauth2({
             providerId: "monzo",
@@ -29,7 +30,6 @@ export default function Home() {
       </button>
       <button
         onClick={async (e) => {
-          console.log("Signing out from Monzo");
           e.preventDefault();
           await signOut();
         }}
