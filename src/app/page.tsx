@@ -1,10 +1,11 @@
 "use client";
 
+import type { JSX } from "react";
 import Link from "next/link";
 
 import { signIn, signOut, useSession } from "@/lib/auth/auth-client";
 
-export default function Home() {
+export default function Home(): JSX.Element {
   const session = useSession();
 
   return (

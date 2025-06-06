@@ -1,4 +1,4 @@
-import { MonzoAccount } from "@/types/monzo/account";
+import type { MonzoAccount } from "@/types/monzo/account";
 
 export const fetchAccounts = async (
   accessToken: string | undefined

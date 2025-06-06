@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import type { User } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { genericOAuth } from "better-auth/plugins";
 
@@ -36,7 +37,7 @@ export const auth = betterAuth({
             response_type: "code",
           },
           tokenUrl: process.env.MONZO_TOKEN_URL,
-          async getUserInfo(tokens) {
+          async getUserInfo(tokens): Promise<User> {
             if (!process.env.MONZO_USER_INFO_URL)
               throw Error("MONZO_USER_INFO_URL env variable must be set");
 
