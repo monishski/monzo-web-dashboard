@@ -1,6 +1,7 @@
 "use client";
 
 import { signIn, signOut, useSession } from "@/lib/auth/auth-client";
+import Link from "next/link";
 
 export default function Home() {
   const session = useSession();
@@ -10,6 +11,8 @@ export default function Home() {
       <h1 className="text-4xl font-bold font-[family-name:var(--font-geist-sans)]">
         Better Auth
       </h1>
+
+      <Link href="/accounts">Accounts</Link>
 
       <pre>{JSON.stringify(session, null, 2)}</pre>
       <button
