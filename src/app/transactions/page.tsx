@@ -1,8 +1,8 @@
-import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
 
-import { fetchTransactions } from "@/endpoints/transactions";
+import { auth } from "@/lib/auth/auth";
 import { fetchAccounts } from "@/endpoints/accounts";
+import { fetchTransactions } from "@/endpoints/transactions";
 
 async function TransactionsPage() {
   const session = await auth.api.getSession({
@@ -18,9 +18,7 @@ async function TransactionsPage() {
 
   const { accounts } = await fetchAccounts(accessToken);
 
-  const retailAccount = accounts?.find(
-    (account) => account.type === "uk_retail"
-  );
+  const retailAccount = accounts?.find((account) => account.type === "uk_retail");
 
   const transactions = await fetchTransactions(accessToken, retailAccount?.id);
 

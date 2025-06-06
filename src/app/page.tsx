@@ -1,16 +1,15 @@
 "use client";
 
-import { signIn, signOut, useSession } from "@/lib/auth/auth-client";
 import Link from "next/link";
+
+import { signIn, signOut, useSession } from "@/lib/auth/auth-client";
 
 export default function Home() {
   const session = useSession();
 
   return (
-    <div className="flex items-start justify-center min-h-screen p-8 flex-col">
-      <h1 className="text-4xl font-bold font-[family-name:var(--font-geist-sans)]">
-        Better Auth
-      </h1>
+    <div className="flex min-h-screen flex-col items-start justify-center p-8">
+      <h1 className="font-[family-name:var(--font-geist-sans)] text-4xl font-bold">Better Auth</h1>
 
       <Link href="/transactions">Transactions</Link>
 

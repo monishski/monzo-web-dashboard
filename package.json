@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "prettier": "prettier . --write",
     "drizzle:generate": "drizzle-kit generate --config drizzle.session.config.ts",
     "drizzle:migrate": "drizzle-kit migrate --config drizzle.session.config.ts",
     "drizzle:studio": "drizzle-kit studio --config drizzle.session.config.ts"
@@ -23,6 +24,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@ianvs/prettier-plugin-sort-imports": "^4.4.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/pg": "^8.15.3",
@@ -31,6 +33,8 @@
     "drizzle-kit": "^0.31.1",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
+    "prettier": "^3.5.3",
+    "prettier-plugin-tailwindcss": "^0.6.12",
     "tailwindcss": "^4",
     "tsx": "^4.19.4",
     "typescript": "^5"
