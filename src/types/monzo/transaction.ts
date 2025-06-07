@@ -1,33 +1,47 @@
-export type MonzoCategory =
-  | "entertainment"
-  | "general"
-  | "groceries"
-  | "eating_out"
-  | "charity"
-  | "expenses"
-  | "family"
-  | "finances"
-  | "gifts"
-  | "personal_care"
-  | "shopping"
-  | "transport"
-  | "income"
-  | "savings"
-  | "transfers"
-  | "holidays";
+import type { TransactionCategory } from "../common";
 
-export type MonzoMerchant = {
+type MonzoTransactionMetadata = {
+  card_acceptor_website?: string;
+  ledger_committed_timestamp_earliest?: string;
+  ledger_committed_timestamp_latest?: string;
+  ledger_insertion_id?: string;
+  mastercard_approval_type?: string;
+  mastercard_auth_message_id?: string;
+  mastercard_card_id?: string;
+  mastercard_clearing_message_id?: string;
+  mastercard_lifecycle_id?: string;
+  mcc?: string;
+  standin_correlation_id?: string;
+  token_unique_reference?: string;
+  tokenization_method?: string;
+};
+
+type MonzoTransactionMerchantAddress = {
+  short_formatted: string;
+  city: string;
+  latitude: number;
+  longitude: number;
+  zoom_level: number;
+  approximate: boolean;
+  formatted: string;
+  address: string;
+  region: string;
+  country: string;
+  postcode: string;
+};
+
+export type MonzoTransactionMerchant = {
   id: string;
   group_id: string;
   name: string;
   logo: string;
   emoji: string;
-  category: MonzoCategory;
+  category: TransactionCategory;
   online: boolean;
   atm: boolean;
-  address: MonzoAddress;
+  address: MonzoTransactionMerchantAddress;
   disable_feedback: boolean;
-  metadata: unknown;
+  metadata: Record<string, string>;
 };
 
 export type MonzoTransaction = {
@@ -37,16 +51,16 @@ export type MonzoTransaction = {
   amount: number;
   fees: unknown;
   currency: string;
-  merchant?: MonzoMerchant;
+  merchant?: MonzoTransactionMerchant;
   merchant_feedback_uri?: string;
   notes: string;
-  metadata: MonzoMetadata;
+  metadata: MonzoTransactionMetadata;
   labels: unknown;
   attachments: unknown;
   international: unknown;
-  category: MonzoCategory;
+  category: TransactionCategory;
   categories: {
-    [key in MonzoCategory]?: number;
+    [key in TransactionCategory]?: number;
   };
   is_load: boolean;
   settled: string;
@@ -68,34 +82,4 @@ export type MonzoTransaction = {
   amount_is_pending: boolean;
   atm_fees_detailed: unknown;
   parent_account_id: string;
-};
-
-type MonzoAddress = {
-  short_formatted: string;
-  city: string;
-  latitude: number;
-  longitude: number;
-  zoom_level: number;
-  approximate: boolean;
-  formatted: string;
-  address: string;
-  region: string;
-  country: string;
-  postcode: string;
-};
-
-type MonzoMetadata = {
-  card_acceptor_website?: string;
-  ledger_committed_timestamp_earliest?: string;
-  ledger_committed_timestamp_latest?: string;
-  ledger_insertion_id?: string;
-  mastercard_approval_type?: string;
-  mastercard_auth_message_id?: string;
-  mastercard_card_id?: string;
-  mastercard_clearing_message_id?: string;
-  mastercard_lifecycle_id?: string;
-  mcc?: string;
-  standin_correlation_id?: string;
-  token_unique_reference?: string;
-  tokenization_method?: string;
 };
