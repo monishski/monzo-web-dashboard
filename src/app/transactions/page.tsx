@@ -10,18 +10,21 @@ async function TransactionsPage(): Promise<JSX.Element> {
     headers: await headers(),
   });
 
+  if (!session) throw Error("Unauthenticated");
+
   const { accessToken } = await auth.api.getAccessToken({
-    body: {
-      providerId: "monzo",
-      userId: session?.user?.id,
-    },
+    body: { providerId: "monzo", userId: session?.user?.id },
   });
 
+  // TODO: should redirect user to sigin page
+  if (!accessToken) throw Error("Unauthenticated");
+
   const { accounts } = await fetchAccounts(accessToken);
-
   const retailAccount = accounts?.find((account) => account.type === "uk_retail");
+  if (!retailAccount) throw Error("Retail account not found");
 
-  const transactions = await fetchTransactions(accessToken, retailAccount?.id);
+  const { id } = retailAccount;
+  const transactions = await fetchTransactions(accessToken, id);
 
   return (
     <div>
