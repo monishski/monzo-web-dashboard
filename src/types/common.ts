@@ -23,3 +23,31 @@ export type TransactionCategory =
   | "savings"
   | "transfers"
   | "holidays";
+
+type TransactionMerchantAddress = {
+  short_formatted: string;
+  city: string;
+  latitude: number;
+  longitude: number;
+  zoom_level: number;
+  approximate: boolean;
+  formatted: string;
+  address: string;
+  region: string;
+  country: string;
+  postcode: string;
+};
+
+export type TransactionMerchant = {
+  id: string;
+  group_id: string;
+  name: string;
+  logo: string;
+  emoji: string;
+  category: TransactionCategory;
+  online: boolean;
+  atm: boolean;
+  address: TransactionMerchantAddress;
+  disable_feedback: boolean;
+  metadata: Record<string, string>;
+};

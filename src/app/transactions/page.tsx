@@ -1,34 +1,23 @@
+"use client";
+
 import type { JSX } from "react";
-import { headers } from "next/headers";
 
-import { auth } from "@/lib/auth/auth";
-import { fetchAccounts } from "@/endpoints/accounts";
-import { fetchTransactions } from "@/endpoints/transactions";
+function TransactionsPage(): JSX.Element {
+  const handleSeedTransactions = async (): Promise<void> => {
+    const accountResponse = await fetch("/api/monzo/accounts");
+    if (!accountResponse.ok) throw Error("Failed to fetch account");
+    const { account } = await accountResponse.json();
 
-async function TransactionsPage(): Promise<JSX.Element> {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) throw Error("Unauthenticated");
-
-  const { accessToken } = await auth.api.getAccessToken({
-    body: { providerId: "monzo", userId: session?.user?.id },
-  });
-
-  // TODO: should redirect user to sigin page
-  if (!accessToken) throw Error("Unauthenticated");
-
-  const { accounts } = await fetchAccounts(accessToken);
-  const retailAccount = accounts?.find((account) => account.type === "uk_retail");
-  if (!retailAccount) throw Error("Retail account not found");
-
-  const { id } = retailAccount;
-  const transactions = await fetchTransactions(accessToken, id);
+    const transactionResponse = await fetch("/api/monzo/transactions", {
+      method: "POST",
+      body: JSON.stringify({ accountId: account.id }),
+    });
+    if (!transactionResponse.ok) throw Error("Failed to seed transaction data");
+  };
 
   return (
     <div>
-      <pre>{JSON.stringify(transactions, null, 2)}</pre>
+      <button onClick={handleSeedTransactions}>Seed transactions data</button>
     </div>
   );
 }

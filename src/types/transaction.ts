@@ -12,7 +12,7 @@ type TransactionMerchantAddress = {
   postcode: string;
 };
 
-type TransactionMerchant = {
+export type TransactionMerchant = {
   id: string;
   group_id: string;
   name: string;
@@ -28,7 +28,7 @@ export type Transaction = {
   id: string;
   created: string;
   description: string;
-  amount: string;
+  amount: number;
   fees: unknown;
   currency: string;
   notes: string;

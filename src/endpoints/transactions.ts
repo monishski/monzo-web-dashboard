@@ -5,7 +5,7 @@ import type { MonzoTransaction } from "@/types/monzo/transaction";
 export const fetchTransactions = async (
   accessToken: string,
   accountId: string
-): Promise<{ total: number; data: { transactions: MonzoTransaction[] } }> => {
+): Promise<{ transactions: MonzoTransaction[] }> => {
   const transactionsMap: Record<string, MonzoTransaction> = {};
   let before = new Date();
 
@@ -56,8 +56,5 @@ export const fetchTransactions = async (
 
   const transactions = Object.values(transactionsMap);
 
-  return {
-    total: transactions.length,
-    data: { transactions },
-  };
+  return { transactions };
 };

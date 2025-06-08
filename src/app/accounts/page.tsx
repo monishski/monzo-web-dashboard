@@ -1,26 +1,18 @@
+"use client";
+
 import type { JSX } from "react";
-import { headers } from "next/headers";
 
-import { auth } from "@/lib/auth/auth";
-import { fetchAccounts } from "@/endpoints/accounts";
-
-async function AccountsPage(): Promise<JSX.Element> {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  const { accessToken } = await auth.api.getAccessToken({
-    body: {
-      providerId: "monzo",
-      userId: session?.user?.id,
-    },
-  });
-
-  const accounts = await fetchAccounts(accessToken);
+function AccountsPage(): JSX.Element {
+  const handleSeedAccounts = async (): Promise<void> => {
+    const response = await fetch("/api/monzo/accounts", {
+      method: "POST",
+    });
+    if (!response.ok) throw Error("There was error saving accounts");
+  };
 
   return (
     <div>
-      <pre>{JSON.stringify(accounts, null, 2)}</pre>
+      <button onClick={handleSeedAccounts}>Seed accounts data</button>
     </div>
   );
 }

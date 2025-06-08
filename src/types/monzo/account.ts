@@ -1,10 +1,4 @@
-import type { AccountType } from "../common";
-
-type MonzoAccountOwner = {
-  user_id: string;
-  preferred_name: string;
-  preferred_first_name: string;
-};
+import type { AccountOwner, AccountType } from "../common";
 
 type MonzoAccountIban = {
   unformatted: string;
@@ -36,7 +30,7 @@ export type MonzoAccount = {
   legal_entity: string;
   country_code: string;
   country_code_alpha3: string;
-  owners: MonzoAccountOwner[];
+  owners: AccountOwner[];
   account_number: string;
   sort_code: string;
   payment_details: MonzoAccountPaymentDetails;

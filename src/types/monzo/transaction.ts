@@ -1,4 +1,4 @@
-import type { TransactionCategory } from "../common";
+import type { TransactionCategory, TransactionMerchant } from "../common";
 
 type MonzoTransactionMetadata = {
   card_acceptor_website?: string;
@@ -16,34 +16,6 @@ type MonzoTransactionMetadata = {
   tokenization_method?: string;
 };
 
-type MonzoTransactionMerchantAddress = {
-  short_formatted: string;
-  city: string;
-  latitude: number;
-  longitude: number;
-  zoom_level: number;
-  approximate: boolean;
-  formatted: string;
-  address: string;
-  region: string;
-  country: string;
-  postcode: string;
-};
-
-export type MonzoTransactionMerchant = {
-  id: string;
-  group_id: string;
-  name: string;
-  logo: string;
-  emoji: string;
-  category: TransactionCategory;
-  online: boolean;
-  atm: boolean;
-  address: MonzoTransactionMerchantAddress;
-  disable_feedback: boolean;
-  metadata: Record<string, string>;
-};
-
 export type MonzoTransaction = {
   id: string;
   created: string;
@@ -51,7 +23,7 @@ export type MonzoTransaction = {
   amount: number;
   fees: unknown;
   currency: string;
-  merchant?: MonzoTransactionMerchant;
+  merchant?: TransactionMerchant;
   merchant_feedback_uri?: string;
   notes: string;
   metadata: MonzoTransactionMetadata;

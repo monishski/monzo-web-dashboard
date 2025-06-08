@@ -15,6 +15,13 @@
       "when": 1749383198910,
       "tag": "0001_auth_user_additional_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1749404742309,
+      "tag": "0002_monzo_accounts_and_transactions",
+      "breakpoints": true
     }
   ]
 }

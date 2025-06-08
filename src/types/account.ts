@@ -1,9 +1,4 @@
-import type { AccountType } from "./common";
-
-type AccountOwner = {
-  user_id: string;
-  name: string;
-};
+import type { AccountOwner, AccountType } from "./common";
 
 export type Account = {
   id: string;
