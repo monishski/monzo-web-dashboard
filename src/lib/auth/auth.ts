@@ -1,10 +1,10 @@
 import { betterAuth } from "better-auth";
-import type { User } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { genericOAuth } from "better-auth/plugins";
 
 import { db } from "@/lib/db";
 import * as authSchema from "@/lib/db/schema/auth-schema";
+import type { MonzoUserInfo } from "@/types/monzo/user-info";
 
 if (
   !process.env.MONZO_CLIENT_ID ||
@@ -22,6 +22,13 @@ export const auth = betterAuth({
     provider: "pg",
     schema: authSchema,
   }),
+  user: {
+    additionalFields: {
+      userId: { type: "string" },
+      clientId: { type: "string" },
+      clientIp: { type: "string" },
+    },
+  },
   plugins: [
     genericOAuth({
       config: [
@@ -37,7 +44,8 @@ export const auth = betterAuth({
             response_type: "code",
           },
           tokenUrl: process.env.MONZO_TOKEN_URL,
-          async getUserInfo(tokens): Promise<User> {
+          // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+          async getUserInfo(tokens) {
             if (!process.env.MONZO_USER_INFO_URL)
               throw Error("MONZO_USER_INFO_URL env variable must be set");
 
@@ -47,11 +55,15 @@ export const auth = betterAuth({
               },
             });
             if (!response.ok) throw new Error("Failed to fetch user info");
-            const user = await response.json();
+
+            const user = (await response.json()) as MonzoUserInfo;
+
+            if (!user.authenticated) throw new Error("User unauthenticated");
 
             const now = new Date();
 
             return {
+              // NOTE: the DB seems to create its own id?
               id: user.user_id,
               // NOTE: that 'email' is required in Better Auth, so we are using placeholder domain
               // REF: https://github.com/better-auth/better-auth/issues/2172
@@ -61,6 +73,10 @@ export const auth = betterAuth({
               emailVerified: true,
               createdAt: now,
               updatedAt: now,
+              // NOTE: these are additional custom fields
+              userId: user.user_id,
+              clientId: user.client_id,
+              clientIp: user.client_ip,
             };
           },
         },
@@ -68,3 +84,5 @@ export const auth = betterAuth({
     }),
   ],
 });
+
+export type Session = typeof auth.$Infer.Session;
