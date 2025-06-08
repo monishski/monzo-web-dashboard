@@ -4,7 +4,8 @@ import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth/auth";
 import { db } from "@/lib/db";
 import { monzoMerchants, monzoTransactions } from "@/lib/db/schema/monzo-schema";
-import { fetchTransactions } from "@/endpoints/transactions";
+
+import { fetchTransactions } from "./endpoints";
 
 export async function POST(request: Request): Promise<NextResponse> {
   try {

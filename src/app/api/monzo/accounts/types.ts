@@ -1,4 +1,4 @@
-import type { AccountOwner, AccountType } from "../common";
+import type { AccountOwner, AccountType } from "@/types/common";
 
 type MonzoAccountIban = {
   unformatted: string;

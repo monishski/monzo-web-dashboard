@@ -1,28 +1,4 @@
-import type { TransactionCategory } from "./common";
-
-type TransactionMerchantAddress = {
-  city: string;
-  latitude: string;
-  longitude: string;
-  approximate: boolean;
-  formatted: string;
-  address: string;
-  region: string;
-  country: string;
-  postcode: string;
-};
-
-export type TransactionMerchant = {
-  id: string;
-  group_id: string;
-  name: string;
-  logo: string;
-  category: TransactionCategory;
-  online: boolean;
-  atm: boolean;
-  metadata: Record<string, string>;
-  address: TransactionMerchantAddress;
-};
+import type { TransactionCategory, TransactionMerchant } from "./common";
 
 export type Transaction = {
   id: string;

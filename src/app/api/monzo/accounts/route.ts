@@ -3,7 +3,8 @@ import { eq } from "drizzle-orm";
 
 import { auth } from "@/lib/auth/auth";
 import { db, monzoAccounts } from "@/lib/db";
-import { fetchAccounts } from "@/endpoints/accounts";
+
+import { fetchAccounts } from "./endpoints";
 
 export async function GET(request: Request): Promise<NextResponse> {
   try {

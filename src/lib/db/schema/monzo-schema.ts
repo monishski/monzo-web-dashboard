@@ -36,6 +36,7 @@ export const monzoMerchants = pgTable("monzo_merchants", {
   address: jsonb("address").notNull(),
   disableFeedback: boolean("disable_feedback").notNull(),
   metadata: jsonb("metadata").notNull(),
+  // TODO: Surely this is a general table that doesnt need user id?
   accountId: text("account_id")
     .notNull()
     .references(() => monzoAccounts.id, { onDelete: "cascade" }),

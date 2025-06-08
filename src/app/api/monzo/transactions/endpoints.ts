@@ -1,6 +1,6 @@
 import qs from "qs";
 
-import type { MonzoTransaction } from "@/types/monzo/transaction";
+import type { MonzoTransaction } from "./types";
 
 export const fetchTransactions = async (
   accessToken: string,
