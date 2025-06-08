@@ -1,3 +1,5 @@
+import qs from "qs";
+
 import type { MonzoTransaction } from "@/types/monzo/transaction";
 
 export const fetchTransactions = async (
@@ -8,15 +10,19 @@ export const fetchTransactions = async (
   let before = new Date();
 
   while (true) {
-    const url = new URL(`${process.env.MONZO_API_URL}/transactions`);
-    url.searchParams.append("expand[]", "merchant");
-    url.searchParams.append("account_id", accountId ?? "");
-    // Note: Monzo only allows a maximum of a 100 transactions to be fetched at once
-    // REF: https://community.monzo.com/t/changes-when-listing-with-our-api/158676
-    url.searchParams.append("limit", String(100));
-    url.searchParams.append("before", before.toISOString());
+    const queryParams = qs.stringify(
+      {
+        expand: ["merchant"],
+        account_id: accountId,
+        limit: 100,
+        before: before.toISOString(),
+      },
+      { arrayFormat: "brackets" }
+    );
 
-    const response = await fetch(url.toString(), {
+    const url = `${process.env.MONZO_API_URL}/transactions?${queryParams}`;
+
+    const response = await fetch(url, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
