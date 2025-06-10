@@ -10,7 +10,9 @@ export default function Home(): JSX.Element {
 
   return (
     <div className="flex min-h-screen flex-col items-start justify-center p-8">
-      <h1 className="font-[family-name:var(--font-geist-sans)] text-4xl font-bold">Better Auth</h1>
+      <h1 className="font-[family-name:var(--font-geist-sans)] text-4xl font-bold">
+        Better Auth
+      </h1>
 
       <Link href="/transactions">Transactions</Link>
 

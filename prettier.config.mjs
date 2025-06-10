@@ -5,7 +5,7 @@ const prettierConfig = {
   singleQuote: false,
   tabWidth: 2,
   trailingComma: "es5",
-  printWidth: 100,
+  printWidth: 75,
   importOrder: [
     "^(react/(.*)$)|^(react$)",
     "^(next/(.*)$)|^(next$)",
@@ -26,7 +26,10 @@ const prettierConfig = {
   ],
   importOrderParserPlugins: ["typescript", "jsx", "decorators-legacy"],
   importOrderCaseSensitive: false,
-  plugins: ["@ianvs/prettier-plugin-sort-imports", "prettier-plugin-tailwindcss"],
+  plugins: [
+    "@ianvs/prettier-plugin-sort-imports",
+    "prettier-plugin-tailwindcss",
+  ],
 };
 
 export default prettierConfig;

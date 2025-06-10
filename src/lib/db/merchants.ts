@@ -4,7 +4,9 @@ import { db } from "@/lib/db";
 import { monzoMerchants } from "@/lib/db/schema/monzo-schema";
 import type { TransactionMerchant } from "@/types/common";
 
-export async function upsertMerchant(merchant: TransactionMerchant): Promise<string> {
+export async function upsertMerchant(
+  merchant: TransactionMerchant
+): Promise<string> {
   // First try to find the merchant
   const existingMerchant = await db
     .select()

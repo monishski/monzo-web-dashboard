@@ -12,12 +12,15 @@ function TransactionsPage(): JSX.Element {
       method: "POST",
       body: JSON.stringify({ accountId: account.id }),
     });
-    if (!transactionResponse.ok) throw Error("Failed to seed transaction data");
+    if (!transactionResponse.ok)
+      throw Error("Failed to seed transaction data");
   };
 
   return (
     <div>
-      <button onClick={handleSeedTransactions}>Seed transactions data</button>
+      <button onClick={handleSeedTransactions}>
+        Seed transactions data
+      </button>
     </div>
   );
 }

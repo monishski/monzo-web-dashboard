@@ -19,8 +19,16 @@ export function getDatabaseMerchant(
 export function getDatabaseTransaction(
   transaction: MonzoTransaction
 ): typeof monzoTransactions.$inferInsert {
-  const { created, amount, local_amount, local_currency, settled, merchant, account_id, ...other } =
-    transaction;
+  const {
+    created,
+    amount,
+    local_amount,
+    local_currency,
+    settled,
+    merchant,
+    account_id,
+    ...other
+  } = transaction;
 
   return {
     ...other,

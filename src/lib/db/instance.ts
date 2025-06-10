@@ -6,8 +6,11 @@ if (!process.env.DATABASE_URL_TRANSACTION_POOLER) {
 }
 
 // Disable prefetch as it is not supported for "Transaction" pool mode
-export const client = postgres(process.env.DATABASE_URL_TRANSACTION_POOLER, {
-  prepare: false,
-});
+export const client = postgres(
+  process.env.DATABASE_URL_TRANSACTION_POOLER,
+  {
+    prepare: false,
+  }
+);
 
 export const db = drizzle(client);

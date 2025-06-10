@@ -3,7 +3,10 @@ import { eq } from "drizzle-orm";
 
 import { auth } from "@/lib/auth/auth";
 import { db } from "@/lib/db";
-import { monzoMerchants, monzoTransactions } from "@/lib/db/schema/monzo-schema";
+import {
+  monzoMerchants,
+  monzoTransactions,
+} from "@/lib/db/schema/monzo-schema";
 
 import { fetchTransactions } from "./endpoints";
 import { getDatabaseMerchant, getDatabaseTransaction } from "./utils";
@@ -15,7 +18,10 @@ export async function POST(request: Request): Promise<NextResponse> {
     });
 
     if (!session) {
-      return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Unauthenticated" },
+        { status: 401 }
+      );
     }
 
     const { accessToken } = await auth.api.getAccessToken({
@@ -23,19 +29,30 @@ export async function POST(request: Request): Promise<NextResponse> {
     });
 
     if (!accessToken) {
-      return NextResponse.json({ error: "No access token" }, { status: 401 });
+      return NextResponse.json(
+        { error: "No access token" },
+        { status: 401 }
+      );
     }
 
     // Get the account ID from the request body
     const { accountId } = await request.json();
     if (!accountId) {
-      return NextResponse.json({ error: "Account ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Account ID is required" },
+        { status: 400 }
+      );
     }
 
-    const { transactions } = await fetchTransactions(accessToken, accountId);
+    const { transactions } = await fetchTransactions(
+      accessToken,
+      accountId
+    );
 
     const insertedTransactions = await db.transaction(async (tx) => {
-      await tx.delete(monzoTransactions).where(eq(monzoTransactions.accountId, accountId));
+      await tx
+        .delete(monzoTransactions)
+        .where(eq(monzoTransactions.accountId, accountId));
 
       // Handle merchants first
       const merchantMap = new Map<string, string>();
@@ -53,7 +70,9 @@ export async function POST(request: Request): Promise<NextResponse> {
           if (existingMerchant.length === 0) {
             const [insertedMerchant] = await tx
               .insert(monzoMerchants)
-              .values(getDatabaseMerchant(merchant, transaction.account_id))
+              .values(
+                getDatabaseMerchant(merchant, transaction.account_id)
+              )
               .returning({ id: monzoMerchants.id });
 
             merchantMap.set(merchant.id, insertedMerchant.id);
@@ -65,7 +84,11 @@ export async function POST(request: Request): Promise<NextResponse> {
 
       const insertedTransactions = await tx
         .insert(monzoTransactions)
-        .values(transactions.map((transaction) => getDatabaseTransaction(transaction)))
+        .values(
+          transactions.map((transaction) =>
+            getDatabaseTransaction(transaction)
+          )
+        )
         .returning();
 
       return insertedTransactions;
@@ -75,7 +98,10 @@ export async function POST(request: Request): Promise<NextResponse> {
       transactions: insertedTransactions,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "An unexpected error occurred";
+    const message =
+      error instanceof Error
+        ? error.message
+        : "An unexpected error occurred";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -58,7 +58,8 @@ export const auth = betterAuth({
 
             const user = (await response.json()) as MonzoUserInfo;
 
-            if (!user.authenticated) throw new Error("User unauthenticated");
+            if (!user.authenticated)
+              throw new Error("User unauthenticated");
 
             const now = new Date();
 

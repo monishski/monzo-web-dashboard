@@ -1,4 +1,7 @@
-import type { TransactionCategory, TransactionMerchant } from "@/types/common";
+import type {
+  TransactionCategory,
+  TransactionMerchant,
+} from "@/types/common";
 
 type MonzoTransactionMetadata = {
   card_acceptor_website?: string;

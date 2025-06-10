@@ -6,8 +6,15 @@ export function getDatabaseAccount(
   account: MonzoAccount,
   userId: string
 ): typeof monzoAccounts.$inferInsert {
-  const { created, owner_type, is_flex, product_type, account_number, sort_code, ...other } =
-    account;
+  const {
+    created,
+    owner_type,
+    is_flex,
+    product_type,
+    account_number,
+    sort_code,
+    ...other
+  } = account;
 
   return {
     ...other,
