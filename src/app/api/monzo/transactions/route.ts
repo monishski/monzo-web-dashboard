@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { monzoMerchants, monzoTransactions } from "@/lib/db/schema/monzo-schema";
 
 import { fetchTransactions } from "./endpoints";
+import { getDatabaseMerchant, getDatabaseTransaction } from "./utils";
 
 export async function POST(request: Request): Promise<NextResponse> {
   try {
@@ -52,20 +53,7 @@ export async function POST(request: Request): Promise<NextResponse> {
           if (existingMerchant.length === 0) {
             const [insertedMerchant] = await tx
               .insert(monzoMerchants)
-              .values({
-                id: merchant.id,
-                groupId: merchant.group_id,
-                name: merchant.name,
-                logo: merchant.logo,
-                emoji: merchant.emoji,
-                category: merchant.category,
-                online: merchant.online,
-                atm: merchant.atm,
-                address: merchant.address,
-                disableFeedback: merchant.disable_feedback,
-                metadata: merchant.metadata,
-                accountId: transaction.account_id,
-              })
+              .values(getDatabaseMerchant(merchant, transaction.account_id))
               .returning({ id: monzoMerchants.id });
 
             merchantMap.set(merchant.id, insertedMerchant.id);
@@ -77,23 +65,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
       const insertedTransactions = await tx
         .insert(monzoTransactions)
-        .values(
-          transactions.map((transaction) => ({
-            id: transaction.id,
-            created: new Date(transaction.created),
-            description: transaction.description,
-            // TODO: ?Drizzle ORM expects these values as strings to maintain precision?
-            amount: transaction.amount.toString(),
-            currency: transaction.currency,
-            notes: transaction.notes,
-            category: transaction.category,
-            settled: transaction.settled ? new Date(transaction.settled) : null,
-            localAmount: transaction.local_amount.toString(),
-            localCurrency: transaction.local_currency,
-            accountId: transaction.account_id,
-            merchantId: transaction.merchant ? merchantMap.get(transaction.merchant.id) : undefined,
-          }))
-        )
+        .values(transactions.map((transaction) => getDatabaseTransaction(transaction)))
         .returning();
 
       return insertedTransactions;
