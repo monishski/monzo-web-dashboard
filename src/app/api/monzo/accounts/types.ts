@@ -1,10 +1,6 @@
-type MonzoOwner = {
-  user_id: string;
-  preferred_name: string;
-  preferred_first_name: string;
-};
+import type { AccountOwner, AccountType } from "@/types/common";
 
-type MonzoIban = {
+type MonzoAccountIban = {
   unformatted: string;
   formatted: string;
   bic: string;
@@ -12,22 +8,20 @@ type MonzoIban = {
   usage_description_web: string;
 };
 
-type MonzoPaymentDetails = {
+type MonzoAccountPaymentDetails = {
   locale_uk: {
     account_number: string;
     sort_code: string;
   };
-  iban: MonzoIban;
+  iban: MonzoAccountIban;
 };
-
-type MonzoAccountType = "uk_retail" | "uk_retail_joint";
 
 export type MonzoAccount = {
   id: string;
   closed: boolean;
   created: string;
   description: string;
-  type: MonzoAccountType;
+  type: AccountType;
   owner_type: string;
   is_flex: boolean;
   product_type: string;
@@ -36,8 +30,8 @@ export type MonzoAccount = {
   legal_entity: string;
   country_code: string;
   country_code_alpha3: string;
-  owners: MonzoOwner[];
+  owners: AccountOwner[];
   account_number: string;
   sort_code: string;
-  payment_details: MonzoPaymentDetails;
+  payment_details: MonzoAccountPaymentDetails;
 };
