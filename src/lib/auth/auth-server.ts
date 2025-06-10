@@ -4,7 +4,6 @@ import { genericOAuth } from "better-auth/plugins";
 
 import { db } from "@/lib/db";
 import * as authSchema from "@/lib/db/schema/auth-schema";
-import type { MonzoUserInfo } from "@/types/monzo/user-info";
 
 if (
   !process.env.MONZO_CLIENT_ID ||
@@ -17,7 +16,14 @@ if (
   throw new Error("Monzo env variables must be set");
 }
 
-export const auth = betterAuth({
+type MonzoUserInfo = {
+  authenticated: boolean;
+  client_id: string;
+  client_ip: string;
+  user_id: string;
+};
+
+export const authServer = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: authSchema,
@@ -86,4 +92,4 @@ export const auth = betterAuth({
   ],
 });
 
-export type Session = typeof auth.$Infer.Session;
+export type Session = typeof authServer.$Infer.Session;
