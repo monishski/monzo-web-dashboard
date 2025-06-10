@@ -23,7 +23,7 @@ type MonzoUserInfo = {
   user_id: string;
 };
 
-export const auth = betterAuth({
+export const authServer = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: authSchema,
@@ -92,4 +92,4 @@ export const auth = betterAuth({
   ],
 });
 
-export type Session = typeof auth.$Infer.Session;
+export type Session = typeof authServer.$Infer.Session;

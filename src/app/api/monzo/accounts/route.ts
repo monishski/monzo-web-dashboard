@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 
-import { auth } from "@/lib/auth/auth";
+import { authServer } from "@/lib/auth/auth-server";
 import { db, monzoAccounts } from "@/lib/db";
 
 import { fetchAccounts } from "./endpoints";
@@ -9,7 +9,7 @@ import { getDatabaseAccount } from "./utils";
 
 export async function GET(request: Request): Promise<NextResponse> {
   try {
-    const session = await auth.api.getSession({
+    const session = await authServer.api.getSession({
       headers: request.headers,
     });
 
@@ -38,7 +38,7 @@ export async function GET(request: Request): Promise<NextResponse> {
 
 export async function POST(request: Request): Promise<NextResponse> {
   try {
-    const session = await auth.api.getSession({
+    const session = await authServer.api.getSession({
       headers: request.headers,
     });
 
@@ -49,7 +49,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
 
-    const { accessToken } = await auth.api.getAccessToken({
+    const { accessToken } = await authServer.api.getAccessToken({
       body: { providerId: "monzo", userId: session.user.id },
     });
 
