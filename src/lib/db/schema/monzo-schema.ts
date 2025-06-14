@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import {
   boolean,
   jsonb,
@@ -23,6 +24,14 @@ export const monzoCategories = pgTable("monzo_categories", {
     .$defaultFn(() => new Date())
     .notNull(),
 });
+
+export const monzoCategoriesRelations = relations(
+  monzoCategories,
+  ({ many }) => ({
+    merchants: many(monzoMerchants),
+    transactions: many(monzoTransactions),
+  })
+);
 
 export const monzoAccounts = pgTable("monzo_accounts", {
   id: text("id").primaryKey(),
@@ -72,6 +81,17 @@ export const monzoMerchants = pgTable("monzo_merchants", {
     .notNull(),
 });
 
+export const monzoMerchantsRelations = relations(
+  monzoMerchants,
+  ({ one, many }) => ({
+    category: one(monzoCategories, {
+      fields: [monzoMerchants.categoryId],
+      references: [monzoCategories.id],
+    }),
+    transactions: many(monzoTransactions),
+  })
+);
+
 export const monzoTransactions = pgTable("monzo_transactions", {
   id: text("id").primaryKey(),
   created: timestamp("created").notNull(),
@@ -96,3 +116,17 @@ export const monzoTransactions = pgTable("monzo_transactions", {
     .$defaultFn(() => new Date())
     .notNull(),
 });
+
+export const monzoTransactionsRelations = relations(
+  monzoTransactions,
+  ({ one }) => ({
+    category: one(monzoCategories, {
+      fields: [monzoTransactions.categoryId],
+      references: [monzoCategories.id],
+    }),
+    merchant: one(monzoMerchants, {
+      fields: [monzoTransactions.merchantId],
+      references: [monzoMerchants.id],
+    }),
+  })
+);
