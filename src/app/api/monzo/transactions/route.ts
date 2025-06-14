@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
 
 import { authServer } from "@/lib/auth/auth-server";
 import { db } from "@/lib/db";
 import {
+  monzoCategories,
   monzoMerchants,
   monzoTransactions,
 } from "@/lib/db/schema/monzo-schema";
 
+import { DEFAULT_CATEGORIES, DEFAULT_CATEGORIES_IDS } from "./constants";
 import { fetchTransactions } from "./endpoints";
 import { getDatabaseMerchant, getDatabaseTransaction } from "./utils";
 
@@ -49,39 +50,68 @@ export async function POST(request: Request): Promise<NextResponse> {
       accountId
     );
 
-    const insertedTransactions = await db.transaction(async (tx) => {
-      await tx
-        .delete(monzoTransactions)
-        .where(eq(monzoTransactions.accountId, accountId));
+    if (!transactions || transactions.length === 0) {
+      return NextResponse.json({ transactions: [] });
+    }
 
-      // Handle merchants first
-      const merchantMap = new Map<string, string>();
+    // Collect merchants and categories
+    const merchantMap = new Map<
+      string,
+      typeof monzoMerchants.$inferInsert
+    >();
+    const customCategoriesMap = new Map<
+      string,
+      typeof monzoCategories.$inferInsert
+    >();
 
-      for (const transaction of transactions) {
-        const { merchant } = transaction;
+    for (const transaction of transactions) {
+      const { merchant, category } = transaction;
 
-        if (merchant && !merchantMap.has(merchant.id)) {
-          const existingMerchant = await tx
-            .select()
-            .from(monzoMerchants)
-            .where(eq(monzoMerchants.id, merchant.id))
-            .limit(1);
-
-          if (existingMerchant.length === 0) {
-            const [insertedMerchant] = await tx
-              .insert(monzoMerchants)
-              .values(
-                getDatabaseMerchant(merchant, transaction.account_id)
-              )
-              .returning({ id: monzoMerchants.id });
-
-            merchantMap.set(merchant.id, insertedMerchant.id);
-          } else {
-            merchantMap.set(merchant.id, existingMerchant[0].id);
-          }
-        }
+      if (
+        !DEFAULT_CATEGORIES_IDS.includes(category) &&
+        !!category &&
+        !customCategoriesMap.has(category)
+      ) {
+        customCategoriesMap.set(category, {
+          id: category,
+          name: category,
+          isMonzo: true,
+          userId: session.user.id,
+        });
       }
 
+      if (!!merchant && !merchantMap.has(merchant.id)) {
+        merchantMap.set(
+          merchant.id,
+          getDatabaseMerchant(merchant, accountId)
+        );
+      }
+    }
+
+    const insertedTransactions = await db.transaction(async (tx) => {
+      // Insert default categories
+      await tx.insert(monzoCategories).values(
+        DEFAULT_CATEGORIES.map((category) => ({
+          id: category.id,
+          name: category.name,
+          isMonzo: true,
+          userId: session.user.id,
+        }))
+      );
+
+      // Insert custom categories
+      const customCategories = Array.from(customCategoriesMap.values());
+      if (customCategories.length > 0) {
+        await tx.insert(monzoCategories).values(customCategories);
+      }
+
+      // Insert merchants
+      const merchants = Array.from(merchantMap.values());
+      if (merchants.length > 0) {
+        await tx.insert(monzoMerchants).values(merchants);
+      }
+
+      // Insert transactions
       const insertedTransactions = await tx
         .insert(monzoTransactions)
         .values(
@@ -94,9 +124,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       return insertedTransactions;
     });
 
-    return NextResponse.json({
-      transactions: insertedTransactions,
-    });
+    return NextResponse.json({ transactions: insertedTransactions });
   } catch (error) {
     const message =
       error instanceof Error

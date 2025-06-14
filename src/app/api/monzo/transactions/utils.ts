@@ -1,20 +1,10 @@
-import type { monzoMerchants, monzoTransactions } from "@/lib/db";
+import type {
+  monzoMerchants,
+  monzoTransactions,
+} from "@/lib/db/schema/monzo-schema";
 import type { TransactionMerchant } from "@/types/common";
 
 import type { MonzoTransaction } from "./types";
-
-export function getDatabaseMerchant(
-  merchant: TransactionMerchant,
-  accountId: string
-): typeof monzoMerchants.$inferInsert {
-  const { group_id, disable_feedback, ...other } = merchant;
-  return {
-    ...other,
-    groupId: group_id,
-    disableFeedback: disable_feedback,
-    accountId,
-  };
-}
 
 export function getDatabaseTransaction(
   transaction: MonzoTransaction
@@ -27,6 +17,7 @@ export function getDatabaseTransaction(
     settled,
     merchant,
     account_id,
+    category,
     ...other
   } = transaction;
 
@@ -40,5 +31,22 @@ export function getDatabaseTransaction(
     localCurrency: local_currency,
     accountId: account_id,
     merchantId: merchant ? merchant.id : null,
+    categoryId: category,
+  };
+}
+
+export function getDatabaseMerchant(
+  merchant: TransactionMerchant,
+  accountId: string
+): typeof monzoMerchants.$inferInsert {
+  const { group_id, category, disable_feedback, ...other } = merchant;
+
+  return {
+    ...other,
+    groupId: group_id,
+    disableFeedback: disable_feedback,
+    // Use 'general' as default category if none is provided
+    categoryId: category || "general",
+    accountId,
   };
 }
