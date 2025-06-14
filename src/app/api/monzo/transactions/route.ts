@@ -8,9 +8,12 @@ import {
   monzoTransactions,
 } from "@/lib/db/schema/monzo-schema";
 
-import { DEFAULT_CATEGORIES, DEFAULT_CATEGORIES_IDS } from "./constants";
+import { DEFAULT_CATEGORIES } from "./constants";
 import { fetchTransactions } from "./endpoints";
-import { getDatabaseMerchant, getDatabaseTransaction } from "./utils";
+import {
+  getDatabaseTransaction,
+  getMerchantsAndCategories,
+} from "./utils";
 
 export async function POST(request: Request): Promise<NextResponse> {
   try {
@@ -25,8 +28,9 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
 
+    const userId = session.user.id;
     const { accessToken } = await authServer.api.getAccessToken({
-      body: { providerId: "monzo", userId: session.user.id },
+      body: { providerId: "monzo", userId },
     });
 
     if (!accessToken) {
@@ -54,61 +58,32 @@ export async function POST(request: Request): Promise<NextResponse> {
       return NextResponse.json({ transactions: [] });
     }
 
-    // Collect merchants and categories
-    const merchantMap = new Map<
-      string,
-      typeof monzoMerchants.$inferInsert
-    >();
-    const customCategoriesMap = new Map<
-      string,
-      typeof monzoCategories.$inferInsert
-    >();
-
-    for (const transaction of transactions) {
-      const { merchant, category } = transaction;
-
-      if (
-        !DEFAULT_CATEGORIES_IDS.includes(category) &&
-        !!category &&
-        !customCategoriesMap.has(category)
-      ) {
-        customCategoriesMap.set(category, {
-          id: category,
-          name: category,
-          isMonzo: true,
-          userId: session.user.id,
-        });
-      }
-
-      if (!!merchant && !merchantMap.has(merchant.id)) {
-        merchantMap.set(
-          merchant.id,
-          getDatabaseMerchant(merchant, accountId)
-        );
-      }
-    }
+    const { merchants, customCategories } = getMerchantsAndCategories({
+      transactions,
+      userId,
+      accountId,
+    });
 
     const insertedTransactions = await db.transaction(async (tx) => {
       // Insert default categories
       await tx.insert(monzoCategories).values(
         DEFAULT_CATEGORIES.map((category) => ({
-          id: category.id,
-          name: category.name,
+          ...category,
           isMonzo: true,
-          userId: session.user.id,
+          userId,
         }))
       );
 
       // Insert custom categories
-      const customCategories = Array.from(customCategoriesMap.values());
-      if (customCategories.length > 0) {
-        await tx.insert(monzoCategories).values(customCategories);
+      const customCategoriesArray = Array.from(customCategories.values());
+      if (customCategoriesArray.length > 0) {
+        await tx.insert(monzoCategories).values(customCategoriesArray);
       }
 
       // Insert merchants
-      const merchants = Array.from(merchantMap.values());
-      if (merchants.length > 0) {
-        await tx.insert(monzoMerchants).values(merchants);
+      const merchantsArray = Array.from(merchants.values());
+      if (merchantsArray.length > 0) {
+        await tx.insert(monzoMerchants).values(merchantsArray);
       }
 
       // Insert transactions
