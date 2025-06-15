@@ -18,6 +18,8 @@ export default function Home(): JSX.Element {
 
       <Link href="/accounts">Accounts</Link>
 
+      <Link href="/categories">Categories</Link>
+
       <pre>{JSON.stringify(session, null, 2)}</pre>
       <button
         onClick={async (e) => {
