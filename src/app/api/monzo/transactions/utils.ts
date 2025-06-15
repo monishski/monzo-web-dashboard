@@ -1,20 +1,12 @@
-import type { monzoMerchants, monzoTransactions } from "@/lib/db";
+import type {
+  monzoCategories,
+  monzoMerchants,
+  monzoTransactions,
+} from "@/lib/db/schema/monzo-schema";
 import type { TransactionMerchant } from "@/types/common";
 
+import { DEFAULT_CATEGORIES_IDS } from "./constants";
 import type { MonzoTransaction } from "./types";
-
-export function getDatabaseMerchant(
-  merchant: TransactionMerchant,
-  accountId: string
-): typeof monzoMerchants.$inferInsert {
-  const { group_id, disable_feedback, ...other } = merchant;
-  return {
-    ...other,
-    groupId: group_id,
-    disableFeedback: disable_feedback,
-    accountId,
-  };
-}
 
 export function getDatabaseTransaction(
   transaction: MonzoTransaction
@@ -27,6 +19,7 @@ export function getDatabaseTransaction(
     settled,
     merchant,
     account_id,
+    category,
     ...other
   } = transaction;
 
@@ -40,5 +33,72 @@ export function getDatabaseTransaction(
     localCurrency: local_currency,
     accountId: account_id,
     merchantId: merchant ? merchant.id : null,
+    categoryId: category,
+  };
+}
+
+export function getDatabaseMerchant(
+  merchant: TransactionMerchant,
+  accountId: string
+): typeof monzoMerchants.$inferInsert {
+  const { group_id, category, disable_feedback, ...other } = merchant;
+
+  return {
+    ...other,
+    groupId: group_id,
+    disableFeedback: disable_feedback,
+    categoryId: category,
+    accountId,
+  };
+}
+
+export function getMerchantsAndCategories({
+  transactions,
+  userId,
+  accountId,
+}: {
+  transactions: MonzoTransaction[];
+  userId: string;
+  accountId: string;
+}): {
+  merchants: Map<string, typeof monzoMerchants.$inferInsert>;
+  customCategories: Map<string, typeof monzoCategories.$inferInsert>;
+} {
+  const merchantMap = new Map<
+    string,
+    typeof monzoMerchants.$inferInsert
+  >();
+  const customCategoriesMap = new Map<
+    string,
+    typeof monzoCategories.$inferInsert
+  >();
+
+  for (const transaction of transactions) {
+    const { merchant, category } = transaction;
+
+    if (
+      !DEFAULT_CATEGORIES_IDS.includes(category) &&
+      !!category &&
+      !customCategoriesMap.has(category)
+    ) {
+      customCategoriesMap.set(category, {
+        id: category,
+        name: category,
+        isMonzo: true,
+        userId,
+      });
+    }
+
+    if (!!merchant && !merchantMap.has(merchant.id)) {
+      merchantMap.set(
+        merchant.id,
+        getDatabaseMerchant(merchant, accountId)
+      );
+    }
+  }
+
+  return {
+    merchants: merchantMap,
+    customCategories: customCategoriesMap,
   };
 }
