@@ -11,14 +11,16 @@ export async function GET(request: Request): Promise<NextResponse> {
       headers: request.headers,
     });
 
-    if (!session?.user?.id) {
+    if (!session) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
+
+    const userId = session.user.id;
 
     const categories = await db
       .select()
       .from(monzoCategories)
-      .where(eq(monzoCategories.userId, session.user.id));
+      .where(eq(monzoCategories.userId, userId));
 
     return NextResponse.json({ categories });
   } catch (error) {
@@ -48,7 +50,6 @@ export async function POST(req: Request): Promise<NextResponse> {
     }
 
     const userId = session?.user?.id;
-
     const existingCategory = await db
       .select()
       .from(monzoCategories)

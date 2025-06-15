@@ -54,6 +54,7 @@ export async function PUT(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    const userId = session.user.id;
     const body = await req.json();
     const { name } = body;
 
@@ -87,7 +88,7 @@ export async function PUT(
       .where(
         and(
           eq(monzoCategories.id, params.id),
-          eq(monzoCategories.userId, session.user.id)
+          eq(monzoCategories.userId, userId)
         )
       )
       .returning();
@@ -119,12 +120,14 @@ export async function DELETE(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    const userId = session.user.id;
+
     const category = await db
       .delete(monzoCategories)
       .where(
         and(
           eq(monzoCategories.id, params.id),
-          eq(monzoCategories.userId, session.user.id)
+          eq(monzoCategories.userId, userId)
         )
       )
       .returning();
