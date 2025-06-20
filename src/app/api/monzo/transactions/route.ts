@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 
-import { authServer } from "@/lib/auth/auth-server";
 import { db } from "@/lib/db";
 import {
   monzoCategories,
@@ -8,6 +7,7 @@ import {
   monzoTransactions,
 } from "@/lib/db/schema/monzo-schema";
 
+import { withAuthAccessToken } from "../../middleware";
 import { DEFAULT_CATEGORIES } from "./constants";
 import { fetchTransactions } from "./endpoints";
 import {
@@ -15,31 +15,8 @@ import {
   getMerchantsAndCategories,
 } from "./utils";
 
-export async function POST(request: Request): Promise<NextResponse> {
-  try {
-    const session = await authServer.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session) {
-      return NextResponse.json(
-        { error: "Unauthenticated" },
-        { status: 401 }
-      );
-    }
-
-    const userId = session.user.id;
-    const { accessToken } = await authServer.api.getAccessToken({
-      body: { providerId: "monzo", userId },
-    });
-
-    if (!accessToken) {
-      return NextResponse.json(
-        { error: "No access token" },
-        { status: 401 }
-      );
-    }
-
+export const POST = withAuthAccessToken(
+  async ({ request, userId, accessToken }) => {
     // Get the account ID from the request body
     const { accountId } = await request.json();
     if (!accountId) {
@@ -58,6 +35,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       return NextResponse.json({ transactions: [] });
     }
 
+    // Process transactions to extract merchants and categories
     const { merchants, customCategories } = getMerchantsAndCategories({
       transactions,
       userId,
@@ -100,11 +78,5 @@ export async function POST(request: Request): Promise<NextResponse> {
     });
 
     return NextResponse.json({ transactions: insertedTransactions });
-  } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "An unexpected error occurred";
-    return NextResponse.json({ error: message }, { status: 500 });
   }
-}
+);
