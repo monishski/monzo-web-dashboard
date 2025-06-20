@@ -48,3 +48,26 @@ export function withAuth<Context extends HandlerContext>(
     }
   );
 }
+
+export function withAuthAccessToken<Context extends HandlerContext>(
+  handler: (args: {
+    request: NextRequest;
+    context: Context;
+    userId: string;
+    accessToken: string;
+  }) => Promise<Response>
+): Handler<Context> {
+  return withAuth(async function (args): Promise<Response> {
+    const { userId } = args;
+
+    const { accessToken } = await authServer.api.getAccessToken({
+      body: { providerId: "monzo", userId },
+    });
+
+    if (!accessToken) {
+      return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
+    }
+
+    return handler({ ...args, accessToken });
+  });
+}
