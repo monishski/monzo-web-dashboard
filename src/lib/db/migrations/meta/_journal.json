@@ -29,6 +29,13 @@
       "when": 1749584867773,
       "tag": "0003_monzo_categories",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1750443295733,
+      "tag": "0004_persist_original_monzo_categories",
+      "breakpoints": true
     }
   ]
 }

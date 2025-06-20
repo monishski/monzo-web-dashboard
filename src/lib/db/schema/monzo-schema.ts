@@ -13,7 +13,7 @@ import { user } from "./auth-schema";
 export const monzoCategories = pgTable("monzo_categories", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
-  isMonzo: boolean("is_monzo").notNull().default(true),
+  isMonzo: boolean("is_monzo").notNull().default(false),
   userId: text("user_id").references(() => user.id, {
     onDelete: "cascade",
   }),
@@ -61,9 +61,8 @@ export const monzoMerchants = pgTable("monzo_merchants", {
   name: text("name").notNull(),
   logo: text("logo").notNull(),
   emoji: text("emoji"),
-  categoryId: text("category_id")
-    .notNull()
-    .references(() => monzoCategories.id),
+  categoryId: text("category_id").references(() => monzoCategories.id),
+  category: text("category").references(() => monzoCategories.id),
   online: boolean("online").notNull(),
   atm: boolean("atm").notNull(),
   address: jsonb("address").notNull(),
@@ -99,9 +98,8 @@ export const monzoTransactions = pgTable("monzo_transactions", {
   amount: numeric("amount").notNull(),
   currency: text("currency").notNull(),
   notes: text("notes"),
-  categoryId: text("category_id")
-    .notNull()
-    .references(() => monzoCategories.id),
+  categoryId: text("category_id").references(() => monzoCategories.id),
+  category: text("category").references(() => monzoCategories.id),
   settled: timestamp("settled"),
   localAmount: numeric("local_amount").notNull(),
   localCurrency: text("local_currency").notNull(),
