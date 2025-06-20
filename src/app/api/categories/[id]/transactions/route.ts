@@ -1,25 +1,15 @@
 import { NextResponse } from "next/server";
 import { and, desc, eq } from "drizzle-orm";
 
-import { authServer } from "@/lib/auth/auth-server";
 import { db } from "@/lib/db";
 import { monzoTransactions } from "@/lib/db/schema/monzo-schema";
+import { withAuth } from "@/app/api/middleware";
 
-export async function POST(
-  req: Request,
-  { params }: { params: { id: string } }
-): Promise<NextResponse> {
-  try {
-    const session = await authServer.api.getSession({
-      headers: req.headers,
-    });
-
-    if (!session) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
-
+// NOTE: this is a POST request even though we are fetching because of the request body
+export const POST = withAuth<{ params: { id: string } }>(
+  async ({ request, context: { params } }) => {
     const { id: categoryId } = await params;
-    const body = await req.json();
+    const body = await request.json();
     const { accountId } = body;
 
     const transactions = await db
@@ -34,11 +24,5 @@ export async function POST(
       .orderBy(desc(monzoTransactions.created));
 
     return NextResponse.json(transactions);
-  } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "An unexpected error occurred";
-    return NextResponse.json({ error: message }, { status: 500 });
   }
-}
+);

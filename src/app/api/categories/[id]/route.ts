@@ -1,25 +1,13 @@
 import { NextResponse } from "next/server";
 import { and, eq, not } from "drizzle-orm";
 
-import { authServer } from "@/lib/auth/auth-server";
 import { db } from "@/lib/db";
 import { monzoCategories } from "@/lib/db/schema/monzo-schema";
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-): Promise<NextResponse> {
-  try {
-    const session = await authServer.api.getSession({
-      headers: request.headers,
-    });
+import { withAuth } from "../../middleware";
 
-    if (!session) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
-
-    const userId = session.user.id;
-
+export const GET = withAuth<{ params: { id: string } }>(
+  async ({ context: { params }, userId }) => {
     const [category] = await db
       .select()
       .from(monzoCategories)
@@ -32,30 +20,12 @@ export async function GET(
       .limit(1);
 
     return NextResponse.json(category);
-  } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "An unexpected error occurred";
-    return NextResponse.json({ error: message }, { status: 500 });
   }
-}
+);
 
-export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
-): Promise<NextResponse> {
-  try {
-    const session = await authServer.api.getSession({
-      headers: req.headers,
-    });
-
-    if (!session) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
-
-    const userId = session.user.id;
-    const body = await req.json();
+export const PUT = withAuth<{ params: { id: string } }>(
+  async ({ request, context: { params }, userId }) => {
+    const body = await request.json();
     const { name } = body;
 
     if (!name) {
@@ -69,7 +39,7 @@ export async function PUT(
       .where(
         and(
           eq(monzoCategories.name, name.trim()),
-          eq(monzoCategories.userId, session.user.id),
+          eq(monzoCategories.userId, userId),
           // Exclude the current category being updated
           not(eq(monzoCategories.id, params.id))
         )
@@ -82,7 +52,7 @@ export async function PUT(
       });
     }
 
-    const category = await db
+    const [category] = await db
       .update(monzoCategories)
       .set({ name })
       .where(
@@ -93,35 +63,16 @@ export async function PUT(
       )
       .returning();
 
-    if (!category.length) {
+    if (!category) {
       return new NextResponse("Category not found", { status: 404 });
     }
 
-    return NextResponse.json(category[0]);
-  } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "An unexpected error occurred";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json(category);
   }
-}
+);
 
-export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
-): Promise<NextResponse> {
-  try {
-    const session = await authServer.api.getSession({
-      headers: req.headers,
-    });
-
-    if (!session) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
-
-    const userId = session.user.id;
-
+export const DELETE = withAuth<{ params: { id: string } }>(
+  async ({ context: { params }, userId }) => {
     const category = await db
       .delete(monzoCategories)
       .where(
@@ -137,11 +88,5 @@ export async function DELETE(
     }
 
     return new NextResponse(null, { status: 204 });
-  } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "An unexpected error occurred";
-    return NextResponse.json({ error: message }, { status: 500 });
   }
-}
+);
