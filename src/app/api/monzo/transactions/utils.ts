@@ -33,7 +33,8 @@ export function getDatabaseTransaction(
     localCurrency: local_currency,
     accountId: account_id,
     merchantId: merchant ? merchant.id : null,
-    categoryId: category,
+    category: category || null,
+    categoryId: category || null,
   };
 }
 
@@ -47,7 +48,8 @@ export function getDatabaseMerchant(
     ...other,
     groupId: group_id,
     disableFeedback: disable_feedback,
-    categoryId: category,
+    category: category || null,
+    categoryId: category || null,
     accountId,
   };
 }
