@@ -78,7 +78,7 @@ async function CategoryPage({
     const error = await categoryRes.text();
     throw new Error(JSON.stringify(error, null, 2));
   }
-  const category = await categoryRes.json();
+  const { data: category } = await categoryRes.json();
 
   const updateCategoryWithId = updateCategory.bind(null, id);
   const deleteCategoryWithId = deleteCategory.bind(null, id);

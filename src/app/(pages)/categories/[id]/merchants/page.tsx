@@ -11,15 +11,17 @@ async function CategoryMerchantsPage({
   const headersList = await headers();
   const cookie = headersList.get("cookie");
 
-  const accountRes = await fetch(
-    "http://localhost:3001/api/monzo/accounts",
-    { headers: headersList }
-  );
+  const accountRes = await fetch("http://localhost:3001/api/accounts", {
+    headers: headersList,
+  });
   if (!accountRes.ok) {
     const error = await accountRes.text();
     throw new Error(JSON.stringify(error, null, 2));
   }
-  const { account } = await accountRes.json();
+  const { data: account } = await accountRes.json();
+  if (!account) {
+    throw new Error("No account found");
+  }
 
   const response = await fetch(
     `http://localhost:3001/api/categories/${id}/merchants`,
@@ -36,7 +38,7 @@ async function CategoryMerchantsPage({
     const error = await response.text();
     throw new Error(JSON.stringify(error, null, 2));
   }
-  const merchants = await response.json();
+  const { data: merchants } = await response.json();
 
   return (
     <div>

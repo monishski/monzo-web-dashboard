@@ -12,8 +12,8 @@ async function CategoriesPage(): Promise<JSX.Element> {
     const error = await response.text();
     throw new Error(JSON.stringify(error, null, 2));
   }
-  const { categories } = (await response.json()) as {
-    categories: Category[];
+  const { data: categories } = (await response.json()) as {
+    data: Category[];
   };
 
   return (
