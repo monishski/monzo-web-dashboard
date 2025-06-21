@@ -13,15 +13,17 @@ async function CategoryTransactionsPage({
   const headersList = await headers();
   const cookie = headersList.get("cookie");
 
-  const accountRes = await fetch(
-    "http://localhost:3001/api/monzo/accounts",
-    { headers: headersList }
-  );
+  const accountRes = await fetch("http://localhost:3001/api/accounts", {
+    headers: headersList,
+  });
   if (!accountRes.ok) {
     const error = await accountRes.text();
     throw new Error(JSON.stringify(error, null, 2));
   }
-  const { account } = await accountRes.json();
+  const { data: account } = await accountRes.json();
+  if (!account) {
+    throw new Error("No account found");
+  }
 
   const transactionsRes = await fetch(
     `http://localhost:3001/api/categories/${id}/transactions`,
@@ -38,7 +40,7 @@ async function CategoryTransactionsPage({
     const error = await transactionsRes.text();
     throw new Error(JSON.stringify(error, null, 2));
   }
-  const transactions = await transactionsRes.json();
+  const { data: transactions } = await transactionsRes.json();
 
   return (
     <div>
