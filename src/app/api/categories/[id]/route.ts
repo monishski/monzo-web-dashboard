@@ -3,10 +3,11 @@ import { and, eq, not } from "drizzle-orm";
 
 import { db } from "@/lib/db";
 import { monzoCategories } from "@/lib/db/schema/monzo-schema";
+import type { Category } from "@/types/category";
 
 import { withAuth } from "../../middleware";
 
-export const GET = withAuth<{ params: { id: string } }>(
+export const GET = withAuth<Category, { params: { id: string } }>(
   async ({ context: { params }, userId }) => {
     const [category] = await db
       .select()
@@ -19,17 +20,20 @@ export const GET = withAuth<{ params: { id: string } }>(
       )
       .limit(1);
 
-    return NextResponse.json(category);
+    return NextResponse.json({ success: true, data: category });
   }
 );
 
-export const PUT = withAuth<{ params: { id: string } }>(
+export const PUT = withAuth<Category, { params: { id: string } }>(
   async ({ request, context: { params }, userId }) => {
     const body = await request.json();
     const { name } = body;
 
     if (!name) {
-      return new NextResponse("Name is required", { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "Name is required" },
+        { status: 400 }
+      );
     }
 
     // Check if another category with the same name exists for this user
@@ -47,9 +51,13 @@ export const PUT = withAuth<{ params: { id: string } }>(
       .limit(1);
 
     if (existingCategory.length > 0) {
-      return new NextResponse("Category with this name already exists", {
-        status: 400,
-      });
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Category with this name already exists",
+        },
+        { status: 400 }
+      );
     }
 
     const [category] = await db
@@ -64,14 +72,17 @@ export const PUT = withAuth<{ params: { id: string } }>(
       .returning();
 
     if (!category) {
-      return new NextResponse("Category not found", { status: 404 });
+      return NextResponse.json(
+        { success: false, error: "Category not found" },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json(category);
+    return NextResponse.json({ success: true, data: category });
   }
 );
 
-export const DELETE = withAuth<{ params: { id: string } }>(
+export const DELETE = withAuth<null, { params: { id: string } }>(
   async ({ context: { params }, userId }) => {
     const category = await db
       .delete(monzoCategories)
@@ -84,9 +95,12 @@ export const DELETE = withAuth<{ params: { id: string } }>(
       .returning();
 
     if (!category.length) {
-      return new NextResponse("Category not found", { status: 404 });
+      return NextResponse.json(
+        { success: false, error: "Category not found" },
+        { status: 404 }
+      );
     }
 
-    return new NextResponse(null, { status: 204 });
+    return NextResponse.json({ success: true }, { status: 204 });
   }
 );

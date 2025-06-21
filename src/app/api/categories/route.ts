@@ -3,24 +3,34 @@ import { and, eq } from "drizzle-orm";
 
 import { db } from "@/lib/db";
 import { monzoCategories } from "@/lib/db/schema/monzo-schema";
+import type { Category } from "@/types/category";
 
 import { withAuth } from "../middleware";
 
-export const GET = withAuth(async ({ userId }) => {
+export const GET = withAuth<Category[]>(async ({ userId }) => {
   const categories = await db
-    .select()
+    .select({
+      id: monzoCategories.id,
+      name: monzoCategories.name,
+      isMonzo: monzoCategories.isMonzo,
+      createdAt: monzoCategories.createdAt,
+      updatedAt: monzoCategories.updatedAt,
+    })
     .from(monzoCategories)
     .where(eq(monzoCategories.userId, userId));
 
-  return NextResponse.json({ categories });
+  return NextResponse.json({ success: true, data: categories });
 });
 
-export const POST = withAuth(async ({ request, userId }) => {
+export const POST = withAuth<Category>(async ({ request, userId }) => {
   const body = await request.json();
   const { name } = body;
 
   if (!name) {
-    return new NextResponse("Name is required", { status: 400 });
+    return NextResponse.json(
+      { success: false, error: "Name is required" },
+      { status: 400 }
+    );
   }
 
   const existingCategory = await db
@@ -35,9 +45,10 @@ export const POST = withAuth(async ({ request, userId }) => {
     .limit(1);
 
   if (existingCategory.length > 0) {
-    return new NextResponse("Category with this name already exists", {
-      status: 400,
-    });
+    return NextResponse.json(
+      { success: false, error: "Category with this name already exists" },
+      { status: 400 }
+    );
   }
 
   const [category] = await db
@@ -50,5 +61,5 @@ export const POST = withAuth(async ({ request, userId }) => {
     })
     .returning();
 
-  return NextResponse.json(category);
+  return NextResponse.json({ success: true, data: category });
 });
