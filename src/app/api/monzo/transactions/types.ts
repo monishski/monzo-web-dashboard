@@ -1,7 +1,4 @@
-import type {
-  TransactionCategory,
-  TransactionMerchant,
-} from "@/types/common";
+import type { TransactionMerchant } from "@/lib/types";
 
 type MonzoTransactionMetadata = {
   card_acceptor_website?: string;
@@ -33,9 +30,9 @@ export type MonzoTransaction = {
   labels: unknown;
   attachments: unknown;
   international: unknown;
-  category: TransactionCategory;
+  category: string;
   categories: {
-    [key in TransactionCategory]?: number;
+    [key in string]?: number;
   };
   is_load: boolean;
   settled: string;

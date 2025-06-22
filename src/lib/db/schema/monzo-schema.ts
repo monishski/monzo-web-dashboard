@@ -62,6 +62,7 @@ export const monzoMerchants = pgTable("monzo_merchants", {
   logo: text("logo").notNull(),
   emoji: text("emoji"),
   categoryId: text("category_id").references(() => monzoCategories.id),
+  // TODO: rename category -> monzo_category
   category: text("category"),
   online: boolean("online").notNull(),
   atm: boolean("atm").notNull(),
@@ -97,8 +98,10 @@ export const monzoTransactions = pgTable("monzo_transactions", {
   description: text("description").notNull(),
   amount: numeric("amount").notNull(),
   currency: text("currency").notNull(),
+  // TODO: fees field is missing
   notes: text("notes"),
   categoryId: text("category_id").references(() => monzoCategories.id),
+  // TODO: rename category -> monzo_category
   category: text("category"),
   settled: timestamp("settled"),
   localAmount: numeric("local_amount").notNull(),

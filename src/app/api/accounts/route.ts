@@ -5,11 +5,7 @@ import { omit } from "lodash";
 import { withAuth } from "@/lib/api/middleware";
 import { db } from "@/lib/db";
 import { monzoAccounts } from "@/lib/db/schema/monzo-schema";
-import type {
-  Account,
-  AccountOwner,
-  AccountType,
-} from "@/lib/types/account";
+import type { Account, AccountOwner, AccountType } from "@/lib/types";
 
 export const GET = withAuth<Account>(async ({ userId }) => {
   const columns = getTableColumns(monzoAccounts);
