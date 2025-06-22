@@ -42,7 +42,10 @@ export function withAuth<Data, Context = unknown>(
     });
 
     if (!session) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
     const userId = session.user.id;
