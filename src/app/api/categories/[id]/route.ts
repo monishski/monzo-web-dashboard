@@ -6,13 +6,15 @@ import { db } from "@/lib/db";
 import { monzoCategories } from "@/lib/db/schema/monzo-schema";
 import type { Category } from "@/lib/types/category";
 
-export const GET = withAuth<Category, { params: { id: string } }>(
+export const GET = withAuth<Category, { params: Promise<{ id: string }> }>(
   async ({ context: { params }, userId }) => {
+    const { id: categoryId } = await params;
+
     const dbCategory = await db.query.monzoCategories.findFirst({
       columns: { userId: false },
       where: and(
         eq(monzoCategories.userId, userId),
-        eq(monzoCategories.id, params.id)
+        eq(monzoCategories.id, categoryId)
       ),
     });
 
@@ -36,8 +38,9 @@ export const GET = withAuth<Category, { params: { id: string } }>(
   }
 );
 
-export const PUT = withAuth<Category, { params: { id: string } }>(
+export const PUT = withAuth<Category, { params: Promise<{ id: string }> }>(
   async ({ request, context: { params }, userId }) => {
+    const { id: categoryId } = await params;
     const body = await request.json();
     const { name } = body;
 
@@ -54,7 +57,7 @@ export const PUT = withAuth<Category, { params: { id: string } }>(
         eq(monzoCategories.name, name.trim()),
         eq(monzoCategories.userId, userId),
         // Exclude the current category being updated
-        not(eq(monzoCategories.id, params.id))
+        not(eq(monzoCategories.id, categoryId))
       ),
       columns: { id: true },
     });
@@ -74,7 +77,7 @@ export const PUT = withAuth<Category, { params: { id: string } }>(
       .set({ name })
       .where(
         and(
-          eq(monzoCategories.id, params.id),
+          eq(monzoCategories.id, categoryId),
           eq(monzoCategories.userId, userId)
         )
       )
@@ -95,13 +98,15 @@ export const PUT = withAuth<Category, { params: { id: string } }>(
   }
 );
 
-export const DELETE = withAuth<null, { params: { id: string } }>(
+export const DELETE = withAuth<null, { params: Promise<{ id: string }> }>(
   async ({ context: { params }, userId }) => {
+    const { id: categoryId } = await params;
+
     const category = await db
       .delete(monzoCategories)
       .where(
         and(
-          eq(monzoCategories.id, params.id),
+          eq(monzoCategories.id, categoryId),
           eq(monzoCategories.userId, userId)
         )
       )

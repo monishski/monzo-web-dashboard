@@ -4,12 +4,12 @@ import { and, desc, eq } from "drizzle-orm";
 import { withAuth } from "@/lib/api/middleware";
 import { db } from "@/lib/db";
 import { monzoMerchants } from "@/lib/db/schema/monzo-schema";
-import type { TransactionMerchant } from "@/lib/types";
+import type { TransactionMerchant } from "@/lib/types/merchant";
 
 // NOTE: this is a POST request even though we are fetching because of the request body
 export const POST = withAuth<
   TransactionMerchant[],
-  { params: { id: string } }
+  { params: Promise<{ id: string }> }
 >(async ({ request, context: { params } }) => {
   const { id: categoryId } = await params;
   const body = await request.json();

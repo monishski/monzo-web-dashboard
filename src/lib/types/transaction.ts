@@ -1,5 +1,5 @@
 import type { Category } from "./category";
-import type { TransactionMerchant } from "./common";
+import type { TransactionMerchant } from "./merchant";
 
 export type Transaction = {
   id: string;

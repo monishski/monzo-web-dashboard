@@ -1,7 +1,5 @@
-import type { TransactionCategory } from "@/types/common";
-
 export const DEFAULT_CATEGORIES: {
-  id: TransactionCategory;
+  id: string;
   name: string;
 }[] = [
   { id: "entertainment", name: "Entertainment" },

@@ -1,5 +1,3 @@
-import type { TransactionMerchant } from "@/lib/types";
-
 type MonzoTransactionMetadata = {
   card_acceptor_website?: string;
   ledger_committed_timestamp_earliest?: string;
@@ -16,6 +14,34 @@ type MonzoTransactionMetadata = {
   tokenization_method?: string;
 };
 
+type TransactionMerchantAddress = {
+  short_formatted: string;
+  city: string;
+  latitude: number;
+  longitude: number;
+  zoom_level: number;
+  approximate: boolean;
+  formatted: string;
+  address: string;
+  region: string;
+  country: string;
+  postcode: string;
+};
+
+export type MonzoTransactionMerchant = {
+  id: string;
+  group_id: string;
+  emoji: string;
+  name: string;
+  logo: string;
+  online: boolean;
+  atm: boolean;
+  address: TransactionMerchantAddress;
+  disable_feedback: boolean;
+  metadata: Record<string, unknown>;
+  category: string;
+};
+
 export type MonzoTransaction = {
   id: string;
   created: string;
@@ -23,7 +49,7 @@ export type MonzoTransaction = {
   amount: number;
   fees: unknown;
   currency: string;
-  merchant?: TransactionMerchant;
+  merchant?: MonzoTransactionMerchant;
   merchant_feedback_uri?: string;
   notes: string;
   metadata: MonzoTransactionMetadata;
