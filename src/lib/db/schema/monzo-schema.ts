@@ -84,7 +84,8 @@ export const monzoMerchants = pgTable("monzo_merchants", {
 export const monzoMerchantsRelations = relations(
   monzoMerchants,
   ({ one, many }) => ({
-    category: one(monzoCategories, {
+    // TODO: rename _category -> category oncce category has been renamed to monzo_category
+    _category: one(monzoCategories, {
       fields: [monzoMerchants.categoryId],
       references: [monzoCategories.id],
     }),
@@ -121,7 +122,8 @@ export const monzoTransactions = pgTable("monzo_transactions", {
 export const monzoTransactionsRelations = relations(
   monzoTransactions,
   ({ one }) => ({
-    category: one(monzoCategories, {
+    // TODO: rename _category -> category oncce category has been renamed to monzo_category
+    _category: one(monzoCategories, {
       fields: [monzoTransactions.categoryId],
       references: [monzoCategories.id],
     }),

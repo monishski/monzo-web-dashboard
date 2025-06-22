@@ -1,3 +1,7 @@
+import type { Category } from "@/types/category";
+
+import type { TransactionMerchant } from "./common";
+
 export type Transaction = {
   id: string;
   created: string;
@@ -11,4 +15,9 @@ export type Transaction = {
   localCurrency: string;
   merchantId: string | null;
   categoryId: string | null;
+  merchant: Pick<
+    TransactionMerchant,
+    "id" | "groupId" | "name" | "logo"
+  > | null;
+  _category: Pick<Category, "id" | "name" | "isMonzo"> | null;
 };

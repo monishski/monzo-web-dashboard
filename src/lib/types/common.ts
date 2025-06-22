@@ -6,12 +6,12 @@ export type AccountOwner = {
   preferred_first_name: string;
 };
 
-type TransactionMerchantAddress = {
-  short_formatted: string;
+export type TransactionMerchantAddress = {
+  shortFormatted: string;
   city: string;
   latitude: number;
   longitude: number;
-  zoom_level: number;
+  zoomLevel: number;
   approximate: boolean;
   formatted: string;
   address: string;
@@ -22,14 +22,14 @@ type TransactionMerchantAddress = {
 
 export type TransactionMerchant = {
   id: string;
-  group_id: string;
+  groupId: string;
   name: string;
   logo: string;
-  emoji: string;
-  category: string;
+  emoji: string | null;
+  category: string | null;
   online: boolean;
   atm: boolean;
   address: TransactionMerchantAddress;
-  disable_feedback: boolean;
+  disableFeedback: boolean;
   metadata: Record<string, string>;
 };

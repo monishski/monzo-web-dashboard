@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { and, desc, eq, getTableColumns } from "drizzle-orm";
-import { omit } from "lodash";
+import { and, desc, eq } from "drizzle-orm";
 
 import { withAuth } from "@/lib/api/middleware";
 import { db } from "@/lib/db";
@@ -14,19 +13,36 @@ export const POST = withAuth<Transaction[], { params: { id: string } }>(
     const body = await request.json();
     const { accountId } = body;
 
-    const columns = getTableColumns(monzoTransactions);
-    const fields = omit(columns, ["createdAt", "updatedAt", "accountId"]);
-
-    const dbTransactions = await db
-      .select(fields)
-      .from(monzoTransactions)
-      .where(
-        and(
-          eq(monzoTransactions.categoryId, categoryId),
-          eq(monzoTransactions.accountId, accountId)
-        )
-      )
-      .orderBy(desc(monzoTransactions.created));
+    const dbTransactions = await db.query.monzoTransactions.findMany({
+      columns: {
+        accountId: false,
+        createdAt: false,
+        updatedAt: false,
+      },
+      with: {
+        _category: {
+          columns: {
+            userId: false,
+            createdAt: false,
+            updatedAt: false,
+          },
+        },
+        merchant: {
+          columns: {
+            id: true,
+            groupId: true,
+            emoji: true,
+            name: true,
+            logo: true,
+          },
+        },
+      },
+      where: and(
+        eq(monzoTransactions.categoryId, categoryId),
+        eq(monzoTransactions.accountId, accountId)
+      ),
+      orderBy: desc(monzoTransactions.created),
+    });
 
     const transactions: Transaction[] = dbTransactions.map(
       (dbTransaction) => {
