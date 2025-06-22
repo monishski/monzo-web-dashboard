@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { and, desc, eq } from "drizzle-orm";
 
+import { withAuth } from "@/lib/api/middleware";
 import { db } from "@/lib/db";
 import { monzoTransactions } from "@/lib/db/schema/monzo-schema";
-import { withAuth } from "@/app/api/middleware";
 
 // NOTE: this is a POST request even though we are fetching because of the request body
 export const POST = withAuth<

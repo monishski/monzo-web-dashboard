@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
+import { withAuthAccessToken } from "@/lib/api/middleware";
 import { db, monzoAccounts } from "@/lib/db";
 
-import { withAuthAccessToken } from "../../middleware";
 import { fetchAccounts } from "./endpoints";
 import { getDatabaseAccount } from "./utils";
 

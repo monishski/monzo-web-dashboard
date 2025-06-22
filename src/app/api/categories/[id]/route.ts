@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
 import { and, eq, not } from "drizzle-orm";
 
+import { withAuth } from "@/lib/api/middleware";
 import { db } from "@/lib/db";
 import { monzoCategories } from "@/lib/db/schema/monzo-schema";
 import type { Category } from "@/types/category";
-
-import { withAuth } from "../../middleware";
 
 export const GET = withAuth<Category, { params: { id: string } }>(
   async ({ context: { params }, userId }) => {

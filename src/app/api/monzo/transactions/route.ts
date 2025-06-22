@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { withAuthAccessToken } from "@/lib/api/middleware";
 import { db } from "@/lib/db";
 import {
   monzoCategories,
@@ -7,7 +8,6 @@ import {
   monzoTransactions,
 } from "@/lib/db/schema/monzo-schema";
 
-import { withAuthAccessToken } from "../../middleware";
 import { DEFAULT_CATEGORIES } from "./constants";
 import { fetchTransactions } from "./endpoints";
 import {
