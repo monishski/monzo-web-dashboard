@@ -1,4 +1,10 @@
-import type { AccountOwner, AccountType } from "@/types/common";
+type AccountType = "uk_retail" | "uk_retail_joint";
+
+type AccountOwner = {
+  user_id: string;
+  preferred_name: string;
+  preferred_first_name: string;
+};
 
 type MonzoAccountIban = {
   unformatted: string;
