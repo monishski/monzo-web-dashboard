@@ -1,6 +1,6 @@
 import type { Category } from "./category";
 
-type TransactionMerchantAddress = {
+type MerchantAddress = {
   shortFormatted: string;
   city: string;
   latitude: number;
@@ -14,7 +14,7 @@ type TransactionMerchantAddress = {
   postcode: string;
 };
 
-export type TransactionMerchant = {
+export type Merchant = {
   id: string;
   groupId: string;
   name: string;
@@ -23,7 +23,7 @@ export type TransactionMerchant = {
   category: string | null;
   online: boolean;
   atm: boolean;
-  address: TransactionMerchantAddress;
+  address: MerchantAddress;
   metadata: Record<string, string>;
   _category?: Pick<Category, "id" | "name" | "isMonzo"> | null;
 };

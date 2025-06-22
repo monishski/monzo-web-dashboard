@@ -14,7 +14,7 @@ type MonzoTransactionMetadata = {
   tokenization_method?: string;
 };
 
-type TransactionMerchantAddress = {
+type MonzoMerchantAddress = {
   short_formatted: string;
   city: string;
   latitude: number;
@@ -28,7 +28,7 @@ type TransactionMerchantAddress = {
   postcode: string;
 };
 
-export type MonzoTransactionMerchant = {
+export type MonzoMerchant = {
   id: string;
   group_id: string;
   emoji: string;
@@ -36,7 +36,7 @@ export type MonzoTransactionMerchant = {
   logo: string;
   online: boolean;
   atm: boolean;
-  address: TransactionMerchantAddress;
+  address: MonzoMerchantAddress;
   disable_feedback: boolean;
   metadata: Record<string, unknown>;
   category: string;
@@ -49,7 +49,7 @@ export type MonzoTransaction = {
   amount: number;
   fees: unknown;
   currency: string;
-  merchant?: MonzoTransactionMerchant;
+  merchant?: MonzoMerchant;
   merchant_feedback_uri?: string;
   notes: string;
   metadata: MonzoTransactionMetadata;
