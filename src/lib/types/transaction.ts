@@ -15,9 +15,9 @@ export type Transaction = {
   localCurrency: string;
   merchantId: string | null;
   categoryId: string | null;
-  merchant: Pick<
+  merchant?: Pick<
     TransactionMerchant,
     "id" | "groupId" | "name" | "logo"
   > | null;
-  _category: Pick<Category, "id" | "name" | "isMonzo"> | null;
+  _category?: Pick<Category, "id" | "name" | "isMonzo"> | null;
 };

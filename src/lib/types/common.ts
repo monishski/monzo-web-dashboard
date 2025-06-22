@@ -6,7 +6,7 @@ export type AccountOwner = {
   preferred_first_name: string;
 };
 
-export type TransactionMerchantAddress = {
+type TransactionMerchantAddress = {
   shortFormatted: string;
   city: string;
   latitude: number;
@@ -30,6 +30,5 @@ export type TransactionMerchant = {
   online: boolean;
   atm: boolean;
   address: TransactionMerchantAddress;
-  disableFeedback: boolean;
   metadata: Record<string, string>;
 };
