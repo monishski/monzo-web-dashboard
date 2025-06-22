@@ -66,7 +66,7 @@ async function updateCategory(
 async function CategoryPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }): Promise<JSX.Element> {
   const { id } = await params;
 

@@ -1,23 +1,27 @@
 import { NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
 
+import { withAuth } from "@/lib/api/middleware";
 import { db } from "@/lib/db";
 import { monzoCategories } from "@/lib/db/schema/monzo-schema";
-import type { Category } from "@/types/category";
-
-import { withAuth } from "../middleware";
+import type { Category } from "@/lib/types/category";
 
 export const GET = withAuth<Category[]>(async ({ userId }) => {
-  const categories = await db
-    .select({
-      id: monzoCategories.id,
-      name: monzoCategories.name,
-      isMonzo: monzoCategories.isMonzo,
-      createdAt: monzoCategories.createdAt,
-      updatedAt: monzoCategories.updatedAt,
-    })
-    .from(monzoCategories)
-    .where(eq(monzoCategories.userId, userId));
+  const dbCategories = await db.query.monzoCategories.findMany({
+    columns: { userId: false },
+    where: eq(monzoCategories.userId, userId),
+  });
+
+  const categories: Category[] = dbCategories.map((dbCategory) => {
+    const { createdAt, updatedAt } = dbCategory;
+    return {
+      ...dbCategory,
+      createdAt:
+        createdAt instanceof Date ? createdAt.toISOString() : createdAt,
+      updatedAt:
+        updatedAt instanceof Date ? updatedAt.toISOString() : updatedAt,
+    };
+  });
 
   return NextResponse.json({ success: true, data: categories });
 });
@@ -33,25 +37,22 @@ export const POST = withAuth<Category>(async ({ request, userId }) => {
     );
   }
 
-  const existingCategory = await db
-    .select()
-    .from(monzoCategories)
-    .where(
-      and(
-        eq(monzoCategories.name, name),
-        eq(monzoCategories.userId, userId)
-      )
-    )
-    .limit(1);
+  const existingCategory = await db.query.monzoCategories.findFirst({
+    where: and(
+      eq(monzoCategories.name, name.trim()),
+      eq(monzoCategories.userId, userId)
+    ),
+    columns: { id: true },
+  });
 
-  if (existingCategory.length > 0) {
+  if (existingCategory) {
     return NextResponse.json(
       { success: false, error: "Category with this name already exists" },
       { status: 400 }
     );
   }
 
-  const [category] = await db
+  const [dbCategory] = await db
     .insert(monzoCategories)
     .values({
       id: crypto.randomUUID(),
@@ -60,6 +61,17 @@ export const POST = withAuth<Category>(async ({ request, userId }) => {
       userId,
     })
     .returning();
+
+  const { createdAt, updatedAt } = dbCategory;
+  const category = {
+    id: dbCategory.id,
+    name: dbCategory.name,
+    isMonzo: dbCategory.isMonzo,
+    createdAt:
+      createdAt instanceof Date ? createdAt.toISOString() : createdAt,
+    updatedAt:
+      updatedAt instanceof Date ? updatedAt.toISOString() : updatedAt,
+  };
 
   return NextResponse.json({ success: true, data: category });
 });

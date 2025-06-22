@@ -62,6 +62,7 @@ export const monzoMerchants = pgTable("monzo_merchants", {
   logo: text("logo").notNull(),
   emoji: text("emoji"),
   categoryId: text("category_id").references(() => monzoCategories.id),
+  // TODO: rename category -> monzo_category
   category: text("category"),
   online: boolean("online").notNull(),
   atm: boolean("atm").notNull(),
@@ -83,7 +84,8 @@ export const monzoMerchants = pgTable("monzo_merchants", {
 export const monzoMerchantsRelations = relations(
   monzoMerchants,
   ({ one, many }) => ({
-    category: one(monzoCategories, {
+    // TODO: rename _category -> category oncce category has been renamed to monzo_category
+    _category: one(monzoCategories, {
       fields: [monzoMerchants.categoryId],
       references: [monzoCategories.id],
     }),
@@ -97,8 +99,10 @@ export const monzoTransactions = pgTable("monzo_transactions", {
   description: text("description").notNull(),
   amount: numeric("amount").notNull(),
   currency: text("currency").notNull(),
+  // TODO: fees field is missing
   notes: text("notes"),
   categoryId: text("category_id").references(() => monzoCategories.id),
+  // TODO: rename category -> monzo_category
   category: text("category"),
   settled: timestamp("settled"),
   localAmount: numeric("local_amount").notNull(),
@@ -118,7 +122,8 @@ export const monzoTransactions = pgTable("monzo_transactions", {
 export const monzoTransactionsRelations = relations(
   monzoTransactions,
   ({ one }) => ({
-    category: one(monzoCategories, {
+    // TODO: rename _category -> category oncce category has been renamed to monzo_category
+    _category: one(monzoCategories, {
       fields: [monzoTransactions.categoryId],
       references: [monzoCategories.id],
     }),

@@ -6,7 +6,7 @@ import { headers } from "next/headers";
 async function CategoryTransactionsPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }): Promise<JSX.Element> {
   const { id } = await params;
 

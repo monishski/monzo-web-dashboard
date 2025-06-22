@@ -3,10 +3,9 @@ import type {
   monzoMerchants,
   monzoTransactions,
 } from "@/lib/db/schema/monzo-schema";
-import type { TransactionMerchant } from "@/types/common";
 
 import { DEFAULT_CATEGORIES_IDS } from "./constants";
-import type { MonzoTransaction } from "./types";
+import type { MonzoTransaction, MonzoTransactionMerchant } from "./types";
 
 export function getDatabaseTransaction(
   transaction: MonzoTransaction
@@ -39,7 +38,7 @@ export function getDatabaseTransaction(
 }
 
 export function getDatabaseMerchant(
-  merchant: TransactionMerchant,
+  merchant: MonzoTransactionMerchant,
   accountId: string
 ): typeof monzoMerchants.$inferInsert {
   const { group_id, category, disable_feedback, ...other } = merchant;
