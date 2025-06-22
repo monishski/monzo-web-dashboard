@@ -1,3 +1,5 @@
+import type { Category } from "./category";
+
 export type AccountType = "uk_retail" | "uk_retail_joint";
 
 export type AccountOwner = {
@@ -31,4 +33,5 @@ export type TransactionMerchant = {
   atm: boolean;
   address: TransactionMerchantAddress;
   metadata: Record<string, string>;
+  _category?: Pick<Category, "id" | "name" | "isMonzo"> | null;
 };

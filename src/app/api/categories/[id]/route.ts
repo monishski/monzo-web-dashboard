@@ -4,20 +4,33 @@ import { and, eq, not } from "drizzle-orm";
 import { withAuth } from "@/lib/api/middleware";
 import { db } from "@/lib/db";
 import { monzoCategories } from "@/lib/db/schema/monzo-schema";
-import type { Category } from "@/types/category";
+import type { Category } from "@/lib/types/category";
 
 export const GET = withAuth<Category, { params: { id: string } }>(
   async ({ context: { params }, userId }) => {
-    const [category] = await db
-      .select()
-      .from(monzoCategories)
-      .where(
-        and(
-          eq(monzoCategories.userId, userId),
-          eq(monzoCategories.id, params.id)
-        )
-      )
-      .limit(1);
+    const dbCategory = await db.query.monzoCategories.findFirst({
+      columns: { userId: false },
+      where: and(
+        eq(monzoCategories.userId, userId),
+        eq(monzoCategories.id, params.id)
+      ),
+    });
+
+    if (!dbCategory) {
+      return NextResponse.json(
+        { success: false, error: "Category not found" },
+        { status: 404 }
+      );
+    }
+
+    const { createdAt, updatedAt } = dbCategory;
+    const category = {
+      ...dbCategory,
+      createdAt:
+        createdAt instanceof Date ? createdAt.toISOString() : createdAt,
+      updatedAt:
+        updatedAt instanceof Date ? updatedAt.toISOString() : updatedAt,
+    };
 
     return NextResponse.json({ success: true, data: category });
   }
@@ -36,20 +49,17 @@ export const PUT = withAuth<Category, { params: { id: string } }>(
     }
 
     // Check if another category with the same name exists for this user
-    const existingCategory = await db
-      .select()
-      .from(monzoCategories)
-      .where(
-        and(
-          eq(monzoCategories.name, name.trim()),
-          eq(monzoCategories.userId, userId),
-          // Exclude the current category being updated
-          not(eq(monzoCategories.id, params.id))
-        )
-      )
-      .limit(1);
+    const existingCategory = await db.query.monzoCategories.findFirst({
+      where: and(
+        eq(monzoCategories.name, name.trim()),
+        eq(monzoCategories.userId, userId),
+        // Exclude the current category being updated
+        not(eq(monzoCategories.id, params.id))
+      ),
+      columns: { id: true },
+    });
 
-    if (existingCategory.length > 0) {
+    if (existingCategory) {
       return NextResponse.json(
         {
           success: false,
@@ -59,7 +69,7 @@ export const PUT = withAuth<Category, { params: { id: string } }>(
       );
     }
 
-    const [category] = await db
+    const [dbCategory] = await db
       .update(monzoCategories)
       .set({ name })
       .where(
@@ -70,12 +80,16 @@ export const PUT = withAuth<Category, { params: { id: string } }>(
       )
       .returning();
 
-    if (!category) {
-      return NextResponse.json(
-        { success: false, error: "Category not found" },
-        { status: 404 }
-      );
-    }
+    const { createdAt, updatedAt } = dbCategory;
+    const category = {
+      id: dbCategory.id,
+      name: dbCategory.name,
+      isMonzo: dbCategory.isMonzo,
+      createdAt:
+        createdAt instanceof Date ? createdAt.toISOString() : createdAt,
+      updatedAt:
+        updatedAt instanceof Date ? updatedAt.toISOString() : updatedAt,
+    };
 
     return NextResponse.json({ success: true, data: category });
   }
@@ -100,6 +114,6 @@ export const DELETE = withAuth<null, { params: { id: string } }>(
       );
     }
 
-    return NextResponse.json({ success: true }, { status: 204 });
+    return NextResponse.json({ success: true }, { status: 200 });
   }
 );

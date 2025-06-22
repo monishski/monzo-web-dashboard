@@ -1,5 +1,4 @@
-import type { Category } from "@/types/category";
-
+import type { Category } from "./category";
 import type { TransactionMerchant } from "./common";
 
 export type Transaction = {
