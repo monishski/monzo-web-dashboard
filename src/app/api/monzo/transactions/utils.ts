@@ -32,7 +32,7 @@ export function getDatabaseTransaction(
     localCurrency: local_currency,
     accountId: account_id,
     merchantId: merchant ? merchant.id : null,
-    category: category || null,
+    monzo_category: category || null,
     categoryId: category || null,
   };
 }
@@ -47,7 +47,7 @@ export function getDatabaseMerchant(
     ...other,
     groupId: group_id,
     disableFeedback: disable_feedback,
-    category: category || null,
+    monzo_category: category || null,
     categoryId: category || null,
     accountId,
   };

@@ -20,10 +20,10 @@ export type Merchant = {
   name: string;
   logo: string;
   emoji: string | null;
-  category: string | null;
+  monzo_category: string | null;
   online: boolean;
   atm: boolean;
   address: MerchantAddress;
   metadata: Record<string, string>;
-  _category?: Pick<Category, "id" | "name" | "isMonzo"> | null;
+  category?: Pick<Category, "id" | "name" | "isMonzo"> | null;
 };

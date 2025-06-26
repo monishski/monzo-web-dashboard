@@ -23,7 +23,7 @@ export const POST = withAuth<
       updatedAt: false,
     },
     with: {
-      _category: {
+      category: {
         columns: {
           userId: false,
           createdAt: false,
