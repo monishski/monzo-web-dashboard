@@ -43,6 +43,13 @@
       "when": 1750447791551,
       "tag": "0005_dissociated_monzo_category_from_categories_table",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1750964426643,
+      "tag": "0006_rename_category_column_to_monzo_category",
+      "breakpoints": true
     }
   ]
 }
