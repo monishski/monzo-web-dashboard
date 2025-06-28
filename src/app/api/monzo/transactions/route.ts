@@ -22,12 +22,12 @@ export const POST = withAuthAccessToken(
       );
     }
 
-    const { transactions: dbTransactions } = await fetchTransactions(
+    const { transactions: _monzoTransactions } = await fetchTransactions(
       accessToken,
       accountId
     );
 
-    if (!dbTransactions || dbTransactions.length === 0) {
+    if (!_monzoTransactions || _monzoTransactions.length === 0) {
       return NextResponse.json({
         success: false,
         error: "No transactions found",
@@ -36,7 +36,7 @@ export const POST = withAuthAccessToken(
 
     // Process transactions to extract merchants and categories
     const { transactions, merchants, categories } = getDatabaseData({
-      transactions: dbTransactions,
+      transactions: _monzoTransactions,
       accountId,
     });
 
