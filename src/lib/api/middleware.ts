@@ -1,7 +1,9 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { eq } from "drizzle-orm";
 
 import { authServer } from "@/lib/auth/auth-server";
+import { db, monzoAccounts } from "@/lib/db";
 
 import type { ApiResponse, Handler } from "./types";
 
@@ -78,5 +80,33 @@ export function withAuthAccessToken<Data, Context = unknown>(
     }
 
     return handler({ ...args, accessToken });
+  });
+}
+
+export function withAccount<Data, Context = unknown>(
+  handler: (args: {
+    request: NextRequest;
+    context: Context;
+    userId: string;
+    accountId: string;
+  }) => Promise<NextResponse<ApiResponse<Data>>>
+): Handler<Data, Context> {
+  return withAuth(async function (args): Promise<
+    NextResponse<ApiResponse<Data>>
+  > {
+    const { userId } = args;
+
+    const account = await db.query.monzoAccounts.findFirst({
+      where: eq(monzoAccounts.userId, userId),
+    });
+
+    if (!account) {
+      return NextResponse.json(
+        { success: false, error: "Account not found" },
+        { status: 404 }
+      );
+    }
+
+    return handler({ ...args, accountId: account.id });
   });
 }
