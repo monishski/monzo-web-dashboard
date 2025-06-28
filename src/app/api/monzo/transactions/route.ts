@@ -8,15 +8,11 @@ import {
   monzoTransactions,
 } from "@/lib/db/schema/monzo-schema";
 
-import { DEFAULT_CATEGORIES } from "./constants";
 import { fetchTransactions } from "./endpoints";
-import {
-  getDatabaseTransaction,
-  getMerchantsAndCategories,
-} from "./utils";
+import { getDatabaseData } from "./utils";
 
 export const POST = withAuthAccessToken(
-  async ({ request, userId, accessToken }) => {
+  async ({ request, accessToken }) => {
     // Get the account ID from the request body
     const { accountId } = await request.json();
     if (!accountId) {
@@ -26,12 +22,12 @@ export const POST = withAuthAccessToken(
       );
     }
 
-    const { transactions } = await fetchTransactions(
+    const { transactions: _monzoTransactions } = await fetchTransactions(
       accessToken,
       accountId
     );
 
-    if (!transactions || transactions.length === 0) {
+    if (!_monzoTransactions || _monzoTransactions.length === 0) {
       return NextResponse.json({
         success: false,
         error: "No transactions found",
@@ -39,45 +35,20 @@ export const POST = withAuthAccessToken(
     }
 
     // Process transactions to extract merchants and categories
-    const { merchants, customCategories } = getMerchantsAndCategories({
-      transactions,
-      userId,
+    const { transactions, merchants, categories } = getDatabaseData({
+      transactions: _monzoTransactions,
       accountId,
     });
 
     await db.transaction(async (tx) => {
-      // Insert default categories
-      await tx.insert(monzoCategories).values(
-        DEFAULT_CATEGORIES.map((category) => ({
-          ...category,
-          isMonzo: true,
-          userId,
-        }))
-      );
-
-      // Insert custom categories
-      const customCategoriesArray = Array.from(customCategories.values());
-      if (customCategoriesArray.length > 0) {
-        await tx.insert(monzoCategories).values(customCategoriesArray);
-      }
+      // Insert categories
+      await tx.insert(monzoCategories).values(categories);
 
       // Insert merchants
-      const merchantsArray = Array.from(merchants.values());
-      if (merchantsArray.length > 0) {
-        await tx.insert(monzoMerchants).values(merchantsArray);
-      }
+      await tx.insert(monzoMerchants).values(merchants);
 
       // Insert transactions
-      const insertedTransactions = await tx
-        .insert(monzoTransactions)
-        .values(
-          transactions.map((transaction) =>
-            getDatabaseTransaction(transaction)
-          )
-        )
-        .returning();
-
-      return insertedTransactions;
+      await tx.insert(monzoTransactions).values(transactions).returning();
     });
 
     return NextResponse.json({ success: true });

@@ -1,0 +1,1 @@
+ALTER TABLE "monzo_transactions" ADD COLUMN "owners" jsonb NOT NULL;
