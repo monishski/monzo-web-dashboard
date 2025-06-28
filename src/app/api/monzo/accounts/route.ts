@@ -6,7 +6,7 @@ import { db, monzoAccounts } from "@/lib/db";
 import { fetchAccounts } from "./endpoints";
 import { getDatabaseAccount } from "./utils";
 
-export const GET = withAuthAccessToken<typeof monzoAccounts.$inferInsert>(
+export const POST = withAuthAccessToken<typeof monzoAccounts.$inferInsert>(
   async ({ userId, accessToken }) => {
     const { accounts } = await fetchAccounts(accessToken);
     const retailAccounts = accounts?.filter(

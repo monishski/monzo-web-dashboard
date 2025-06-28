@@ -14,6 +14,8 @@ export default function Home(): JSX.Element {
         Better Auth
       </h1>
 
+      <Link href="/seed">Seed</Link>
+
       <Link href="/transactions">Transactions</Link>
 
       <Link href="/accounts">Accounts</Link>

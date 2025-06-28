@@ -15,17 +15,9 @@ function AccountsPage(): JSX.Element {
     fetchAccount();
   }, [setAccount]);
 
-  const handleSeedAccounts = async (): Promise<void> => {
-    const response = await fetch("/api/monzo/accounts", {
-      method: "POST",
-    });
-    if (!response.ok) throw Error("There was error saving accounts");
-  };
-
   return (
     <div>
       <pre>{JSON.stringify(account, null, 2)}</pre>
-      <button onClick={handleSeedAccounts}>Seed accounts data</button>
     </div>
   );
 }
