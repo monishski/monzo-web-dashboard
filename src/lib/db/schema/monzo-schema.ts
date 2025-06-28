@@ -27,11 +27,7 @@ export const monzoCategories = pgTable("monzo_categories", {
 
 export const monzoCategoriesRelations = relations(
   monzoCategories,
-  ({ one, many }) => ({
-    account: one(monzoAccounts, {
-      fields: [monzoCategories.accountId],
-      references: [monzoAccounts.id],
-    }),
+  ({ many }) => ({
     merchants: many(monzoMerchants),
     transactions: many(monzoTransactions),
   })
@@ -65,13 +61,13 @@ export const monzoMerchants = pgTable("monzo_merchants", {
   name: text("name").notNull(),
   logo: text("logo").notNull(),
   emoji: text("emoji"),
-  categoryId: text("category_id").references(() => monzoCategories.id),
   monzo_category: text("monzo_category"),
   online: boolean("online").notNull(),
   atm: boolean("atm").notNull(),
   address: jsonb("address").notNull(),
   disableFeedback: boolean("disable_feedback").notNull(),
   metadata: jsonb("metadata").notNull(),
+  categoryId: text("category_id").references(() => monzoCategories.id),
   accountId: text("account_id")
     .notNull()
     .references(() => monzoAccounts.id, { onDelete: "cascade" }),
@@ -100,9 +96,8 @@ export const monzoTransactions = pgTable("monzo_transactions", {
   description: text("description").notNull(),
   amount: numeric("amount").notNull(),
   currency: text("currency").notNull(),
-  // TODO: fees field is missing
+  fees: jsonb("owners").notNull(),
   notes: text("notes"),
-  categoryId: text("category_id").references(() => monzoCategories.id),
   monzo_category: text("monzo_category"),
   settled: timestamp("settled"),
   localAmount: numeric("local_amount").notNull(),
@@ -110,6 +105,7 @@ export const monzoTransactions = pgTable("monzo_transactions", {
   accountId: text("account_id")
     .notNull()
     .references(() => monzoAccounts.id, { onDelete: "cascade" }),
+  categoryId: text("category_id").references(() => monzoCategories.id),
   merchantId: text("merchant_id").references(() => monzoMerchants.id),
   createdAt: timestamp("created_at")
     .$defaultFn(() => new Date())

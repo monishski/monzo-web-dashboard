@@ -47,7 +47,7 @@ export type MonzoTransaction = {
   created: string;
   description: string;
   amount: number;
-  fees: unknown;
+  fees: Record<string, unknown>;
   currency: string;
   merchant?: MonzoMerchant;
   merchant_feedback_uri?: string;

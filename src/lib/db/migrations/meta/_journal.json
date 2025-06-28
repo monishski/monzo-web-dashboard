@@ -57,6 +57,13 @@
       "when": 1751106659903,
       "tag": "0007_rm_user_id_from_monzo_categories_table",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1751107270825,
+      "tag": "0008_add_fees_column_to_monzo_transactions",
+      "breakpoints": true
     }
   ]
 }

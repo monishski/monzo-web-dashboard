@@ -4,83 +4,88 @@ import type {
   monzoTransactions,
 } from "@/lib/db/schema/monzo-schema";
 
-import { DEFAULT_CATEGORIES_IDS } from "./constants";
-import type { MonzoMerchant, MonzoTransaction } from "./types";
+import type { MonzoTransaction } from "./types";
 
-export function getDatabaseTransaction(
-  transaction: MonzoTransaction
-): typeof monzoTransactions.$inferInsert {
-  const {
-    created,
-    amount,
-    local_amount,
-    local_currency,
-    settled,
-    merchant,
-    account_id,
-    category,
-    ...other
-  } = transaction;
+const DEFAULT_CATEGORIES: {
+  id: string;
+  name: string;
+}[] = [
+  { id: "entertainment", name: "Entertainment" },
+  { id: "general", name: "General" },
+  { id: "groceries", name: "Groceries" },
+  { id: "eating_out", name: "Eating Out" },
+  { id: "charity", name: "Charity" },
+  { id: "expenses", name: "Expenses" },
+  { id: "family", name: "Family" },
+  { id: "finances", name: "Finances" },
+  { id: "gifts", name: "Gifts" },
+  { id: "personal_care", name: "Personal Care" },
+  { id: "shopping", name: "Shopping" },
+  { id: "transport", name: "Transport" },
+  { id: "income", name: "Income" },
+  { id: "savings", name: "Savings" },
+  { id: "transfers", name: "Transfers" },
+  { id: "holidays", name: "Holidays" },
+];
 
-  return {
-    ...other,
-    created: new Date(created),
-    // TODO: ?Drizzle ORM expects these values as strings to maintain precision?
-    amount: amount.toString(),
-    settled: settled ? new Date(settled) : null,
-    localAmount: local_amount.toString(),
-    localCurrency: local_currency,
-    accountId: account_id,
-    merchantId: merchant ? merchant.id : null,
-    monzo_category: category || null,
-    categoryId: category || null,
-  };
-}
+const DEFAULT_CATEGORIES_IDS = DEFAULT_CATEGORIES.map((c) => c.id);
 
-export function getDatabaseMerchant(
-  merchant: MonzoMerchant,
-  accountId: string
-): typeof monzoMerchants.$inferInsert {
-  const { group_id, category, disable_feedback, ...other } = merchant;
+type MonzoDbTransaction = typeof monzoTransactions.$inferInsert;
+type MonzoDbMerchant = typeof monzoMerchants.$inferInsert;
+type MonzoDbCategory = typeof monzoCategories.$inferInsert;
 
-  return {
-    ...other,
-    groupId: group_id,
-    disableFeedback: disable_feedback,
-    monzo_category: category || null,
-    categoryId: category || null,
-    accountId,
-  };
-}
-
-export function getMerchantsAndCategories({
+export function getDatabaseData({
   transactions,
   accountId,
 }: {
   transactions: MonzoTransaction[];
   accountId: string;
 }): {
-  merchants: Map<string, typeof monzoMerchants.$inferInsert>;
-  customCategories: Map<string, typeof monzoCategories.$inferInsert>;
+  transactions: MonzoDbTransaction[];
+  merchants: MonzoDbMerchant[];
+  categories: MonzoDbCategory[];
 } {
-  const merchantMap = new Map<
-    string,
-    typeof monzoMerchants.$inferInsert
-  >();
-  const customCategoriesMap = new Map<
-    string,
-    typeof monzoCategories.$inferInsert
-  >();
+  const dbTransactions = [] as MonzoDbTransaction[];
+  const dbMerchantsMap = new Map<string, MonzoDbMerchant>();
+  const dbCategoriesMap = new Map<string, MonzoDbCategory>();
+
+  // Prepopulate categories map with default categories
+  for (const category of DEFAULT_CATEGORIES) {
+    dbCategoriesMap.set(category.id, {
+      id: category.id,
+      name: category.name,
+      isMonzo: false,
+      accountId,
+    });
+  }
 
   for (const transaction of transactions) {
     const { merchant, category } = transaction;
 
-    if (
+    dbTransactions.push({
+      id: transaction.id,
+      created: new Date(transaction.created),
+      description: transaction.description,
+      // TODO: ?Drizzle ORM expects these values as strings to maintain precision?
+      amount: transaction.amount.toString(),
+      currency: transaction.currency,
+      fees: transaction.fees,
+      notes: transaction.notes,
+      monzo_category: transaction.category || null,
+      settled: transaction.settled ? new Date(transaction.settled) : null,
+      localAmount: transaction.local_amount.toString(),
+      localCurrency: transaction.local_currency,
+      accountId: transaction.account_id,
+      categoryId: transaction.category || null,
+      merchantId: transaction.merchant ? transaction.merchant.id : null,
+    });
+
+    const isNewCustomCategory =
       !DEFAULT_CATEGORIES_IDS.includes(category) &&
       !!category &&
-      !customCategoriesMap.has(category)
-    ) {
-      customCategoriesMap.set(category, {
+      !dbCategoriesMap.has(category);
+    if (isNewCustomCategory) {
+      dbCategoriesMap.set(category, {
         id: category,
         name: category,
         isMonzo: true,
@@ -88,16 +93,29 @@ export function getMerchantsAndCategories({
       });
     }
 
-    if (!!merchant && !merchantMap.has(merchant.id)) {
-      merchantMap.set(
-        merchant.id,
-        getDatabaseMerchant(merchant, accountId)
-      );
+    const isNewMerchant = !!merchant && !dbMerchantsMap.has(merchant.id);
+    if (isNewMerchant) {
+      dbMerchantsMap.set(merchant.id, {
+        id: merchant.id,
+        groupId: merchant.group_id,
+        name: merchant.name,
+        logo: merchant.logo,
+        emoji: merchant.emoji,
+        monzo_category: merchant.category || null,
+        online: merchant.online,
+        atm: merchant.atm,
+        address: merchant.address,
+        disableFeedback: merchant.disable_feedback,
+        metadata: merchant.metadata,
+        categoryId: merchant.category || null,
+        accountId,
+      });
     }
   }
 
   return {
-    merchants: merchantMap,
-    customCategories: customCategoriesMap,
+    transactions: dbTransactions,
+    merchants: Array.from(dbMerchantsMap.values()),
+    categories: Array.from(dbCategoriesMap.values()),
   };
 }

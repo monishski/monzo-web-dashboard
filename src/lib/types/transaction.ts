@@ -7,6 +7,7 @@ export type Transaction = {
   description: string;
   amount: number;
   currency: string;
+  fees: Record<string, unknown>;
   notes: string | null;
   monzo_category: string | null;
   settled: string | null;
