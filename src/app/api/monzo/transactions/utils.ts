@@ -55,11 +55,9 @@ export function getDatabaseMerchant(
 
 export function getMerchantsAndCategories({
   transactions,
-  userId,
   accountId,
 }: {
   transactions: MonzoTransaction[];
-  userId: string;
   accountId: string;
 }): {
   merchants: Map<string, typeof monzoMerchants.$inferInsert>;
@@ -86,7 +84,7 @@ export function getMerchantsAndCategories({
         id: category,
         name: category,
         isMonzo: true,
-        userId,
+        accountId,
       });
     }
 

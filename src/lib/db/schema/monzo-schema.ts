@@ -14,7 +14,7 @@ export const monzoCategories = pgTable("monzo_categories", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   isMonzo: boolean("is_monzo").notNull().default(false),
-  userId: text("user_id").references(() => user.id, {
+  accountId: text("account_id").references(() => monzoAccounts.id, {
     onDelete: "cascade",
   }),
   createdAt: timestamp("created_at")
@@ -27,7 +27,11 @@ export const monzoCategories = pgTable("monzo_categories", {
 
 export const monzoCategoriesRelations = relations(
   monzoCategories,
-  ({ many }) => ({
+  ({ one, many }) => ({
+    account: one(monzoAccounts, {
+      fields: [monzoCategories.accountId],
+      references: [monzoAccounts.id],
+    }),
     merchants: many(monzoMerchants),
     transactions: many(monzoTransactions),
   })
@@ -68,7 +72,6 @@ export const monzoMerchants = pgTable("monzo_merchants", {
   address: jsonb("address").notNull(),
   disableFeedback: boolean("disable_feedback").notNull(),
   metadata: jsonb("metadata").notNull(),
-  // TODO: Surely this is a general table that doesnt need user id?
   accountId: text("account_id")
     .notNull()
     .references(() => monzoAccounts.id, { onDelete: "cascade" }),

@@ -41,7 +41,6 @@ export const POST = withAuthAccessToken(
     // Process transactions to extract merchants and categories
     const { merchants, customCategories } = getMerchantsAndCategories({
       transactions,
-      userId,
       accountId,
     });
 
