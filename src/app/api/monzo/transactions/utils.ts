@@ -54,7 +54,7 @@ export function getDatabaseData({
     dbCategoriesMap.set(category.id, {
       id: category.id,
       name: category.name,
-      isMonzo: false,
+      isMonzo: true,
       accountId,
     });
   }
