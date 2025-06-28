@@ -1,19 +1,16 @@
 import { NextResponse } from "next/server";
 import { and, desc, eq } from "drizzle-orm";
 
-import { withAuth } from "@/lib/api/middleware";
+import { withAccount } from "@/lib/api/middleware";
 import { db } from "@/lib/db";
 import { monzoMerchants } from "@/lib/db/schema/monzo-schema";
 import type { Merchant } from "@/lib/types/merchant";
 
-// NOTE: this is a POST request even though we are fetching because of the request body
-export const POST = withAuth<
+export const GET = withAccount<
   Merchant[],
   { params: Promise<{ id: string }> }
->(async ({ request, context: { params } }) => {
+>(async ({ context: { params }, accountId }) => {
   const { id: categoryId } = await params;
-  const body = await request.json();
-  const { accountId } = body;
 
   const dbMerchants = await db.query.monzoMerchants.findMany({
     columns: {
@@ -25,7 +22,7 @@ export const POST = withAuth<
     with: {
       category: {
         columns: {
-          userId: false,
+          accountId: false,
           createdAt: false,
           updatedAt: false,
         },

@@ -1,19 +1,16 @@
 import { NextResponse } from "next/server";
 import { and, desc, eq } from "drizzle-orm";
 
-import { withAuth } from "@/lib/api/middleware";
+import { withAccount } from "@/lib/api/middleware";
 import { db } from "@/lib/db";
 import { monzoTransactions } from "@/lib/db/schema/monzo-schema";
 import type { Transaction } from "@/lib/types";
 
-// NOTE: this is a POST request even though we are fetching because of the request body
-export const POST = withAuth<
+export const GET = withAccount<
   Transaction[],
   { params: Promise<{ id: string }> }
->(async ({ request, context: { params } }) => {
+>(async ({ context: { params }, accountId }) => {
   const { id: categoryId } = await params;
-  const body = await request.json();
-  const { accountId } = body;
 
   const dbTransactions = await db.query.monzoTransactions.findMany({
     columns: {
@@ -24,7 +21,7 @@ export const POST = withAuth<
     with: {
       category: {
         columns: {
-          userId: false,
+          accountId: false,
           createdAt: false,
           updatedAt: false,
         },
@@ -58,6 +55,7 @@ export const POST = withAuth<
           dbTransaction.settled instanceof Date
             ? dbTransaction.settled.toISOString()
             : dbTransaction.settled,
+        fees: dbTransaction.fees as Record<string, unknown>,
         amount: Number(dbTransaction.amount),
         localAmount: Number(dbTransaction.localAmount),
       };
