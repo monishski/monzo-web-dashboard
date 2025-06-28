@@ -2,11 +2,12 @@ import { NextResponse } from "next/server";
 
 import { withAuthAccessToken } from "@/lib/api/middleware";
 import { db, monzoAccounts } from "@/lib/db";
+import type { MonzoDbAccount } from "@/lib/db/types";
 
 import { fetchAccounts } from "./endpoints";
 import { getDatabaseAccount } from "./utils";
 
-export const POST = withAuthAccessToken<typeof monzoAccounts.$inferInsert>(
+export const POST = withAuthAccessToken<MonzoDbAccount>(
   async ({ userId, accessToken }) => {
     const { accounts } = await fetchAccounts(accessToken);
     const retailAccounts = accounts?.filter(

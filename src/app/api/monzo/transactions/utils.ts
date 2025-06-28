@@ -1,8 +1,8 @@
 import type {
-  monzoCategories,
-  monzoMerchants,
-  monzoTransactions,
-} from "@/lib/db/schema/monzo-schema";
+  MonzoDbCategory,
+  MonzoDbMerchant,
+  MonzoDbTransaction,
+} from "@/lib/db/types";
 
 import type { MonzoTransaction } from "./types";
 
@@ -29,10 +29,6 @@ const DEFAULT_CATEGORIES: {
 ];
 
 const DEFAULT_CATEGORIES_IDS = DEFAULT_CATEGORIES.map((c) => c.id);
-
-type MonzoDbTransaction = typeof monzoTransactions.$inferInsert;
-type MonzoDbMerchant = typeof monzoMerchants.$inferInsert;
-type MonzoDbCategory = typeof monzoCategories.$inferInsert;
 
 export function getDatabaseData({
   transactions,
