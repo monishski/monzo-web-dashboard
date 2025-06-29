@@ -70,7 +70,8 @@ export const fetchMonzoTransactions = async (
   try {
     const transactionsMap: Record<string, MonzoTransaction> = {};
     let since = new Date(accountCreated); // Start date
-    let before = dayjs(since).add(12, "month").toDate(); // End date
+    // Max difference between since and before is 12 months (1 year)
+    let before = dayjs(since).add(11, "month").toDate(); // End date
     const now = new Date();
 
     while (true) {
@@ -110,7 +111,6 @@ export const fetchMonzoTransactions = async (
         }
       }
 
-      // Max difference between since and before is 12 months (1 year)
       before = dayjs(since).add(11, "month").toDate();
 
       if (!newTransactionsFound) break;
