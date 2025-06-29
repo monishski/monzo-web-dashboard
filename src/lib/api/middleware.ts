@@ -29,12 +29,15 @@ export function withErrorHandling<Data, Context = unknown>(
       if (!res.success) {
         const { error, status } = res;
         return NextResponse.json(
-          MiddlewareResponse.error({ error, status })
+          MiddlewareResponse.error({ error, status }),
+          { status }
         );
       }
 
       const { status, data } = res;
-      return NextResponse.json(MiddlewareResponse.ok({ status, data }));
+      return NextResponse.json(MiddlewareResponse.ok({ status, data }), {
+        status,
+      });
     } catch (error) {
       const message =
         error instanceof Error
@@ -42,7 +45,8 @@ export function withErrorHandling<Data, Context = unknown>(
           : "An unexpected error occurred";
 
       return NextResponse.json(
-        MiddlewareResponse.internalServerError(message)
+        MiddlewareResponse.internalServerError(message),
+        { status: 500 }
       );
     }
   };
