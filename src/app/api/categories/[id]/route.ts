@@ -21,7 +21,7 @@ export const GET = withAccount<
   });
 
   if (!dbCategory) {
-    return { status: 404, success: false, error: "Category not found" };
+    return MiddlewareResponse.notFound("Category not found");
   }
 
   const { createdAt: created, updatedAt: updated } = dbCategory;

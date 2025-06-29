@@ -17,7 +17,7 @@ export const GET = withAuth<Account>(async ({ userId }) => {
   });
 
   if (!dbAccount) {
-    return { status: 404, success: false, error: "Account not found" };
+    return MiddlewareResponse.notFound("Account not found");
   }
 
   const account: Account = {
