@@ -1,4 +1,5 @@
 import { withAuthAccessToken } from "@/lib/api/middleware";
+import { MiddlewareResponse } from "@/lib/api/response";
 import { db } from "@/lib/db";
 import {
   monzoCategories,
@@ -11,10 +12,9 @@ import { getDatabaseData } from "./utils";
 
 export const POST = withAuthAccessToken(
   async ({ request, accessToken }) => {
-    // Get the account ID from the request body
     const { accountId } = await request.json();
     if (!accountId) {
-      return { success: false, error: "Account ID is required" };
+      return MiddlewareResponse.badRequest("Account ID is required");
     }
 
     const { transactions: _monzoTransactions } = await fetchTransactions(
@@ -23,7 +23,7 @@ export const POST = withAuthAccessToken(
     );
 
     if (!_monzoTransactions || _monzoTransactions.length === 0) {
-      return { success: false, error: "No transactions found" };
+      return MiddlewareResponse.badRequest("No transactions found");
     }
 
     // Process transactions to extract merchants and categories
@@ -43,6 +43,6 @@ export const POST = withAuthAccessToken(
       await tx.insert(monzoTransactions).values(transactions).returning();
     });
 
-    return { status: 201, success: true };
+    return MiddlewareResponse.created();
   }
 );

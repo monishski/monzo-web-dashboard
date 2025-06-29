@@ -5,7 +5,8 @@ import { eq } from "drizzle-orm";
 import { authServer } from "@/lib/auth/auth-server";
 import { db, monzoAccounts } from "@/lib/db";
 
-import type { ApiErrorResponse, ApiResponse } from "./types";
+import { MiddlewareResponse } from "./response";
+import type { ApiResponse } from "./types";
 
 type Handler<Data, Context> = (
   request: NextRequest,
@@ -26,23 +27,22 @@ export function withErrorHandling<Data, Context = unknown>(
       const res = await handler(request, context);
 
       if (!res.success) {
-        return NextResponse.json<ApiErrorResponse>(res, {
-          status: res.status || 400,
-        });
+        const { error, status } = res;
+        return NextResponse.json(
+          MiddlewareResponse.error({ error, status })
+        );
       }
 
-      return NextResponse.json<ApiResponse<Data>>(res, {
-        status: res.status || 200,
-      });
+      const { status, data } = res;
+      return NextResponse.json(MiddlewareResponse.ok({ status, data }));
     } catch (error) {
       const message =
         error instanceof Error
           ? error.message
           : "An unexpected error occurred";
 
-      return NextResponse.json<ApiErrorResponse>(
-        { status: 500, success: false, error: message },
-        { status: 500 }
+      return NextResponse.json(
+        MiddlewareResponse.internalServerError(message)
       );
     }
   };
@@ -63,12 +63,11 @@ export function withAuth<Data, Context = unknown>(
     });
 
     if (!session) {
-      return { status: 401, success: false, error: "Unauthorized" };
+      return MiddlewareResponse.unauthorized();
     }
 
     const userId = session.user.id;
-    const res = await handler({ request, context, userId });
-    return res;
+    return await handler({ request, context, userId });
   });
 }
 
@@ -88,11 +87,10 @@ export function withAuthAccessToken<Data, Context = unknown>(
     });
 
     if (!accessToken) {
-      return { status: 401, success: false, error: "Unauthorised" };
+      return MiddlewareResponse.unauthorized();
     }
 
-    const res = handler({ ...args, accessToken });
-    return res;
+    return await handler({ ...args, accessToken });
   });
 }
 
@@ -112,10 +110,9 @@ export function withAccount<Data, Context = unknown>(
     });
 
     if (!account) {
-      return { status: 404, success: false, error: "Account not found" };
+      return MiddlewareResponse.notFound("Account not found");
     }
 
-    const res = handler({ ...args, accountId: account.id });
-    return res;
+    return await handler({ ...args, accountId: account.id });
   });
 }

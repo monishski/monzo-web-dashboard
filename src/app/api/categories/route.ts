@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 
 import { withAccount } from "@/lib/api/middleware";
+import { MiddlewareResponse } from "@/lib/api/response";
 import { db } from "@/lib/db";
 import { monzoCategories } from "@/lib/db/schema/monzo-schema";
 import type { Category } from "@/lib/types/category";
@@ -20,7 +21,7 @@ export const GET = withAccount<Category[]>(async ({ accountId }) => {
     };
   });
 
-  return { success: true, data: categories };
+  return MiddlewareResponse.success(categories);
 });
 
 export const POST = withAccount<Category>(
@@ -29,7 +30,7 @@ export const POST = withAccount<Category>(
     const { name } = body;
 
     if (!name) {
-      return { success: false, error: "Name is required" };
+      return MiddlewareResponse.badRequest("Name is required");
     }
 
     const existingCategory = await db.query.monzoCategories.findFirst({
@@ -41,7 +42,7 @@ export const POST = withAccount<Category>(
     });
 
     if (existingCategory) {
-      return { success: false, error: "Category name already exists" };
+      return MiddlewareResponse.conflict("Category name already exists");
     }
 
     const [dbCategory] = await db
@@ -63,6 +64,6 @@ export const POST = withAccount<Category>(
       updatedAt: updated instanceof Date ? updated.toISOString() : updated,
     };
 
-    return { status: 201, success: true, data: category };
+    return MiddlewareResponse.created(category);
   }
 );

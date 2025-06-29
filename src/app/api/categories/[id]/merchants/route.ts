@@ -1,6 +1,7 @@
 import { and, desc, eq } from "drizzle-orm";
 
 import { withAccount } from "@/lib/api/middleware";
+import { MiddlewareResponse } from "@/lib/api/response";
 import { db } from "@/lib/db";
 import { monzoMerchants } from "@/lib/db/schema/monzo-schema";
 import type { Merchant } from "@/lib/types/merchant";
@@ -42,5 +43,5 @@ export const GET = withAccount<
     };
   });
 
-  return { success: true, data: merchants };
+  return MiddlewareResponse.success(merchants);
 });

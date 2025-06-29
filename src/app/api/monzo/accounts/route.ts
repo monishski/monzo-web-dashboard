@@ -1,4 +1,5 @@
 import { withAuthAccessToken } from "@/lib/api/middleware";
+import { MiddlewareResponse } from "@/lib/api/response";
 import { db, monzoAccounts } from "@/lib/db";
 import type { MonzoDbAccount } from "@/lib/db/types";
 
@@ -11,10 +12,11 @@ export const POST = withAuthAccessToken<MonzoDbAccount>(
     const retailAccounts = accounts?.filter(
       (account) => account.type === "uk_retail"
     );
-    if (!retailAccounts.length)
-      throw Error("Unable to find any retail accounts");
+    if (!retailAccounts.length) {
+      return MiddlewareResponse.notFound("No retail accounts found");
+    }
 
-    const [insertedAccounts] = await db
+    const [insertedAccount] = await db
       .insert(monzoAccounts)
       .values(
         retailAccounts.map((account) =>
@@ -23,6 +25,6 @@ export const POST = withAuthAccessToken<MonzoDbAccount>(
       )
       .returning();
 
-    return { status: 201, success: true, data: insertedAccounts };
+    return MiddlewareResponse.created(insertedAccount);
   }
 );

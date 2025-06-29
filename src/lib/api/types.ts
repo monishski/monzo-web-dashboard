@@ -4,13 +4,13 @@ export type ApiErrorResponse = {
   error: string;
 };
 
-export type ApiSuccessResponse<T> = {
+export type ApiOkResponse<T = undefined> = {
   status?: number;
   success: true;
   data?: T;
 };
 
-export type ApiResponse<T> = ApiErrorResponse | ApiSuccessResponse<T>;
+export type ApiResponse<T> = ApiErrorResponse | ApiOkResponse<T>;
 
 export type PaginatedData<T> = {
   data: T[];
