@@ -127,14 +127,15 @@ export function getDatabaseData({
 export const POST = withAuthAccessToken(
   async ({ request, accessToken }) => {
     try {
-      const { accountId } = await request.json();
-      if (!accountId) {
-        return MiddlewareResponse.badRequest("Account ID is required");
+      const { accountId, accountCreated } = await request.json();
+      if (!accountId || !accountCreated) {
+        return MiddlewareResponse.badRequest("Account is required");
       }
 
       const _monzoTransactions = await fetchMonzoTransactions(
         accessToken,
-        accountId
+        accountId,
+        accountCreated
       );
 
       if (!_monzoTransactions || _monzoTransactions.length === 0) {
