@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 
 import { withAuth } from "@/lib/api/middleware";
@@ -17,10 +16,7 @@ export const GET = withAuth<Account>(async ({ userId }) => {
   });
 
   if (!dbAccount) {
-    return NextResponse.json(
-      { success: false, error: "Account not found" },
-      { status: 404 }
-    );
+    return { status: 404, success: false, error: "Account not found" };
   }
 
   const account: Account = {
@@ -33,5 +29,5 @@ export const GET = withAuth<Account>(async ({ userId }) => {
     owners: dbAccount.owners as AccountOwner[],
   };
 
-  return NextResponse.json({ success: true, data: account });
+  return { success: true, data: account };
 });

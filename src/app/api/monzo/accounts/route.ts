@@ -1,5 +1,3 @@
-import { NextResponse } from "next/server";
-
 import { withAuthAccessToken } from "@/lib/api/middleware";
 import { db, monzoAccounts } from "@/lib/db";
 import type { MonzoDbAccount } from "@/lib/db/types";
@@ -25,6 +23,6 @@ export const POST = withAuthAccessToken<MonzoDbAccount>(
       )
       .returning();
 
-    return NextResponse.json({ success: true, data: insertedAccounts });
+    return { status: 201, success: true, data: insertedAccounts };
   }
 );

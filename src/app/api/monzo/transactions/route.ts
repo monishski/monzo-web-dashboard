@@ -1,5 +1,3 @@
-import { NextResponse } from "next/server";
-
 import { withAuthAccessToken } from "@/lib/api/middleware";
 import { db } from "@/lib/db";
 import {
@@ -16,10 +14,7 @@ export const POST = withAuthAccessToken(
     // Get the account ID from the request body
     const { accountId } = await request.json();
     if (!accountId) {
-      return NextResponse.json(
-        { success: false, error: "Account ID is required" },
-        { status: 400 }
-      );
+      return { success: false, error: "Account ID is required" };
     }
 
     const { transactions: _monzoTransactions } = await fetchTransactions(
@@ -28,10 +23,7 @@ export const POST = withAuthAccessToken(
     );
 
     if (!_monzoTransactions || _monzoTransactions.length === 0) {
-      return NextResponse.json({
-        success: false,
-        error: "No transactions found",
-      });
+      return { success: false, error: "No transactions found" };
     }
 
     // Process transactions to extract merchants and categories
@@ -51,6 +43,6 @@ export const POST = withAuthAccessToken(
       await tx.insert(monzoTransactions).values(transactions).returning();
     });
 
-    return NextResponse.json({ success: true });
+    return { status: 201, success: true };
   }
 );

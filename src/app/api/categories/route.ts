@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
 
 import { withAccount } from "@/lib/api/middleware";
@@ -21,7 +20,7 @@ export const GET = withAccount<Category[]>(async ({ accountId }) => {
     };
   });
 
-  return NextResponse.json({ success: true, data: categories });
+  return { success: true, data: categories };
 });
 
 export const POST = withAccount<Category>(
@@ -30,10 +29,7 @@ export const POST = withAccount<Category>(
     const { name } = body;
 
     if (!name) {
-      return NextResponse.json(
-        { success: false, error: "Name is required" },
-        { status: 400 }
-      );
+      return { success: false, error: "Name is required" };
     }
 
     const existingCategory = await db.query.monzoCategories.findFirst({
@@ -45,10 +41,7 @@ export const POST = withAccount<Category>(
     });
 
     if (existingCategory) {
-      return NextResponse.json(
-        { success: false, error: "Category name already exists" },
-        { status: 400 }
-      );
+      return { success: false, error: "Category name already exists" };
     }
 
     const [dbCategory] = await db
@@ -70,6 +63,6 @@ export const POST = withAccount<Category>(
       updatedAt: updated instanceof Date ? updated.toISOString() : updated,
     };
 
-    return NextResponse.json({ success: true, data: category });
+    return { status: 201, success: true, data: category };
   }
 );

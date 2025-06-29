@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { and, desc, eq } from "drizzle-orm";
 
 import { withAccount } from "@/lib/api/middleware";
@@ -62,5 +61,5 @@ export const GET = withAccount<
     }
   );
 
-  return NextResponse.json({ success: true, data: transactions });
+  return { success: true, data: transactions };
 });

@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { and, eq, not } from "drizzle-orm";
 
 import { withAccount } from "@/lib/api/middleware";
@@ -21,10 +20,7 @@ export const GET = withAccount<
   });
 
   if (!dbCategory) {
-    return NextResponse.json(
-      { success: false, error: "Category not found" },
-      { status: 404 }
-    );
+    return { status: 404, success: false, error: "Category not found" };
   }
 
   const { createdAt: created, updatedAt: updated } = dbCategory;
@@ -34,7 +30,7 @@ export const GET = withAccount<
     updatedAt: updated instanceof Date ? updated.toISOString() : updated,
   };
 
-  return NextResponse.json({ success: true, data: category });
+  return { success: true, data: category };
 });
 
 export const PUT = withAccount<
@@ -47,10 +43,7 @@ export const PUT = withAccount<
   const { name } = body;
 
   if (!name) {
-    return NextResponse.json(
-      { success: false, error: "Name is required" },
-      { status: 400 }
-    );
+    return { success: false, error: "Name is required" };
   }
 
   const existingCategory = await db.query.monzoCategories.findFirst({
@@ -64,10 +57,7 @@ export const PUT = withAccount<
   });
 
   if (existingCategory) {
-    return NextResponse.json(
-      { success: false, error: "Category name already exists" },
-      { status: 400 }
-    );
+    return { success: false, error: "Category name already exists" };
   }
 
   const [dbCategory] = await db
@@ -90,7 +80,7 @@ export const PUT = withAccount<
     updatedAt: updated instanceof Date ? updated.toISOString() : updated,
   };
 
-  return NextResponse.json({ success: true, data: category });
+  return { success: true, data: category };
 });
 
 export const DELETE = withAccount<
@@ -110,14 +100,8 @@ export const DELETE = withAccount<
     .returning();
 
   if (!category) {
-    return NextResponse.json(
-      { success: false, error: "Category not found" },
-      { status: 404 }
-    );
+    return { status: 404, success: false, error: "Category not found" };
   }
 
-  return NextResponse.json(
-    { success: true, data: { id: category.id } },
-    { status: 200 }
-  );
+  return { success: true, data: { id: category.id } };
 });
