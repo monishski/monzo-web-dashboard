@@ -1,4 +1,5 @@
 import { AxiosError } from "axios";
+import dayjs from "dayjs";
 import qs from "qs";
 
 import { HttpClient } from "./client";
@@ -27,6 +28,7 @@ export class MonzoApiError extends Error {
     this.error = error;
   }
 }
+
 export const fetchMonzoAccount = async (
   accessToken: string | undefined
 ): Promise<MonzoAccount | null> => {
@@ -62,11 +64,14 @@ export const fetchMonzoAccount = async (
 
 export const fetchMonzoTransactions = async (
   accessToken: string,
-  accountId: string
+  accountId: string,
+  accountCreated: string
 ): Promise<MonzoTransaction[]> => {
   try {
     const transactionsMap: Record<string, MonzoTransaction> = {};
-    let before = new Date();
+    let since = new Date(accountCreated); // Start date
+    let before = dayjs(since).add(12, "month").toDate(); // End date
+    const now = new Date();
 
     while (true) {
       const queryParams = qs.stringify(
@@ -74,7 +79,8 @@ export const fetchMonzoTransactions = async (
           expand: ["merchant"],
           account_id: accountId,
           limit: 100,
-          before: before.toISOString(),
+          before: before > now ? now.toISOString() : before.toISOString(), // Required
+          since: since.toISOString(),
         },
         { arrayFormat: "brackets" }
       );
@@ -98,11 +104,14 @@ export const fetchMonzoTransactions = async (
           transactionsMap[id] = transaction;
           newTransactionsFound = true;
           const txnCreated = new Date(created);
-          if (txnCreated < before) {
-            before = txnCreated;
+          if (txnCreated > since) {
+            since = txnCreated;
           }
         }
       }
+
+      // Max difference between since and before is 12 months (1 year)
+      before = dayjs(since).add(11, "month").toDate();
 
       if (!newTransactionsFound) break;
     }
