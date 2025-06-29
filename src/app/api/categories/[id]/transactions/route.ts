@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
 import { and, desc, eq } from "drizzle-orm";
 
 import { withAccount } from "@/lib/api/middleware";
+import { MiddlewareResponse } from "@/lib/api/response";
 import { db } from "@/lib/db";
 import { monzoTransactions } from "@/lib/db/schema/monzo-schema";
 import type { Transaction } from "@/lib/types";
@@ -62,5 +62,5 @@ export const GET = withAccount<
     }
   );
 
-  return NextResponse.json({ success: true, data: transactions });
+  return MiddlewareResponse.success(transactions);
 });

@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 
 import { withAuth } from "@/lib/api/middleware";
+import { MiddlewareResponse } from "@/lib/api/response";
 import { db } from "@/lib/db";
 import { monzoAccounts } from "@/lib/db/schema/monzo-schema";
 import type { Account, AccountOwner, AccountType } from "@/lib/types";
@@ -17,10 +17,7 @@ export const GET = withAuth<Account>(async ({ userId }) => {
   });
 
   if (!dbAccount) {
-    return NextResponse.json(
-      { success: false, error: "Account not found" },
-      { status: 404 }
-    );
+    return MiddlewareResponse.notFound("Account not found");
   }
 
   const account: Account = {
@@ -33,5 +30,5 @@ export const GET = withAuth<Account>(async ({ userId }) => {
     owners: dbAccount.owners as AccountOwner[],
   };
 
-  return NextResponse.json({ success: true, data: account });
+  return MiddlewareResponse.success(account);
 });
