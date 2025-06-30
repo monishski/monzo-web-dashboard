@@ -3,11 +3,13 @@ import { MiddlewareResponse } from "@/lib/api/response";
 import type {
   MonzoDbCategory,
   MonzoDbMerchant,
+  MonzoDbMerchantGroup,
   MonzoDbTransaction,
 } from "@/lib/db";
 import { db } from "@/lib/db";
 import {
   monzoCategories,
+  monzoMerchantGroups,
   monzoMerchants,
   monzoTransactions,
 } from "@/lib/db/schema/monzo-schema";
@@ -47,10 +49,12 @@ export function getDatabaseData({
 }): {
   transactions: MonzoDbTransaction[];
   merchants: MonzoDbMerchant[];
+  merchantGroups: MonzoDbMerchantGroup[];
   categories: MonzoDbCategory[];
 } {
   const dbTransactions = [] as MonzoDbTransaction[];
   const dbMerchantsMap = new Map<string, MonzoDbMerchant>();
+  const dbMerchantGroupsMap = new Map<string, MonzoDbMerchantGroup>();
   const dbCategoriesMap = new Map<string, MonzoDbCategory>();
 
   // Prepopulate categories map with default categories
@@ -97,20 +101,26 @@ export function getDatabaseData({
       });
     }
 
-    const isNewMerchant = !!merchant && !dbMerchantsMap.has(merchant.id);
-    if (isNewMerchant) {
+    if (merchant && !dbMerchantsMap.has(merchant.id)) {
       dbMerchantsMap.set(merchant.id, {
         id: merchant.id,
         groupId: merchant.group_id,
+        address: merchant.address,
+        online: merchant.online,
+        accountId,
+      });
+    }
+
+    if (merchant && !dbMerchantGroupsMap.has(merchant.group_id)) {
+      dbMerchantGroupsMap.set(merchant.group_id, {
+        id: merchant.group_id,
         name: merchant.name,
         logo: merchant.logo,
         emoji: merchant.emoji,
-        monzo_category: merchant.category || null,
-        online: merchant.online,
-        atm: merchant.atm,
-        address: merchant.address,
         disableFeedback: merchant.disable_feedback,
+        atm: merchant.atm,
         metadata: merchant.metadata,
+        monzo_category: merchant.category || null,
         categoryId: merchant.category || null,
         accountId,
       });
@@ -120,6 +130,7 @@ export function getDatabaseData({
   return {
     transactions: dbTransactions,
     merchants: Array.from(dbMerchantsMap.values()),
+    merchantGroups: Array.from(dbMerchantGroupsMap.values()),
     categories: Array.from(dbCategoriesMap.values()),
   };
 }
@@ -143,13 +154,16 @@ export const POST = withAuthAccessToken(
       }
 
       // Process transactions to extract merchants and categories
-      const { transactions, merchants, categories } = getDatabaseData({
-        transactions: _monzoTransactions,
-        accountId,
-      });
+      const { transactions, merchants, merchantGroups, categories } =
+        getDatabaseData({
+          transactions: _monzoTransactions,
+          accountId,
+        });
 
       await db.transaction(async (tx) => {
         await tx.insert(monzoCategories).values(categories);
+
+        await tx.insert(monzoMerchantGroups).values(merchantGroups);
 
         await tx.insert(monzoMerchants).values(merchants);
 
