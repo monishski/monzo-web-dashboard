@@ -14,16 +14,23 @@ type MerchantAddress = {
   postcode: string;
 };
 
-export type Merchant = {
+export type MerchantGroup = {
   id: string;
-  groupId: string;
   name: string;
   logo: string;
   emoji: string | null;
-  monzo_category: string | null;
-  online: boolean;
+  disableFeedback: boolean;
   atm: boolean;
-  address: MerchantAddress;
-  metadata: Record<string, string>;
+  monzo_category: string | null;
+  categoryId: string | null;
   category?: Pick<Category, "id" | "name" | "isMonzo"> | null;
+  merchant?: Merchant[];
+};
+
+export type Merchant = {
+  id: string;
+  groupId: string;
+  online: boolean;
+  address: MerchantAddress;
+  group?: MerchantGroup;
 };

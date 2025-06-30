@@ -1,5 +1,5 @@
 import type { Category } from "./category";
-import type { Merchant } from "./merchant";
+import type { Merchant, MerchantGroup } from "./merchant";
 
 export type Transaction = {
   id: string;
@@ -15,6 +15,10 @@ export type Transaction = {
   localCurrency: string;
   merchantId: string | null;
   categoryId: string | null;
-  merchant?: Pick<Merchant, "id" | "groupId" | "name" | "logo"> | null;
+  merchant?:
+    | (Pick<Merchant, "id" | "groupId"> & {
+        group: Pick<MerchantGroup, "id" | "name" | "logo" | "emoji">;
+      })
+    | null;
   category?: Pick<Category, "id" | "name" | "isMonzo"> | null;
 };
