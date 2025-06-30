@@ -64,6 +64,13 @@
       "when": 1751107270825,
       "tag": "0008_add_fees_column_to_monzo_transactions",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1751317544514,
+      "tag": "0009_add_merchant_groups_table",
+      "breakpoints": true
     }
   ]
 }
