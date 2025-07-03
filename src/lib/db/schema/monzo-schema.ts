@@ -57,17 +57,11 @@ export const monzoAccounts = pgTable("monzo_accounts", {
 
 export const monzoMerchants = pgTable("monzo_merchants", {
   id: text("id").primaryKey(),
-  groupId: text("group_id").notNull(),
-  name: text("name").notNull(),
-  logo: text("logo").notNull(),
-  emoji: text("emoji"),
-  monzo_category: text("monzo_category"),
-  online: boolean("online").notNull(),
-  atm: boolean("atm").notNull(),
+  groupId: text("group_id")
+    .notNull()
+    .references(() => monzoMerchantGroups.id, { onDelete: "cascade" }),
   address: jsonb("address").notNull(),
-  disableFeedback: boolean("disable_feedback").notNull(),
-  metadata: jsonb("metadata").notNull(),
-  categoryId: text("category_id").references(() => monzoCategories.id),
+  online: boolean("online").notNull(),
   accountId: text("account_id")
     .notNull()
     .references(() => monzoAccounts.id, { onDelete: "cascade" }),
@@ -82,11 +76,43 @@ export const monzoMerchants = pgTable("monzo_merchants", {
 export const monzoMerchantsRelations = relations(
   monzoMerchants,
   ({ one, many }) => ({
-    category: one(monzoCategories, {
-      fields: [monzoMerchants.categoryId],
-      references: [monzoCategories.id],
+    group: one(monzoMerchantGroups, {
+      fields: [monzoMerchants.groupId],
+      references: [monzoMerchantGroups.id],
     }),
     transactions: many(monzoTransactions),
+  })
+);
+
+export const monzoMerchantGroups = pgTable("monzo_merchant_groups", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  logo: text("logo").notNull(),
+  emoji: text("emoji"),
+  disableFeedback: boolean("disable_feedback").notNull(),
+  atm: boolean("atm").notNull(),
+  metadata: jsonb("metadata").notNull(),
+  monzo_category: text("monzo_category"),
+  categoryId: text("category_id").references(() => monzoCategories.id),
+  accountId: text("account_id")
+    .notNull()
+    .references(() => monzoAccounts.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+});
+
+export const monzoMerchantGroupsRelations = relations(
+  monzoMerchantGroups,
+  ({ many, one }) => ({
+    merchants: many(monzoMerchants),
+    category: one(monzoCategories, {
+      fields: [monzoMerchantGroups.categoryId],
+      references: [monzoCategories.id],
+    }),
   })
 );
 

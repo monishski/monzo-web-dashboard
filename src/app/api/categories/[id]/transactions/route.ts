@@ -30,9 +30,18 @@ export const GET = withAccount<
         columns: {
           id: true,
           groupId: true,
-          emoji: true,
-          name: true,
-          logo: true,
+          address: true,
+          online: true,
+        },
+        with: {
+          group: {
+            columns: {
+              id: true,
+              name: true,
+              logo: true,
+              emoji: true,
+            },
+          },
         },
       },
     },
