@@ -1,43 +1,68 @@
-import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 
-import { withAuth } from "@/lib/api/middleware";
+import { withAccount } from "@/lib/api/middleware";
+import { MiddlewareResponse } from "@/lib/api/response";
 import { db } from "@/lib/db";
-import {
-  monzoAccounts,
-  monzoMerchants,
-} from "@/lib/db/schema/monzo-schema";
-import type { Merchant } from "@/lib/types";
+import { monzoMerchants } from "@/lib/db/schema/monzo-schema";
+import type { Merchant, MerchantGroup } from "@/lib/types";
 
-export const GET = withAuth<Merchant[]>(async ({ userId }) => {
-  const account = await db.query.monzoAccounts.findFirst({
-    where: eq(monzoAccounts.userId, userId),
-  });
-
-  if (!account) {
-    return NextResponse.json(
-      { success: false, error: "No Monzo account found for this user" },
-      { status: 404 }
-    );
-  }
-
-  const dbMerchants = await db.query.monzoMerchants.findMany({
+export const GET = withAccount<MerchantGroup[]>(async ({ accountId }) => {
+  const dbMerchantGroups = await db.query.monzoMerchantGroups.findMany({
+    columns: {
+      accountId: false,
+      createdAt: false,
+      updatedAt: false,
+    },
     with: {
-      _category: {
-        columns: { userId: false, createdAt: false, updatedAt: false },
+      transactions: {
+        columns: {
+          accountId: false,
+          createdAt: false,
+          updatedAt: false,
+          merchantId: false,
+          merchantGroupId: false,
+          categoryId: false,
+        },
+      },
+      merchants: {
+        columns: {
+          accountId: false,
+          createdAt: false,
+          updatedAt: false,
+        },
       },
     },
-    columns: { accountId: false, createdAt: false, updatedAt: false },
-    where: eq(monzoMerchants.accountId, account.id),
+    where: eq(monzoMerchants.accountId, accountId),
   });
 
-  const merchants: Merchant[] = dbMerchants.map((dbMerchant) => {
-    return {
-      ...dbMerchant,
-      address: dbMerchant.address as Merchant["address"],
-      metadata: dbMerchant.metadata as Merchant["metadata"],
-    };
-  });
+  const merchantGroups: MerchantGroup[] = dbMerchantGroups.map(
+    (dbMerchantGroup) => {
+      const { merchants: dbMerchants, transactions: dbTransactions } =
+        dbMerchantGroup;
 
-  return NextResponse.json({ success: true, data: merchants });
+      return {
+        ...dbMerchantGroup,
+        merchants: dbMerchants.map((dbMerchant) => ({
+          ...dbMerchant,
+          address: dbMerchant.address as Merchant["address"],
+        })),
+        transactions: dbTransactions.map((dbTransaction) => ({
+          ...dbTransaction,
+          created:
+            dbTransaction.created instanceof Date
+              ? dbTransaction.created.toISOString()
+              : dbTransaction.created,
+          settled:
+            dbTransaction.settled instanceof Date
+              ? dbTransaction.settled.toISOString()
+              : dbTransaction.settled,
+          fees: dbTransaction.fees as Record<string, unknown>,
+          amount: Number(dbTransaction.amount),
+          localAmount: Number(dbTransaction.localAmount),
+        })),
+      };
+    }
+  );
+
+  return MiddlewareResponse.success(merchantGroups);
 });

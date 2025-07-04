@@ -113,6 +113,7 @@ export const monzoMerchantGroupsRelations = relations(
       fields: [monzoMerchantGroups.categoryId],
       references: [monzoCategories.id],
     }),
+    transactions: many(monzoTransactions),
   })
 );
 
