@@ -1,0 +1,2 @@
+ALTER TABLE "monzo_transactions" ADD COLUMN "merchant_group_id" text;--> statement-breakpoint
+ALTER TABLE "monzo_transactions" ADD CONSTRAINT "monzo_transactions_merchant_group_id_monzo_merchant_groups_id_fk" FOREIGN KEY ("merchant_group_id") REFERENCES "public"."monzo_merchant_groups"("id") ON DELETE no action ON UPDATE no action;

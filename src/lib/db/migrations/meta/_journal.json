@@ -71,6 +71,13 @@
       "when": 1751317544514,
       "tag": "0009_add_merchant_groups_table",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1751654049941,
+      "tag": "0010_save_merchant_group_in_transactions_table",
+      "breakpoints": true
     }
   ]
 }

@@ -74,12 +74,10 @@ export type Transaction = {
   settled: string | null;
   localAmount: number;
   localCurrency: string;
-  merchantId: string | null;
-  categoryId: string | null;
-  merchant?:
-    | (Pick<Merchant, "id" | "groupId"> & {
-        group: Pick<MerchantGroup, "id" | "name" | "logo" | "emoji">;
-      })
-    | null;
+  merchant?: Merchant | null;
   category?: Pick<Category, "id" | "name" | "isMonzo"> | null;
+  merchantGroup?: Pick<
+    MerchantGroup,
+    "id" | "name" | "logo" | "emoji"
+  > | null;
 };

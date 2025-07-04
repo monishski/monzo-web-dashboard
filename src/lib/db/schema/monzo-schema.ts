@@ -133,6 +133,9 @@ export const monzoTransactions = pgTable("monzo_transactions", {
     .references(() => monzoAccounts.id, { onDelete: "cascade" }),
   categoryId: text("category_id").references(() => monzoCategories.id),
   merchantId: text("merchant_id").references(() => monzoMerchants.id),
+  merchantGroupId: text("merchant_group_id").references(
+    () => monzoMerchantGroups.id
+  ),
   createdAt: timestamp("created_at")
     .$defaultFn(() => new Date())
     .notNull(),
@@ -151,6 +154,10 @@ export const monzoTransactionsRelations = relations(
     merchant: one(monzoMerchants, {
       fields: [monzoTransactions.merchantId],
       references: [monzoMerchants.id],
+    }),
+    group: one(monzoMerchantGroups, {
+      fields: [monzoTransactions.merchantGroupId],
+      references: [monzoMerchantGroups.id],
     }),
   })
 );

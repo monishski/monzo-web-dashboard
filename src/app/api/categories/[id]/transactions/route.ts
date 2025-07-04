@@ -4,7 +4,7 @@ import { withAccount } from "@/lib/api/middleware";
 import { MiddlewareResponse } from "@/lib/api/response";
 import { db } from "@/lib/db";
 import { monzoTransactions } from "@/lib/db/schema/monzo-schema";
-import type { Transaction } from "@/lib/types";
+import type { Merchant, Transaction } from "@/lib/types";
 
 export const GET = withAccount<
   Transaction[],
@@ -14,6 +14,9 @@ export const GET = withAccount<
 
   const dbTransactions = await db.query.monzoTransactions.findMany({
     columns: {
+      categoryId: false,
+      merchantId: false,
+      merchantGroupId: false,
       accountId: false,
       createdAt: false,
       updatedAt: false,
@@ -33,15 +36,13 @@ export const GET = withAccount<
           address: true,
           online: true,
         },
-        with: {
-          group: {
-            columns: {
-              id: true,
-              name: true,
-              logo: true,
-              emoji: true,
-            },
-          },
+      },
+      group: {
+        columns: {
+          id: true,
+          name: true,
+          logo: true,
+          emoji: true,
         },
       },
     },
@@ -54,6 +55,8 @@ export const GET = withAccount<
 
   const transactions: Transaction[] = dbTransactions.map(
     (dbTransaction) => {
+      const { merchant: dbMerchant } = dbTransaction;
+
       return {
         ...dbTransaction,
         created:
@@ -67,6 +70,12 @@ export const GET = withAccount<
         fees: dbTransaction.fees as Record<string, unknown>,
         amount: Number(dbTransaction.amount),
         localAmount: Number(dbTransaction.localAmount),
+        merchant: dbMerchant
+          ? {
+              ...dbMerchant,
+              address: dbMerchant?.address as Merchant["address"],
+            }
+          : null,
       };
     }
   );

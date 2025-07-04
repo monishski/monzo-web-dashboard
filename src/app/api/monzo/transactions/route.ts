@@ -86,6 +86,9 @@ export function getDatabaseData({
       accountId: transaction.account_id,
       categoryId: transaction.category || null,
       merchantId: transaction.merchant ? transaction.merchant.id : null,
+      merchantGroupId: transaction.merchant
+        ? transaction.merchant.group_id
+        : null,
     });
 
     const isNewCustomCategory =
