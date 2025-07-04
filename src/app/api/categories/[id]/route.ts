@@ -4,7 +4,7 @@ import { withAccount } from "@/lib/api/middleware";
 import { MiddlewareResponse } from "@/lib/api/response";
 import { db } from "@/lib/db";
 import { monzoCategories } from "@/lib/db/schema/monzo-schema";
-import type { Category } from "@/lib/types/category";
+import type { Category } from "@/lib/types";
 
 export const GET = withAccount<
   Category,

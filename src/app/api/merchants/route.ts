@@ -7,7 +7,7 @@ import {
   monzoAccounts,
   monzoMerchants,
 } from "@/lib/db/schema/monzo-schema";
-import type { Merchant } from "@/lib/types/merchant";
+import type { Merchant } from "@/lib/types";
 
 export const GET = withAuth<Merchant[]>(async ({ userId }) => {
   const account = await db.query.monzoAccounts.findFirst({
