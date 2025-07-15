@@ -9,22 +9,20 @@ import type { Merchant, MerchantGroup } from "@/lib/types";
 export const GET = withAccount<MerchantGroup[]>(async ({ accountId }) => {
   const dbMerchantGroups = await db.query.monzoMerchantGroups.findMany({
     columns: {
+      categoryId: false,
       accountId: false,
       createdAt: false,
       updatedAt: false,
     },
     with: {
-      transactions: {
+      merchants: {
         columns: {
           accountId: false,
           createdAt: false,
           updatedAt: false,
-          merchantId: false,
-          merchantGroupId: false,
-          categoryId: false,
         },
       },
-      merchants: {
+      category: {
         columns: {
           accountId: false,
           createdAt: false,
@@ -37,28 +35,13 @@ export const GET = withAccount<MerchantGroup[]>(async ({ accountId }) => {
 
   const merchantGroups: MerchantGroup[] = dbMerchantGroups.map(
     (dbMerchantGroup) => {
-      const { merchants: dbMerchants, transactions: dbTransactions } =
-        dbMerchantGroup;
+      const { merchants: dbMerchants } = dbMerchantGroup;
 
       return {
         ...dbMerchantGroup,
         merchants: dbMerchants.map((dbMerchant) => ({
           ...dbMerchant,
           address: dbMerchant.address as Merchant["address"],
-        })),
-        transactions: dbTransactions.map((dbTransaction) => ({
-          ...dbTransaction,
-          created:
-            dbTransaction.created instanceof Date
-              ? dbTransaction.created.toISOString()
-              : dbTransaction.created,
-          settled:
-            dbTransaction.settled instanceof Date
-              ? dbTransaction.settled.toISOString()
-              : dbTransaction.settled,
-          fees: dbTransaction.fees as Record<string, unknown>,
-          amount: Number(dbTransaction.amount),
-          localAmount: Number(dbTransaction.localAmount),
         })),
       };
     }

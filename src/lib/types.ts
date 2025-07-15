@@ -27,7 +27,7 @@ export type Category = {
   updatedAt: string;
 };
 
-type MerchantAddress = {
+export type MerchantAddress = {
   shortFormatted: string;
   city: string;
   latitude: number;
@@ -49,7 +49,6 @@ export type MerchantGroup = {
   disableFeedback: boolean;
   atm: boolean;
   monzo_category: string | null;
-  categoryId: string | null;
   category?: Pick<Category, "id" | "name" | "isMonzo"> | null;
   merchants?: Merchant[];
   transactions?: Transaction[];
