@@ -2,7 +2,7 @@ import type { JSX } from "react";
 import { headers } from "next/headers";
 import Link from "next/link";
 
-import type { Category } from "@/lib/types/category";
+import type { Category } from "@/lib/types";
 
 async function CategoriesPage(): Promise<JSX.Element> {
   const response = await fetch("http://localhost:3001/api/categories", {

@@ -10,7 +10,7 @@ export const GET = withAccount<
   Transaction[],
   { params: Promise<{ id: string }> }
 >(async ({ context: { params }, accountId }) => {
-  const { id: categoryId } = await params;
+  const { id: merchantGroupId } = await params;
 
   const dbTransactions = await db.query.monzoTransactions.findMany({
     columns: {
@@ -47,7 +47,7 @@ export const GET = withAccount<
       },
     },
     where: and(
-      eq(monzoTransactions.categoryId, categoryId),
+      eq(monzoTransactions.merchantGroupId, merchantGroupId),
       eq(monzoTransactions.accountId, accountId)
     ),
     orderBy: desc(monzoTransactions.created),
