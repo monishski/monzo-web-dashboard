@@ -25,6 +25,18 @@ function TransactionsPage(): JSX.Element {
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
     []
   );
+  const [description, setDescription] = useState("");
+  const [debouncedDescription, setDebouncedDescription] = useState("");
+
+  // Debounce description input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedDescription(description);
+    }, 400);
+    return (): void => {
+      clearTimeout(handler);
+    };
+  }, [description]);
 
   // Fetch categories on mount
   useEffect(() => {
@@ -58,7 +70,14 @@ function TransactionsPage(): JSX.Element {
             page: 1,
             limit: 10,
             sort: [{ by: "created", order: "asc" }],
-            search: { by: "description", value: "uber" },
+            ...(debouncedDescription
+              ? {
+                  search: {
+                    by: "description",
+                    value: debouncedDescription,
+                  },
+                }
+              : {}),
             filters: {
               date: [
                 {
@@ -73,15 +92,13 @@ function TransactionsPage(): JSX.Element {
                       DEFAULT_END_DATE,
                 },
               ],
-              string: [
-                {
-                  by: "categoryId",
-                  values:
-                    selectedCategories.length > 0
-                      ? selectedCategories
-                      : ["eating_out"],
-                },
-              ],
+              ...(selectedCategories.length > 0
+                ? {
+                    string: [
+                      { by: "categoryId", values: selectedCategories },
+                    ],
+                  }
+                : {}),
             },
           }),
         });
@@ -109,7 +126,7 @@ function TransactionsPage(): JSX.Element {
       }
     };
     fetchTransactions();
-  }, [startDate, endDate, selectedCategories]);
+  }, [startDate, endDate, selectedCategories, debouncedDescription]);
 
   // Handler for multi-select
   const handleCategoryChange = (
@@ -124,6 +141,16 @@ function TransactionsPage(): JSX.Element {
 
   return (
     <div>
+      <div>
+        <label htmlFor="description-input">Description: </label>
+        <input
+          id="description-input"
+          type="text"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Filter by description"
+        />
+      </div>
       <div>
         <label>
           Start Date: {startDate?.toISOString() ?? DEFAULT_START_DATE}
@@ -207,7 +234,7 @@ function TransactionsPage(): JSX.Element {
                     </div>
                   </Link>
                 ) : (
-                  "No category"
+                  "No merchant"
                 )}
               </td>
               <td>{tx.merchant?.address?.formatted ?? ""}</td>
