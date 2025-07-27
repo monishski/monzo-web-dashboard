@@ -7,7 +7,10 @@ import Link from "next/link";
 import { DayPicker } from "react-day-picker";
 
 import type { PaginatedData } from "@/lib/api/types";
-import type { Transaction } from "@/lib/types";
+import type { Category, Transaction } from "@/lib/types";
+
+const DEFAULT_START_DATE = "2025-01-01T00:00:00Z";
+const DEFAULT_END_DATE = "2025-12-31T23:59:59Z";
 
 function TransactionsPage(): JSX.Element {
   const [startDate, setStartDate] = useState<Date | undefined>();
@@ -16,6 +19,30 @@ function TransactionsPage(): JSX.Element {
     useState<PaginatedData<Transaction> | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [categories, setCategories] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    []
+  );
+
+  // Fetch categories on mount
+  useEffect(() => {
+    const fetchCategories = async (): Promise<void> => {
+      try {
+        const res = await fetch("/api/categories");
+        if (!res.ok) throw new Error("Failed to fetch categories");
+        const { data: categories } = (await res.json()) as {
+          data: Category[];
+        };
+
+        setCategories(categories);
+      } catch {
+        // Optionally handle error
+      }
+    };
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     const fetchTransactions = async (): Promise<void> => {
@@ -39,17 +66,20 @@ function TransactionsPage(): JSX.Element {
                   from: startDate
                     ? startDate.toISOString()
                     : // TODO: this should be account creation date
-                      "2025-01-01T00:00:00Z",
+                      DEFAULT_START_DATE,
                   to: endDate
                     ? endDate.toISOString()
                     : // TODO: this should be today
-                      "2025-12-31T23:59:59Z",
+                      DEFAULT_END_DATE,
                 },
               ],
               string: [
                 {
                   by: "categoryId",
-                  values: ["eating_out"],
+                  values:
+                    selectedCategories.length > 0
+                      ? selectedCategories
+                      : ["eating_out"],
                 },
               ],
             },
@@ -79,25 +109,54 @@ function TransactionsPage(): JSX.Element {
       }
     };
     fetchTransactions();
-  }, [startDate, endDate]);
+  }, [startDate, endDate, selectedCategories]);
+
+  // Handler for multi-select
+  const handleCategoryChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ): void => {
+    const selected = Array.from(
+      e.target.selectedOptions,
+      (option) => option.value
+    );
+    setSelectedCategories(selected);
+  };
 
   return (
     <div>
       <div>
-        <label>Start Date:</label>
+        <label>
+          Start Date: {startDate?.toISOString() ?? DEFAULT_START_DATE}
+        </label>
         <DayPicker
           mode="single"
-          selected={startDate}
+          selected={startDate ?? new Date(DEFAULT_START_DATE)}
           onSelect={setStartDate}
         />
       </div>
       <div>
-        <label>End Date:</label>
+        <label>
+          End Date: {endDate?.toISOString() ?? DEFAULT_END_DATE}
+        </label>
         <DayPicker
           mode="single"
-          selected={endDate}
+          selected={endDate ?? new Date(DEFAULT_END_DATE)}
           onSelect={setEndDate}
         />
+      </div>
+      <div>
+        <label>Categories:</label>
+        <select
+          multiple
+          value={selectedCategories}
+          onChange={handleCategoryChange}
+        >
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.name}
+            </option>
+          ))}
+        </select>
       </div>
       {loading && <div>Loading...</div>}
       {error && <div style={{ color: "red" }}>{error}</div>}
