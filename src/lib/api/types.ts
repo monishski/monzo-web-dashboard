@@ -15,7 +15,6 @@ export type ApiResponse<T> = ApiErrorResponse | ApiOkResponse<T>;
 export type PaginatedData<T> = {
   data: T[];
   pagination: {
-    count: number;
     total: number;
     page: number;
     size: number;
