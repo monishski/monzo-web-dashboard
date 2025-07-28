@@ -204,7 +204,11 @@ function TransactionsPage(): JSX.Element {
         <tbody>
           {transactions?.data?.map((tx) => (
             <tr key={tx.id}>
-              <td>{tx.description}</td>
+              <td>
+                <Link href={`/transactions/${tx.id}`}>
+                  {tx.description}
+                </Link>
+              </td>
               <td>{tx.amount / 100}</td>
               <td>{tx.created}</td>
               <td>{tx.settled}</td>
