@@ -69,7 +69,7 @@ function TransactionsPage(): JSX.Element {
           body: JSON.stringify({
             page: 1,
             limit: 10,
-            sort: [{ by: "created", order: "asc" }],
+            sort: [{ by: "created", order: "desc" }],
             ...(debouncedDescription
               ? {
                   search: {
