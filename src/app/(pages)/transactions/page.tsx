@@ -4,6 +4,7 @@ import type { JSX } from "react";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { parseAsArrayOf, parseAsString, useQueryStates } from "nuqs";
 import { DayPicker } from "react-day-picker";
 
 import type { PaginatedData } from "@/lib/api/types";
@@ -13,6 +14,18 @@ const DEFAULT_START_DATE = "2025-01-01T00:00:00Z";
 const DEFAULT_END_DATE = "2025-12-31T23:59:59Z";
 
 function TransactionsPage(): JSX.Element {
+  const [filters, setFilters] = useQueryStates(
+    {
+      merchantGroupIds: parseAsArrayOf(parseAsString).withDefault([]),
+      categoryIds: parseAsArrayOf(parseAsString).withDefault([]),
+    },
+    {
+      history: "push",
+    }
+  );
+
+  const { merchantGroupIds, categoryIds } = filters;
+
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [transactions, setTransactions] =
@@ -22,9 +35,6 @@ function TransactionsPage(): JSX.Element {
   const [categories, setCategories] = useState<
     { id: string; name: string }[]
   >([]);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    []
-  );
   const [description, setDescription] = useState("");
   const [debouncedDescription, setDebouncedDescription] = useState("");
 
@@ -92,10 +102,20 @@ function TransactionsPage(): JSX.Element {
                       DEFAULT_END_DATE,
                 },
               ],
-              ...(selectedCategories.length > 0
+              ...(merchantGroupIds.length > 0 || categoryIds.length > 0
                 ? {
                     string: [
-                      { by: "categoryId", values: selectedCategories },
+                      ...(merchantGroupIds.length > 0
+                        ? [
+                            {
+                              by: "merchantGroupId",
+                              values: merchantGroupIds,
+                            },
+                          ]
+                        : []),
+                      ...(categoryIds.length > 0
+                        ? [{ by: "categoryId", values: categoryIds }]
+                        : []),
                     ],
                   }
                 : {}),
@@ -126,7 +146,13 @@ function TransactionsPage(): JSX.Element {
       }
     };
     fetchTransactions();
-  }, [startDate, endDate, selectedCategories, debouncedDescription]);
+  }, [
+    startDate,
+    endDate,
+    categoryIds,
+    debouncedDescription,
+    merchantGroupIds,
+  ]);
 
   // Handler for multi-select
   const handleCategoryChange = (
@@ -136,11 +162,74 @@ function TransactionsPage(): JSX.Element {
       e.target.selectedOptions,
       (option) => option.value
     );
-    setSelectedCategories(selected);
+    setFilters({
+      ...filters,
+      categoryIds: selected,
+    });
+  };
+
+  const clearMerchantGroupFilter = (): void => {
+    setFilters({
+      ...filters,
+      merchantGroupIds: [],
+    });
+  };
+
+  // Clear category filter
+  const clearCategoryFilter = (): void => {
+    setFilters({
+      ...filters,
+      categoryIds: [],
+    });
+  };
+
+  // Clear all filters
+  const clearAllFilters = (): void => {
+    setFilters(null);
   };
 
   return (
     <div>
+      {/* Show merchant group filter if active */}
+      {merchantGroupIds.length > 0 && (
+        <div className="mb-4 rounded border border-blue-300 bg-blue-100 p-2">
+          <span>
+            Filtered by merchant groups: {merchantGroupIds.join(", ")}
+          </span>
+          <button
+            onClick={clearMerchantGroupFilter}
+            className="ml-2 rounded bg-blue-500 px-2 py-1 text-sm text-white"
+          >
+            Clear
+          </button>
+        </div>
+      )}
+
+      {/* Show category filter if active */}
+      {categoryIds.length > 0 && (
+        <div className="mb-4 rounded border border-green-300 bg-green-100 p-2">
+          <span>Filtered by categories: {categoryIds.join(", ")}</span>
+          <button
+            onClick={clearCategoryFilter}
+            className="ml-2 rounded bg-green-500 px-2 py-1 text-sm text-white"
+          >
+            Clear
+          </button>
+        </div>
+      )}
+
+      {/* Clear all filters button */}
+      {(merchantGroupIds.length > 0 || categoryIds.length > 0) && (
+        <div className="mb-4">
+          <button
+            onClick={clearAllFilters}
+            className="rounded bg-gray-500 px-3 py-1 text-sm text-white"
+          >
+            Clear All Filters
+          </button>
+        </div>
+      )}
+
       <div>
         <label htmlFor="description-input">Description: </label>
         <input
@@ -175,7 +264,7 @@ function TransactionsPage(): JSX.Element {
         <label>Categories:</label>
         <select
           multiple
-          value={selectedCategories}
+          value={categoryIds}
           onChange={handleCategoryChange}
         >
           {categories.map((cat) => (
