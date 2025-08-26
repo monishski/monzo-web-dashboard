@@ -72,7 +72,7 @@ function MerchantsPage(): JSX.Element {
           body: JSON.stringify({
             page: 1,
             limit: 10,
-            sort: [{ by: "name", order: "asc" }],
+            // sort: [{ by: "name", order: "asc" }],
             ...(debouncedName
               ? {
                   search: {
@@ -215,6 +215,7 @@ function MerchantsPage(): JSX.Element {
             <th>Transactions Count</th>
             <th>ATM</th>
             <th>Online</th>
+            <th>Last transaction date</th>
           </tr>
         </thead>
         <tbody>
@@ -264,6 +265,8 @@ function MerchantsPage(): JSX.Element {
                   ? "Yes"
                   : "No"}
               </td>
+
+              <td>{merchantGroup.lastTransactionDate}</td>
             </tr>
           ))}
         </tbody>
