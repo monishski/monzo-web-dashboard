@@ -41,6 +41,13 @@ export type MerchantAddress = {
   postcode: string;
 };
 
+export type Merchant = {
+  id: string;
+  groupId: string;
+  online: boolean;
+  address: MerchantAddress;
+};
+
 export type MerchantGroup = {
   id: string;
   name: string;
@@ -53,13 +60,6 @@ export type MerchantGroup = {
   merchants?: Merchant[];
   transactionsCount: number;
   lastTransactionDate: string | null;
-};
-
-export type Merchant = {
-  id: string;
-  groupId: string;
-  online: boolean;
-  address: MerchantAddress;
 };
 
 export type Transaction = {

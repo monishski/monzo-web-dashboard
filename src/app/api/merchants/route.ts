@@ -81,7 +81,7 @@ export const POST = withAccount<PaginatedData<MerchantGroup>>(
     // Pagination
     const offset = (page - 1) * limit;
 
-    const where = [eq(monzoMerchants.accountId, accountId)];
+    const where = [eq(monzoMerchantGroups.accountId, accountId)];
 
     // Search
     if (search) {
@@ -129,10 +129,6 @@ export const POST = withAccount<PaginatedData<MerchantGroup>>(
         })
         .from(monzoMerchantGroups)
         .leftJoin(
-          monzoMerchants,
-          eq(monzoMerchantGroups.id, monzoMerchants.groupId)
-        )
-        .leftJoin(
           monzoCategories,
           eq(monzoMerchantGroups.categoryId, monzoCategories.id)
         )
@@ -142,31 +138,31 @@ export const POST = withAccount<PaginatedData<MerchantGroup>>(
         .select({
           merchantGroup: monzoMerchantGroups,
           category: monzoCategories,
-          merchants: sql<Merchant[]>`COALESCE(
-            json_agg(
-              CASE 
-                WHEN ${monzoMerchants.id} IS NOT NULL 
-                THEN json_build_object(
-                  'id', ${monzoMerchants.id},
-                  'groupId', ${monzoMerchants.groupId},
-                  'online', ${monzoMerchants.online},
-                  'address', ${monzoMerchants.address}
-                )
-                ELSE NULL
-              END
-            ) FILTER (WHERE ${monzoMerchants.id} IS NOT NULL),
-            '[]'::json
-          )`,
-          transactionsCount: db.$count(
-            monzoTransactions,
-            and(
-              eq(
-                monzoTransactions.merchantGroupId,
-                monzoMerchantGroups.id
-              ),
-              eq(monzoTransactions.accountId, accountId)
+          merchants: sql<Merchant[]>`(
+            SELECT COALESCE(
+              json_agg(
+                CASE 
+                  WHEN m.id IS NOT NULL 
+                  THEN json_build_object(
+                    'id', m.id,
+                    'groupId', m.group_id,
+                    'online', m.online,
+                    'address', m.address
+                  )
+                  ELSE NULL
+                END
+              ) FILTER (WHERE m.id IS NOT NULL),
+              '[]'::json
             )
-          ),
+            FROM ${monzoMerchants} m
+            WHERE m.group_id = ${monzoMerchantGroups.id}
+          )`,
+          transactionsCount: sql<number>`(
+            SELECT COUNT(*)
+            FROM ${monzoTransactions} t
+            WHERE t.merchant_group_id = ${monzoMerchantGroups.id}
+            AND t.account_id = ${accountId}
+          )`,
           lastTransactionDate: sql<Date | null>`(
             SELECT MAX(t.created)
             FROM ${monzoTransactions} t
@@ -176,15 +172,10 @@ export const POST = withAccount<PaginatedData<MerchantGroup>>(
         })
         .from(monzoMerchantGroups)
         .leftJoin(
-          monzoMerchants,
-          eq(monzoMerchantGroups.id, monzoMerchants.groupId)
-        )
-        .leftJoin(
           monzoCategories,
           eq(monzoMerchantGroups.categoryId, monzoCategories.id)
         )
         .where(and(...where))
-        .groupBy(monzoMerchantGroups.id, monzoCategories.id)
         .orderBy(...orderBy)
         .offset(offset)
         .limit(limit),
@@ -202,13 +193,13 @@ export const POST = withAccount<PaginatedData<MerchantGroup>>(
 
       return {
         ...omit(merchantGroup, ["accountId", "createdAt", "updatedAt"]),
-        category: omit(category, ["accountId"]),
+        category: category ? omit(category, ["accountId"]) : null,
         merchants,
         transactionsCount,
         lastTransactionDate:
           lastTransactionDate instanceof Date
             ? lastTransactionDate.toISOString()
-            : null,
+            : lastTransactionDate,
       };
     });
 

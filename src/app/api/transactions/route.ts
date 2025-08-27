@@ -21,7 +21,12 @@ import {
   monzoMerchants,
   monzoTransactions,
 } from "@/lib/db";
-import type { MerchantAddress, Transaction } from "@/lib/types";
+import type {
+  Category,
+  Merchant,
+  MerchantGroup,
+  Transaction,
+} from "@/lib/types";
 
 const TRANSACTION_SORT_FIELDS = [
   "description",
@@ -197,35 +202,57 @@ export const POST = withAccount<PaginatedData<Transaction>>(
       db
         .select({ count: sql<number>`count(*)` })
         .from(monzoTransactions)
-        .leftJoin(
-          monzoCategories,
-          eq(monzoTransactions.categoryId, monzoCategories.id)
-        )
-        .leftJoin(
-          monzoMerchants,
-          eq(monzoTransactions.merchantId, monzoMerchants.id)
-        )
-        .leftJoin(
-          monzoMerchantGroups,
-          eq(monzoTransactions.merchantGroupId, monzoMerchantGroups.id)
-        )
         .where(and(...where)),
 
       db
-        .select()
+        .select({
+          transaction: monzoTransactions,
+          category: sql<Pick<Category, "id" | "name" | "isMonzo"> | null>`(
+            SELECT CASE 
+              WHEN c.id IS NOT NULL 
+              THEN json_build_object(
+                'id', c.id,
+                'name', c.name,
+                'isMonzo', c.is_monzo
+              )
+              ELSE NULL
+            END
+            FROM ${monzoCategories} c
+            WHERE c.id = ${monzoTransactions.categoryId}
+          )`,
+          merchant: sql<Merchant | null>`(
+            SELECT CASE 
+              WHEN m.id IS NOT NULL 
+              THEN json_build_object(
+                'id', m.id,
+                'groupId', m.group_id,
+                'online', m.online,
+                'address', m.address::jsonb
+              )
+              ELSE NULL
+            END
+            FROM ${monzoMerchants} m
+            WHERE m.id = ${monzoTransactions.merchantId}
+          )`,
+          merchantGroup: sql<Pick<
+            MerchantGroup,
+            "id" | "name" | "logo" | "emoji"
+          > | null>`( 
+            SELECT CASE 
+              WHEN mg.id IS NOT NULL 
+              THEN json_build_object(
+                'id', mg.id,
+                'name', mg.name,
+                'logo', mg.logo,
+                'emoji', mg.emoji
+              )
+              ELSE NULL
+            END
+            FROM ${monzoMerchantGroups} mg
+            WHERE mg.id = ${monzoTransactions.merchantGroupId}
+          )`,
+        })
         .from(monzoTransactions)
-        .leftJoin(
-          monzoCategories,
-          eq(monzoTransactions.categoryId, monzoCategories.id)
-        )
-        .leftJoin(
-          monzoMerchants,
-          eq(monzoTransactions.merchantId, monzoMerchants.id)
-        )
-        .leftJoin(
-          monzoMerchantGroups,
-          eq(monzoTransactions.merchantGroupId, monzoMerchantGroups.id)
-        )
         .where(and(...where))
         .orderBy(...orderBy)
         .offset(offset)
@@ -234,49 +261,24 @@ export const POST = withAccount<PaginatedData<Transaction>>(
 
     // Transform the database results into the expected format
     const transactions: Transaction[] = tables.map((table) => {
-      const {
-        monzo_transactions,
-        monzo_categories,
-        monzo_merchants,
-        monzo_merchant_groups,
-      } = table;
+      const { transaction, category, merchant, merchantGroup } = table;
 
       return {
-        ...monzo_transactions,
+        ...transaction,
         created:
-          monzo_transactions.created instanceof Date
-            ? monzo_transactions.created.toISOString()
-            : monzo_transactions.created,
+          transaction.created instanceof Date
+            ? transaction.created.toISOString()
+            : transaction.created,
         settled:
-          monzo_transactions.settled instanceof Date
-            ? monzo_transactions.settled.toISOString()
-            : monzo_transactions.settled,
-        fees: monzo_transactions.fees as Record<string, unknown>,
-        amount: Number(monzo_transactions.amount),
-        localAmount: Number(monzo_transactions.localAmount),
-        merchant: monzo_merchants
-          ? {
-              id: monzo_merchants.id,
-              groupId: monzo_merchants.groupId,
-              online: monzo_merchants.online,
-              address: monzo_merchants.address as MerchantAddress,
-            }
-          : null,
-        category: monzo_categories
-          ? {
-              id: monzo_categories.id,
-              name: monzo_categories.name,
-              isMonzo: monzo_categories.isMonzo,
-            }
-          : null,
-        merchantGroup: monzo_merchant_groups
-          ? {
-              id: monzo_merchant_groups.id,
-              name: monzo_merchant_groups.name,
-              logo: monzo_merchant_groups.logo,
-              emoji: monzo_merchant_groups.emoji,
-            }
-          : null,
+          transaction.settled instanceof Date
+            ? transaction.settled.toISOString()
+            : transaction.settled,
+        fees: transaction.fees as Record<string, unknown>,
+        amount: Number(transaction.amount),
+        localAmount: Number(transaction.localAmount),
+        merchant,
+        category,
+        merchantGroup,
       };
     });
 
