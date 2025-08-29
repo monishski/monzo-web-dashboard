@@ -1,4 +1,5 @@
 import { and, eq, not } from "drizzle-orm";
+import omit from "lodash/omit";
 
 import { withAccount } from "@/lib/api/middleware";
 import { MiddlewareResponse } from "@/lib/api/response";
@@ -12,7 +13,7 @@ export const GET = withAccount<
 >(async ({ context: { params }, accountId }) => {
   const { id: categoryId } = await params;
 
-  const dbCategory = await db.query.monzoCategories.findFirst({
+  const category = await db.query.monzoCategories.findFirst({
     columns: { accountId: false },
     where: and(
       eq(monzoCategories.accountId, accountId),
@@ -20,16 +21,9 @@ export const GET = withAccount<
     ),
   });
 
-  if (!dbCategory) {
+  if (!category) {
     return MiddlewareResponse.notFound("Category not found");
   }
-
-  const { createdAt: created, updatedAt: updated } = dbCategory;
-  const category: Category = {
-    ...dbCategory,
-    createdAt: created instanceof Date ? created.toISOString() : created,
-    updatedAt: updated instanceof Date ? updated.toISOString() : updated,
-  };
 
   return MiddlewareResponse.success(category);
 });
@@ -61,7 +55,7 @@ export const PUT = withAccount<
     return MiddlewareResponse.conflict("Category name already exists");
   }
 
-  const [dbCategory] = await db
+  const [category] = await db
     .update(monzoCategories)
     .set({ name })
     .where(
@@ -72,16 +66,7 @@ export const PUT = withAccount<
     )
     .returning();
 
-  const { createdAt: created, updatedAt: updated } = dbCategory;
-  const category: Category = {
-    id: dbCategory.id,
-    name: dbCategory.name,
-    isMonzo: dbCategory.isMonzo,
-    createdAt: created instanceof Date ? created.toISOString() : created,
-    updatedAt: updated instanceof Date ? updated.toISOString() : updated,
-  };
-
-  return MiddlewareResponse.success(category);
+  return MiddlewareResponse.success(omit(category, ["accountId"]));
 });
 
 export const DELETE = withAccount<

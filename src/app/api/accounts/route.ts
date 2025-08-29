@@ -21,10 +21,6 @@ export const GET = withAuth<Account>(async ({ userId }) => {
 
   const account: Account = {
     ...dbAccount,
-    created:
-      dbAccount.created instanceof Date
-        ? dbAccount.created.toISOString()
-        : dbAccount.created,
     type: dbAccount.type as AccountType,
     owners: dbAccount.owners as AccountOwner[],
   };

@@ -53,14 +53,6 @@ export const GET = withAccount<
 
   const transaction: Transaction = {
     ...monzo_transactions,
-    created:
-      monzo_transactions.created instanceof Date
-        ? monzo_transactions.created.toISOString()
-        : monzo_transactions.created,
-    settled:
-      monzo_transactions.settled instanceof Date
-        ? monzo_transactions.settled.toISOString()
-        : monzo_transactions.settled,
     fees: monzo_transactions.fees as Record<string, unknown>,
     amount: Number(monzo_transactions.amount),
     localAmount: Number(monzo_transactions.localAmount),
@@ -123,14 +115,6 @@ export const PUT = withAccount<
 
   const transaction: Transaction = {
     ...rest,
-    created:
-      dbTransaction.created instanceof Date
-        ? dbTransaction.created.toISOString()
-        : dbTransaction.created,
-    settled:
-      dbTransaction.settled instanceof Date
-        ? dbTransaction.settled.toISOString()
-        : null,
     amount: Number(dbTransaction.amount),
     localAmount: Number(dbTransaction.localAmount),
     fees: dbTransaction.fees as Record<string, unknown>,

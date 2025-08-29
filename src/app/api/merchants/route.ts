@@ -163,7 +163,7 @@ export const POST = withAccount<PaginatedData<MerchantGroup>>(
             WHERE t.merchant_group_id = ${monzoMerchantGroups.id}
             AND t.account_id = ${accountId}
           )`,
-          lastTransactionDate: sql<Date | null>`(
+          lastTransactionDate: sql<string | null>`(
             SELECT MAX(t.created)
             FROM ${monzoTransactions} t
             WHERE t.merchant_group_id = ${monzoMerchantGroups.id}
@@ -196,10 +196,7 @@ export const POST = withAccount<PaginatedData<MerchantGroup>>(
         category: category ? omit(category, ["accountId"]) : null,
         merchants,
         transactionsCount,
-        lastTransactionDate:
-          lastTransactionDate instanceof Date
-            ? lastTransactionDate.toISOString()
-            : lastTransactionDate,
+        lastTransactionDate,
       };
     });
 

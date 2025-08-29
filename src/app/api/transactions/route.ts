@@ -111,8 +111,10 @@ const TransactionsApiQuerySchema = z.object({
         .array(
           z.object({
             by: z.enum(TRANSACTION_DATE_FILTER_FIELDS),
-            from: z.iso.datetime(),
-            to: z.iso.datetime(),
+            from: z
+              .string()
+              .transform((val) => new Date(val).toISOString()),
+            to: z.string().transform((val) => new Date(val).toISOString()),
           })
         )
         .optional(),
@@ -166,8 +168,8 @@ export const POST = withAccount<PaginatedData<Transaction>>(
         where.push(
           between(
             monzoTransactions[dateFilter.by],
-            new Date(dateFilter.from),
-            new Date(dateFilter.to)
+            dateFilter.from,
+            dateFilter.to
           )
         );
       });
@@ -265,14 +267,6 @@ export const POST = withAccount<PaginatedData<Transaction>>(
 
       return {
         ...transaction,
-        created:
-          transaction.created instanceof Date
-            ? transaction.created.toISOString()
-            : transaction.created,
-        settled:
-          transaction.settled instanceof Date
-            ? transaction.settled.toISOString()
-            : transaction.settled,
         fees: transaction.fees as Record<string, unknown>,
         amount: Number(transaction.amount),
         localAmount: Number(transaction.localAmount),

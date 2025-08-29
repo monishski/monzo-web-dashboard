@@ -1,4 +1,5 @@
 import { and, eq } from "drizzle-orm";
+import omit from "lodash/omit";
 
 import { withAccount } from "@/lib/api/middleware";
 import { MiddlewareResponse } from "@/lib/api/response";
@@ -6,18 +7,9 @@ import { db, monzoCategories } from "@/lib/db";
 import type { Category } from "@/lib/types";
 
 export const GET = withAccount<Category[]>(async ({ accountId }) => {
-  const dbCategories = await db.query.monzoCategories.findMany({
+  const categories = await db.query.monzoCategories.findMany({
     columns: { accountId: false },
     where: eq(monzoCategories.accountId, accountId),
-  });
-
-  const categories: Category[] = dbCategories.map((dbCategory) => {
-    const { createdAt: created, updatedAt: updated } = dbCategory;
-    return {
-      ...dbCategory,
-      createdAt: created instanceof Date ? created.toISOString() : created,
-      updatedAt: updated instanceof Date ? updated.toISOString() : updated,
-    };
   });
 
   return MiddlewareResponse.success(categories);
@@ -44,7 +36,7 @@ export const POST = withAccount<Category>(
       return MiddlewareResponse.conflict("Category name already exists");
     }
 
-    const [dbCategory] = await db
+    const [category] = await db
       .insert(monzoCategories)
       .values({
         id: crypto.randomUUID(),
@@ -54,15 +46,6 @@ export const POST = withAccount<Category>(
       })
       .returning();
 
-    const { createdAt: created, updatedAt: updated } = dbCategory;
-    const category: Category = {
-      id: dbCategory.id,
-      name: dbCategory.name,
-      isMonzo: dbCategory.isMonzo,
-      createdAt: created instanceof Date ? created.toISOString() : created,
-      updatedAt: updated instanceof Date ? updated.toISOString() : updated,
-    };
-
-    return MiddlewareResponse.created(category);
+    return MiddlewareResponse.created(omit(category, ["accountId"]));
   }
 );
