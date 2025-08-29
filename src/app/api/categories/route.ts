@@ -7,10 +7,16 @@ import { db, monzoCategories } from "@/lib/db";
 import type { Category } from "@/lib/types";
 
 export const GET = withAccount<Category[]>(async ({ accountId }) => {
-  const categories = await db.query.monzoCategories.findMany({
-    columns: { accountId: false },
-    where: eq(monzoCategories.accountId, accountId),
-  });
+  const categories = await db
+    .select({
+      id: monzoCategories.id,
+      name: monzoCategories.name,
+      isMonzo: monzoCategories.isMonzo,
+      createdAt: monzoCategories.createdAt,
+      updatedAt: monzoCategories.updatedAt,
+    })
+    .from(monzoCategories)
+    .where(eq(monzoCategories.accountId, accountId));
 
   return MiddlewareResponse.success(categories);
 });
@@ -24,13 +30,16 @@ export const POST = withAccount<Category>(
       return MiddlewareResponse.badRequest("Name is required");
     }
 
-    const existingCategory = await db.query.monzoCategories.findFirst({
-      where: and(
-        eq(monzoCategories.name, name.trim()),
-        eq(monzoCategories.accountId, accountId)
-      ),
-      columns: { id: true },
-    });
+    const [existingCategory] = await db
+      .select({ id: monzoCategories.id })
+      .from(monzoCategories)
+      .where(
+        and(
+          eq(monzoCategories.name, name.trim()),
+          eq(monzoCategories.accountId, accountId)
+        )
+      )
+      .limit(1);
 
     if (existingCategory) {
       return MiddlewareResponse.conflict("Category name already exists");
