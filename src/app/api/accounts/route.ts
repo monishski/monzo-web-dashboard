@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm";
+import omit from "lodash/omit";
 
 import { withAuth } from "@/lib/api/middleware";
 import { MiddlewareResponse } from "@/lib/api/response";
@@ -6,24 +7,19 @@ import { db, monzoAccounts } from "@/lib/db";
 import type { Account, AccountOwner, AccountType } from "@/lib/types";
 
 export const GET = withAuth<Account>(async ({ userId }) => {
-  const dbAccount = await db.query.monzoAccounts.findFirst({
-    where: eq(monzoAccounts.userId, userId),
-    columns: {
-      userId: false,
-      createdAt: false,
-      updatedAt: false,
-    },
-  });
+  const [account] = await db
+    .select()
+    .from(monzoAccounts)
+    .where(eq(monzoAccounts.userId, userId))
+    .limit(1);
 
-  if (!dbAccount) {
+  if (!account) {
     return MiddlewareResponse.notFound("Account not found");
   }
 
-  const account: Account = {
-    ...dbAccount,
-    type: dbAccount.type as AccountType,
-    owners: dbAccount.owners as AccountOwner[],
-  };
-
-  return MiddlewareResponse.success(account);
+  return MiddlewareResponse.success({
+    ...omit(account, ["userId", "createdAt", "updatedAt"]),
+    type: account.type as AccountType,
+    owners: account.owners as AccountOwner[],
+  });
 });
