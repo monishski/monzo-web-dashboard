@@ -2,13 +2,14 @@ import {
   and,
   asc,
   between,
+  countDistinct,
   desc,
   eq,
   ilike,
   inArray,
-  sql,
 } from "drizzle-orm";
 import type { PgColumn } from "drizzle-orm/pg-core";
+import omit from "lodash/omit";
 import * as z from "zod";
 
 import { withAccount } from "@/lib/api/middleware";
@@ -21,12 +22,7 @@ import {
   monzoMerchants,
   monzoTransactions,
 } from "@/lib/db";
-import type {
-  Category,
-  Merchant,
-  MerchantGroup,
-  Transaction,
-} from "@/lib/types";
+import type { MerchantAddress, Transaction } from "@/lib/types";
 
 const TRANSACTION_SORT_FIELDS = [
   "description",
@@ -200,61 +196,46 @@ export const POST = withAccount<PaginatedData<Transaction>>(
     }
     orderBy.push(desc(monzoTransactions.created));
 
-    const [[{ count }], tables] = await Promise.all([
+    const [[{ total }], tables] = await Promise.all([
       db
-        .select({ count: sql<number>`count(*)` })
+        .select({ total: countDistinct(monzoTransactions.id) })
         .from(monzoTransactions)
         .where(and(...where)),
 
       db
         .select({
           transaction: monzoTransactions,
-          category: sql<Pick<Category, "id" | "name" | "isMonzo"> | null>`(
-            SELECT CASE 
-              WHEN c.id IS NOT NULL 
-              THEN json_build_object(
-                'id', c.id,
-                'name', c.name,
-                'isMonzo', c.is_monzo
-              )
-              ELSE NULL
-            END
-            FROM ${monzoCategories} c
-            WHERE c.id = ${monzoTransactions.categoryId}
-          )`,
-          merchant: sql<Merchant | null>`(
-            SELECT CASE 
-              WHEN m.id IS NOT NULL 
-              THEN json_build_object(
-                'id', m.id,
-                'groupId', m.group_id,
-                'online', m.online,
-                'address', m.address::jsonb
-              )
-              ELSE NULL
-            END
-            FROM ${monzoMerchants} m
-            WHERE m.id = ${monzoTransactions.merchantId}
-          )`,
-          merchantGroup: sql<Pick<
-            MerchantGroup,
-            "id" | "name" | "logo" | "emoji"
-          > | null>`( 
-            SELECT CASE 
-              WHEN mg.id IS NOT NULL 
-              THEN json_build_object(
-                'id', mg.id,
-                'name', mg.name,
-                'logo', mg.logo,
-                'emoji', mg.emoji
-              )
-              ELSE NULL
-            END
-            FROM ${monzoMerchantGroups} mg
-            WHERE mg.id = ${monzoTransactions.merchantGroupId}
-          )`,
+          category: {
+            id: monzoCategories.id,
+            name: monzoCategories.name,
+            isMonzo: monzoCategories.isMonzo,
+          },
+          merchant: {
+            id: monzoMerchants.id,
+            groupId: monzoMerchants.groupId,
+            online: monzoMerchants.online,
+            address: monzoMerchants.address,
+          },
+          merchantGroup: {
+            id: monzoMerchantGroups.id,
+            name: monzoMerchantGroups.name,
+            logo: monzoMerchantGroups.logo,
+            emoji: monzoMerchantGroups.emoji,
+          },
         })
         .from(monzoTransactions)
+        .leftJoin(
+          monzoCategories,
+          eq(monzoTransactions.categoryId, monzoCategories.id)
+        )
+        .leftJoin(
+          monzoMerchants,
+          eq(monzoTransactions.merchantId, monzoMerchants.id)
+        )
+        .leftJoin(
+          monzoMerchantGroups,
+          eq(monzoTransactions.merchantGroupId, monzoMerchantGroups.id)
+        )
         .where(and(...where))
         .orderBy(...orderBy)
         .offset(offset)
@@ -266,11 +247,16 @@ export const POST = withAccount<PaginatedData<Transaction>>(
       const { transaction, category, merchant, merchantGroup } = table;
 
       return {
-        ...transaction,
+        ...omit(transaction, ["accountId", "createdAt", "updatedAt"]),
         fees: transaction.fees as Record<string, unknown>,
         amount: Number(transaction.amount),
         localAmount: Number(transaction.localAmount),
-        merchant,
+        merchant: merchant
+          ? {
+              ...merchant,
+              address: merchant.address as MerchantAddress,
+            }
+          : null,
         category,
         merchantGroup,
       };
@@ -279,7 +265,7 @@ export const POST = withAccount<PaginatedData<Transaction>>(
     return MiddlewareResponse.success({
       data: transactions,
       pagination: {
-        total: count,
+        total,
         page,
         size: limit,
       },

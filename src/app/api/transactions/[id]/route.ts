@@ -1,4 +1,5 @@
 import { and, eq } from "drizzle-orm";
+import omit from "lodash/omit";
 
 import { withAccount } from "@/lib/api/middleware";
 import { MiddlewareResponse } from "@/lib/api/response";
@@ -17,8 +18,27 @@ export const GET = withAccount<
 >(async ({ context: { params }, accountId }) => {
   const { id: transactionId } = await params;
 
-  const dbTransaction = await db
-    .select()
+  const [dbTransaction] = await db
+    .select({
+      transaction: monzoTransactions,
+      category: {
+        id: monzoCategories.id,
+        name: monzoCategories.name,
+        isMonzo: monzoCategories.isMonzo,
+      },
+      merchant: {
+        id: monzoMerchants.id,
+        groupId: monzoMerchants.groupId,
+        online: monzoMerchants.online,
+        address: monzoMerchants.address,
+      },
+      merchantGroup: {
+        id: monzoMerchantGroups.id,
+        name: monzoMerchantGroups.name,
+        logo: monzoMerchantGroups.logo,
+        emoji: monzoMerchantGroups.emoji,
+      },
+    })
     .from(monzoTransactions)
     .leftJoin(
       monzoCategories,
@@ -40,48 +60,28 @@ export const GET = withAccount<
     )
     .limit(1);
 
-  if (!dbTransaction || dbTransaction.length === 0) {
+  if (!dbTransaction) {
     return MiddlewareResponse.notFound("Transaction not found");
   }
 
-  const {
-    monzo_transactions,
-    monzo_categories,
-    monzo_merchants,
-    monzo_merchant_groups,
-  } = dbTransaction[0];
-
-  const transaction: Transaction = {
-    ...monzo_transactions,
-    fees: monzo_transactions.fees as Record<string, unknown>,
-    amount: Number(monzo_transactions.amount),
-    localAmount: Number(monzo_transactions.localAmount),
-    merchant: monzo_merchants
+  return MiddlewareResponse.success({
+    ...omit(dbTransaction.transaction, [
+      "accountId",
+      "createdAt",
+      "updatedAt",
+    ]),
+    fees: dbTransaction.transaction.fees as Record<string, unknown>,
+    amount: Number(dbTransaction.transaction.amount),
+    localAmount: Number(dbTransaction.transaction.localAmount),
+    merchant: dbTransaction.merchant
       ? {
-          id: monzo_merchants.id,
-          groupId: monzo_merchants.groupId,
-          online: monzo_merchants.online,
-          address: monzo_merchants.address as MerchantAddress,
+          ...dbTransaction.merchant,
+          address: dbTransaction.merchant.address as MerchantAddress,
         }
       : null,
-    category: monzo_categories
-      ? {
-          id: monzo_categories.id,
-          name: monzo_categories.name,
-          isMonzo: monzo_categories.isMonzo,
-        }
-      : null,
-    merchantGroup: monzo_merchant_groups
-      ? {
-          id: monzo_merchant_groups.id,
-          name: monzo_merchant_groups.name,
-          logo: monzo_merchant_groups.logo,
-          emoji: monzo_merchant_groups.emoji,
-        }
-      : null,
-  };
-
-  return MiddlewareResponse.success(transaction);
+    category: dbTransaction.category,
+    merchantGroup: dbTransaction.merchantGroup,
+  });
 });
 
 export const PUT = withAccount<
@@ -97,28 +97,74 @@ export const PUT = withAccount<
     return MiddlewareResponse.badRequest("Category ID is required");
   }
 
-  const [dbTransaction] = await db
+  const [updatedTransaction] = await db
     .update(monzoTransactions)
     .set({ categoryId })
     .where(eq(monzoTransactions.id, transactionId))
     .returning();
 
-  if (!dbTransaction) {
+  if (!updatedTransaction) {
     return MiddlewareResponse.notFound("Transaction not found");
   }
 
-  const {
-    createdAt: _createdAt,
-    updatedAt: _updatedAt,
-    ...rest
-  } = dbTransaction;
+  const [dbTransaction] = await db
+    .select({
+      transaction: monzoTransactions,
+      category: {
+        id: monzoCategories.id,
+        name: monzoCategories.name,
+        isMonzo: monzoCategories.isMonzo,
+      },
+      merchant: {
+        id: monzoMerchants.id,
+        groupId: monzoMerchants.groupId,
+        online: monzoMerchants.online,
+        address: monzoMerchants.address,
+      },
+      merchantGroup: {
+        id: monzoMerchantGroups.id,
+        name: monzoMerchantGroups.name,
+        logo: monzoMerchantGroups.logo,
+        emoji: monzoMerchantGroups.emoji,
+      },
+    })
+    .from(monzoTransactions)
+    .leftJoin(
+      monzoCategories,
+      eq(monzoTransactions.categoryId, monzoCategories.id)
+    )
+    .leftJoin(
+      monzoMerchants,
+      eq(monzoTransactions.merchantId, monzoMerchants.id)
+    )
+    .leftJoin(
+      monzoMerchantGroups,
+      eq(monzoTransactions.merchantGroupId, monzoMerchantGroups.id)
+    )
+    .where(
+      and(
+        eq(monzoTransactions.id, transactionId),
+        eq(monzoTransactions.accountId, _accountId)
+      )
+    )
+    .limit(1);
 
-  const transaction: Transaction = {
-    ...rest,
-    amount: Number(dbTransaction.amount),
-    localAmount: Number(dbTransaction.localAmount),
-    fees: dbTransaction.fees as Record<string, unknown>,
-  };
-
-  return MiddlewareResponse.success(transaction);
+  return MiddlewareResponse.success({
+    ...omit(dbTransaction.transaction, [
+      "accountId",
+      "createdAt",
+      "updatedAt",
+    ]),
+    fees: dbTransaction.transaction.fees as Record<string, unknown>,
+    amount: Number(dbTransaction.transaction.amount),
+    localAmount: Number(dbTransaction.transaction.localAmount),
+    merchant: dbTransaction.merchant
+      ? {
+          ...dbTransaction.merchant,
+          address: dbTransaction.merchant.address as MerchantAddress,
+        }
+      : null,
+    category: dbTransaction.category,
+    merchantGroup: dbTransaction.merchantGroup,
+  });
 });
