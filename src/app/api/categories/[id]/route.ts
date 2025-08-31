@@ -1,5 +1,4 @@
 import { and, eq, not } from "drizzle-orm";
-import omit from "lodash/omit";
 
 import { withAccount } from "@/lib/api/middleware";
 import { MiddlewareResponse } from "@/lib/api/response";
@@ -14,7 +13,13 @@ export const GET = withAccount<
   const { id: categoryId } = await params;
 
   const [category] = await db
-    .select()
+    .select({
+      id: monzoCategories.id,
+      name: monzoCategories.name,
+      isMonzo: monzoCategories.isMonzo,
+      createdAt: monzoCategories.createdAt,
+      updatedAt: monzoCategories.updatedAt,
+    })
     .from(monzoCategories)
     .where(
       and(
@@ -28,7 +33,7 @@ export const GET = withAccount<
     return MiddlewareResponse.notFound("Category not found");
   }
 
-  return MiddlewareResponse.success(omit(category, ["accountId"]));
+  return MiddlewareResponse.success(category);
 });
 
 export const PUT = withAccount<
@@ -70,9 +75,15 @@ export const PUT = withAccount<
         eq(monzoCategories.accountId, accountId)
       )
     )
-    .returning();
+    .returning({
+      id: monzoCategories.id,
+      name: monzoCategories.name,
+      isMonzo: monzoCategories.isMonzo,
+      createdAt: monzoCategories.createdAt,
+      updatedAt: monzoCategories.updatedAt,
+    });
 
-  return MiddlewareResponse.success(omit(category, ["accountId"]));
+  return MiddlewareResponse.success(category);
 });
 
 export const DELETE = withAccount<

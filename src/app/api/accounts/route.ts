@@ -1,14 +1,24 @@
 import { eq } from "drizzle-orm";
-import omit from "lodash/omit";
 
 import { withAuth } from "@/lib/api/middleware";
 import { MiddlewareResponse } from "@/lib/api/response";
 import { db, monzoAccounts } from "@/lib/db";
-import type { Account, AccountOwner, AccountType } from "@/lib/types";
+import type { Account } from "@/lib/types";
 
 export const GET = withAuth<Account>(async ({ userId }) => {
   const [account] = await db
-    .select()
+    .select({
+      id: monzoAccounts.id,
+      created: monzoAccounts.created,
+      type: monzoAccounts.type,
+      ownerType: monzoAccounts.ownerType,
+      isFlex: monzoAccounts.isFlex,
+      productType: monzoAccounts.productType,
+      currency: monzoAccounts.currency,
+      owners: monzoAccounts.owners,
+      accountNumber: monzoAccounts.accountNumber,
+      sortCode: monzoAccounts.sortCode,
+    })
     .from(monzoAccounts)
     .where(eq(monzoAccounts.userId, userId))
     .limit(1);
@@ -17,9 +27,5 @@ export const GET = withAuth<Account>(async ({ userId }) => {
     return MiddlewareResponse.notFound("Account not found");
   }
 
-  return MiddlewareResponse.success({
-    ...omit(account, ["userId", "createdAt", "updatedAt"]),
-    type: account.type as AccountType,
-    owners: account.owners as AccountOwner[],
-  });
+  return MiddlewareResponse.success(account as Account);
 });

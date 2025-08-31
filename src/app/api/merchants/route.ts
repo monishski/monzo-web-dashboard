@@ -11,7 +11,6 @@ import {
   sql,
 } from "drizzle-orm";
 import type { PgColumn } from "drizzle-orm/pg-core";
-import omit from "lodash/omit";
 import * as z from "zod";
 
 import { withAccount } from "@/lib/api/middleware";
@@ -133,7 +132,7 @@ export const POST = withAccount<PaginatedData<MerchantGroup>>(
     )`)
     );
 
-    const [[{ total }], tables] = await Promise.all([
+    const [[{ total }], merchantGroups] = await Promise.all([
       db
         .select({
           total: countDistinct(monzoMerchantGroups.id),
@@ -147,7 +146,15 @@ export const POST = withAccount<PaginatedData<MerchantGroup>>(
 
       db
         .select({
-          merchantGroup: monzoMerchantGroups,
+          merchantGroup: {
+            id: monzoMerchantGroups.id,
+            name: monzoMerchantGroups.name,
+            logo: monzoMerchantGroups.logo,
+            emoji: monzoMerchantGroups.emoji,
+            disableFeedback: monzoMerchantGroups.disableFeedback,
+            atm: monzoMerchantGroups.atm,
+            monzo_category: monzoMerchantGroups.monzo_category,
+          },
           category: {
             id: monzoCategories.id,
             name: monzoCategories.name,
@@ -194,27 +201,24 @@ export const POST = withAccount<PaginatedData<MerchantGroup>>(
         .limit(limit),
     ]);
 
-    // Transform the database results into the expected format
-    const merchantGroups: MerchantGroup[] = tables.map((table) => {
-      const {
-        merchantGroup,
-        category,
-        merchants,
-        transactionsCount,
-        lastTransactionDate,
-      } = table;
-
-      return {
-        ...omit(merchantGroup, ["accountId", "createdAt", "updatedAt"]),
-        category,
-        merchants,
-        transactionsCount,
-        lastTransactionDate,
-      };
-    });
-
     return MiddlewareResponse.success({
-      data: merchantGroups,
+      data: merchantGroups.map((_merchantGroup) => {
+        const {
+          merchantGroup,
+          category,
+          merchants,
+          transactionsCount,
+          lastTransactionDate,
+        } = _merchantGroup;
+
+        return {
+          ...merchantGroup,
+          category,
+          merchants,
+          transactionsCount,
+          lastTransactionDate,
+        };
+      }),
       pagination: {
         total,
         page,

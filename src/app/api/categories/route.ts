@@ -1,5 +1,4 @@
 import { and, eq } from "drizzle-orm";
-import omit from "lodash/omit";
 
 import { withAccount } from "@/lib/api/middleware";
 import { MiddlewareResponse } from "@/lib/api/response";
@@ -53,8 +52,14 @@ export const POST = withAccount<Category>(
         isMonzo: false,
         accountId,
       })
-      .returning();
+      .returning({
+        id: monzoCategories.id,
+        name: monzoCategories.name,
+        isMonzo: monzoCategories.isMonzo,
+        createdAt: monzoCategories.createdAt,
+        updatedAt: monzoCategories.updatedAt,
+      });
 
-    return MiddlewareResponse.created(omit(category, ["accountId"]));
+    return MiddlewareResponse.created(category);
   }
 );

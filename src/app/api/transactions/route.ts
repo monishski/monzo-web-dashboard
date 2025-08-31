@@ -9,7 +9,6 @@ import {
   inArray,
 } from "drizzle-orm";
 import type { PgColumn } from "drizzle-orm/pg-core";
-import omit from "lodash/omit";
 import * as z from "zod";
 
 import { withAccount } from "@/lib/api/middleware";
@@ -196,7 +195,7 @@ export const POST = withAccount<PaginatedData<Transaction>>(
     }
     orderBy.push(desc(monzoTransactions.created));
 
-    const [[{ total }], tables] = await Promise.all([
+    const [[{ total }], transactions] = await Promise.all([
       db
         .select({ total: countDistinct(monzoTransactions.id) })
         .from(monzoTransactions)
@@ -204,7 +203,19 @@ export const POST = withAccount<PaginatedData<Transaction>>(
 
       db
         .select({
-          transaction: monzoTransactions,
+          transaction: {
+            id: monzoTransactions.id,
+            created: monzoTransactions.created,
+            description: monzoTransactions.description,
+            amount: monzoTransactions.amount,
+            currency: monzoTransactions.currency,
+            fees: monzoTransactions.fees,
+            notes: monzoTransactions.notes,
+            monzo_category: monzoTransactions.monzo_category,
+            settled: monzoTransactions.settled,
+            localAmount: monzoTransactions.localAmount,
+            localCurrency: monzoTransactions.localCurrency,
+          },
           category: {
             id: monzoCategories.id,
             name: monzoCategories.name,
@@ -242,28 +253,24 @@ export const POST = withAccount<PaginatedData<Transaction>>(
         .limit(limit),
     ]);
 
-    // Transform the database results into the expected format
-    const transactions: Transaction[] = tables.map((table) => {
-      const { transaction, category, merchant, merchantGroup } = table;
-
-      return {
-        ...omit(transaction, ["accountId", "createdAt", "updatedAt"]),
-        fees: transaction.fees as Record<string, unknown>,
-        amount: Number(transaction.amount),
-        localAmount: Number(transaction.localAmount),
-        merchant: merchant
-          ? {
-              ...merchant,
-              address: merchant.address as MerchantAddress,
-            }
-          : null,
-        category,
-        merchantGroup,
-      };
-    });
-
     return MiddlewareResponse.success({
-      data: transactions,
+      data: transactions.map((_transaction) => {
+        const { transaction, category, merchant, merchantGroup } =
+          _transaction;
+
+        return {
+          ...transaction,
+          fees: transaction.fees as Record<string, unknown>,
+          amount: Number(transaction.amount),
+          localAmount: Number(transaction.localAmount),
+          merchant: merchant && {
+            ...merchant,
+            address: merchant.address as MerchantAddress,
+          },
+          category,
+          merchantGroup,
+        };
+      }),
       pagination: {
         total,
         page,

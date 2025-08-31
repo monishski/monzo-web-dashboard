@@ -1,5 +1,4 @@
-import { and, count, eq, max } from "drizzle-orm";
-import omit from "lodash/omit";
+import { and, count, eq, max, sql } from "drizzle-orm";
 
 import { withAccount } from "@/lib/api/middleware";
 import { MiddlewareResponse } from "@/lib/api/response";
@@ -10,7 +9,11 @@ import {
   monzoMerchants,
   monzoTransactions,
 } from "@/lib/db/schema/monzo-schema";
-import type { MerchantAddress, MerchantGroup } from "@/lib/types";
+import type {
+  Merchant,
+  MerchantAddress,
+  MerchantGroup,
+} from "@/lib/types";
 
 export const GET = withAccount<
   MerchantGroup,
@@ -18,58 +21,74 @@ export const GET = withAccount<
 >(async ({ context: { params } }) => {
   const { id: groupId } = await params;
 
-  const [dbMerchantGroup] = await db
-    .select()
-    .from(monzoMerchantGroups)
-    .where(eq(monzoMerchantGroups.id, groupId))
-    .limit(1);
-
-  if (!dbMerchantGroup) {
-    return MiddlewareResponse.notFound("Merchant group not found");
-  }
-
-  const merchants = await db
-    .select()
-    .from(monzoMerchants)
-    .where(eq(monzoMerchants.groupId, groupId));
-
-  let dbCategory = null;
-  if (dbMerchantGroup.categoryId) {
-    const [category] = await db
-      .select()
-      .from(monzoCategories)
-      .where(eq(monzoCategories.id, dbMerchantGroup.categoryId))
-      .limit(1);
-    dbCategory = category;
-  }
-
-  const [dbTransactions] = await db
+  const [_merchantGroup] = await db
     .select({
+      merchantGroup: {
+        id: monzoMerchantGroups.id,
+        name: monzoMerchantGroups.name,
+        logo: monzoMerchantGroups.logo,
+        emoji: monzoMerchantGroups.emoji,
+        disableFeedback: monzoMerchantGroups.disableFeedback,
+        atm: monzoMerchantGroups.atm,
+        monzo_category: monzoMerchantGroups.monzo_category,
+      },
+      category: {
+        id: monzoCategories.id,
+        name: monzoCategories.name,
+        isMonzo: monzoCategories.isMonzo,
+      },
+      merchants: sql<Merchant[]>`(
+            SELECT COALESCE(
+              json_agg(
+                CASE 
+                  WHEN m.id IS NOT NULL 
+                  THEN json_build_object(
+                    'id', m.id,
+                    'groupId', m.group_id,
+                    'online', m.online,
+                    'address', m.address
+                  )
+                  ELSE NULL
+                END
+              ) FILTER (WHERE m.id IS NOT NULL),
+              '[]'::json
+            )
+            FROM ${monzoMerchants} m
+            WHERE m.group_id = ${monzoMerchantGroups.id}
+          )`,
       transactionsCount: count(monzoTransactions.id),
       lastTransactionDate: max(monzoTransactions.created),
     })
-    .from(monzoTransactions)
-    .where(
+    .from(monzoMerchantGroups)
+    .leftJoin(
+      monzoCategories,
+      eq(monzoMerchantGroups.categoryId, monzoCategories.id)
+    )
+    .leftJoin(
+      monzoTransactions,
       and(
-        eq(monzoTransactions.merchantGroupId, groupId),
-        eq(monzoTransactions.accountId, dbMerchantGroup.accountId)
+        eq(monzoTransactions.merchantGroupId, monzoMerchantGroups.id),
+        eq(monzoTransactions.accountId, monzoMerchantGroups.accountId)
       )
-    );
+    )
+    .where(eq(monzoMerchantGroups.id, groupId))
+    .groupBy(monzoMerchantGroups.id, monzoCategories.id)
+    .limit(1);
 
-  const merchantGroup: MerchantGroup = {
-    ...omit(dbMerchantGroup, ["accountId", "createdAt", "updatedAt"]),
-    merchants: merchants.map((merchant) => ({
-      ...omit(merchant, ["accountId", "createdAt", "updatedAt"]),
+  if (!_merchantGroup) {
+    return MiddlewareResponse.notFound("Merchant group not found");
+  }
+
+  return MiddlewareResponse.success({
+    ..._merchantGroup.merchantGroup,
+    merchants: _merchantGroup.merchants.map((merchant) => ({
+      ...merchant,
       address: merchant.address as MerchantAddress,
     })),
-    category: dbCategory
-      ? omit(dbCategory, ["accountId", "createdAt", "updatedAt"])
-      : null,
-    transactionsCount: dbTransactions.transactionsCount,
-    lastTransactionDate: dbTransactions.lastTransactionDate,
-  };
-
-  return MiddlewareResponse.success(merchantGroup);
+    category: _merchantGroup.category,
+    transactionsCount: _merchantGroup.transactionsCount,
+    lastTransactionDate: _merchantGroup.lastTransactionDate,
+  });
 });
 
 export const PUT = withAccount<
@@ -84,58 +103,79 @@ export const PUT = withAccount<
     return MiddlewareResponse.badRequest("Category is required");
   }
 
-  const [dbMerchantGroup] = await db
+  // First update the merchant group
+  const [updatedMerchantGroup] = await db
     .update(monzoMerchantGroups)
     .set({ categoryId })
     .where(eq(monzoMerchantGroups.id, groupId))
     .returning();
 
-  if (!dbMerchantGroup) {
+  if (!updatedMerchantGroup) {
     return MiddlewareResponse.notFound("Merchant group not found");
   }
 
-  const dbMerchants = await db
-    .select()
-    .from(monzoMerchants)
-    .where(eq(monzoMerchants.groupId, groupId));
-
-  let category = null;
-  if (dbMerchantGroup.categoryId) {
-    const [dbCategory] = await db
-      .select({
+  const [_merchantGroup] = await db
+    .select({
+      merchantGroup: {
+        id: monzoMerchantGroups.id,
+        name: monzoMerchantGroups.name,
+        logo: monzoMerchantGroups.logo,
+        emoji: monzoMerchantGroups.emoji,
+        disableFeedback: monzoMerchantGroups.disableFeedback,
+        atm: monzoMerchantGroups.atm,
+        monzo_category: monzoMerchantGroups.monzo_category,
+      },
+      category: {
         id: monzoCategories.id,
         name: monzoCategories.name,
         isMonzo: monzoCategories.isMonzo,
-      })
-      .from(monzoCategories)
-      .where(eq(monzoCategories.id, dbMerchantGroup.categoryId))
-      .limit(1);
-    category = dbCategory;
-  }
-
-  const [dbTransactions] = await db
-    .select({
+      },
+      merchants: sql<Merchant[]>`(
+            SELECT COALESCE(
+              json_agg(
+                CASE 
+                  WHEN m.id IS NOT NULL 
+                  THEN json_build_object(
+                    'id', m.id,
+                    'groupId', m.group_id,
+                    'online', m.online,
+                    'address', m.address
+                  )
+                  ELSE NULL
+                END
+              ) FILTER (WHERE m.id IS NOT NULL),
+              '[]'::json
+            )
+            FROM ${monzoMerchants} m
+            WHERE m.group_id = ${monzoMerchantGroups.id}
+          )`,
       transactionsCount: count(monzoTransactions.id),
       lastTransactionDate: max(monzoTransactions.created),
     })
-    .from(monzoTransactions)
-    .where(
+    .from(monzoMerchantGroups)
+    .leftJoin(
+      monzoCategories,
+      eq(monzoMerchantGroups.categoryId, monzoCategories.id)
+    )
+    .leftJoin(
+      monzoTransactions,
       and(
-        eq(monzoTransactions.merchantGroupId, groupId),
-        eq(monzoTransactions.accountId, dbMerchantGroup.accountId)
+        eq(monzoTransactions.merchantGroupId, monzoMerchantGroups.id),
+        eq(monzoTransactions.accountId, monzoMerchantGroups.accountId)
       )
-    );
+    )
+    .where(eq(monzoMerchantGroups.id, groupId))
+    .groupBy(monzoMerchantGroups.id, monzoCategories.id)
+    .limit(1);
 
-  const merchantGroup: MerchantGroup = {
-    ...omit(dbMerchantGroup, ["accountId", "createdAt", "updatedAt"]),
-    merchants: dbMerchants.map((dbMerchant) => ({
-      ...omit(dbMerchant, ["accountId", "createdAt", "updatedAt"]),
-      address: dbMerchant.address as MerchantAddress,
+  return MiddlewareResponse.success({
+    ..._merchantGroup.merchantGroup,
+    merchants: _merchantGroup.merchants.map((merchant) => ({
+      ...merchant,
+      address: merchant.address as MerchantAddress,
     })),
-    category,
-    transactionsCount: dbTransactions.transactionsCount,
-    lastTransactionDate: dbTransactions.lastTransactionDate,
-  };
-
-  return MiddlewareResponse.success(merchantGroup);
+    category: _merchantGroup.category,
+    transactionsCount: _merchantGroup.transactionsCount,
+    lastTransactionDate: _merchantGroup.lastTransactionDate,
+  });
 });

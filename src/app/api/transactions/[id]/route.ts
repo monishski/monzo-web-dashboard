@@ -1,5 +1,4 @@
 import { and, eq } from "drizzle-orm";
-import omit from "lodash/omit";
 
 import { withAccount } from "@/lib/api/middleware";
 import { MiddlewareResponse } from "@/lib/api/response";
@@ -18,9 +17,21 @@ export const GET = withAccount<
 >(async ({ context: { params }, accountId }) => {
   const { id: transactionId } = await params;
 
-  const [dbTransaction] = await db
+  const [_transaction] = await db
     .select({
-      transaction: monzoTransactions,
+      transaction: {
+        id: monzoTransactions.id,
+        created: monzoTransactions.created,
+        description: monzoTransactions.description,
+        amount: monzoTransactions.amount,
+        currency: monzoTransactions.currency,
+        fees: monzoTransactions.fees,
+        notes: monzoTransactions.notes,
+        monzo_category: monzoTransactions.monzo_category,
+        settled: monzoTransactions.settled,
+        localAmount: monzoTransactions.localAmount,
+        localCurrency: monzoTransactions.localCurrency,
+      },
       category: {
         id: monzoCategories.id,
         name: monzoCategories.name,
@@ -60,27 +71,21 @@ export const GET = withAccount<
     )
     .limit(1);
 
-  if (!dbTransaction) {
+  if (!_transaction) {
     return MiddlewareResponse.notFound("Transaction not found");
   }
 
   return MiddlewareResponse.success({
-    ...omit(dbTransaction.transaction, [
-      "accountId",
-      "createdAt",
-      "updatedAt",
-    ]),
-    fees: dbTransaction.transaction.fees as Record<string, unknown>,
-    amount: Number(dbTransaction.transaction.amount),
-    localAmount: Number(dbTransaction.transaction.localAmount),
-    merchant: dbTransaction.merchant
-      ? {
-          ...dbTransaction.merchant,
-          address: dbTransaction.merchant.address as MerchantAddress,
-        }
-      : null,
-    category: dbTransaction.category,
-    merchantGroup: dbTransaction.merchantGroup,
+    ..._transaction.transaction,
+    fees: _transaction.transaction.fees as Record<string, unknown>,
+    amount: Number(_transaction.transaction.amount),
+    localAmount: Number(_transaction.transaction.localAmount),
+    merchant: _transaction.merchant && {
+      ..._transaction.merchant,
+      address: _transaction.merchant.address as MerchantAddress,
+    },
+    category: _transaction.category,
+    merchantGroup: _transaction.merchantGroup,
   });
 });
 
@@ -107,9 +112,21 @@ export const PUT = withAccount<
     return MiddlewareResponse.notFound("Transaction not found");
   }
 
-  const [dbTransaction] = await db
+  const [_transaction] = await db
     .select({
-      transaction: monzoTransactions,
+      transaction: {
+        id: monzoTransactions.id,
+        created: monzoTransactions.created,
+        description: monzoTransactions.description,
+        amount: monzoTransactions.amount,
+        currency: monzoTransactions.currency,
+        fees: monzoTransactions.fees,
+        notes: monzoTransactions.notes,
+        monzo_category: monzoTransactions.monzo_category,
+        settled: monzoTransactions.settled,
+        localAmount: monzoTransactions.localAmount,
+        localCurrency: monzoTransactions.localCurrency,
+      },
       category: {
         id: monzoCategories.id,
         name: monzoCategories.name,
@@ -150,21 +167,15 @@ export const PUT = withAccount<
     .limit(1);
 
   return MiddlewareResponse.success({
-    ...omit(dbTransaction.transaction, [
-      "accountId",
-      "createdAt",
-      "updatedAt",
-    ]),
-    fees: dbTransaction.transaction.fees as Record<string, unknown>,
-    amount: Number(dbTransaction.transaction.amount),
-    localAmount: Number(dbTransaction.transaction.localAmount),
-    merchant: dbTransaction.merchant
-      ? {
-          ...dbTransaction.merchant,
-          address: dbTransaction.merchant.address as MerchantAddress,
-        }
-      : null,
-    category: dbTransaction.category,
-    merchantGroup: dbTransaction.merchantGroup,
+    ..._transaction.transaction,
+    fees: _transaction.transaction.fees as Record<string, unknown>,
+    amount: Number(_transaction.transaction.amount),
+    localAmount: Number(_transaction.transaction.localAmount),
+    merchant: _transaction.merchant && {
+      ..._transaction.merchant,
+      address: _transaction.merchant.address as MerchantAddress,
+    },
+    category: _transaction.category,
+    merchantGroup: _transaction.merchantGroup,
   });
 });
