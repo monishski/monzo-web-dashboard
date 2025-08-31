@@ -86,7 +86,7 @@ function MerchantsPage(): JSX.Element {
                 ? {
                     string: [
                       {
-                        by: "categoryId",
+                        by: "category",
                         values: categoryIds,
                       },
                     ],

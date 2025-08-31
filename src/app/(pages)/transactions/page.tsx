@@ -128,13 +128,13 @@ function TransactionsPage(): JSX.Element {
                       ...(merchantGroupIds.length > 0
                         ? [
                             {
-                              by: "merchantGroupId",
+                              by: "merchantGroup",
                               values: merchantGroupIds,
                             },
                           ]
                         : []),
                       ...(categoryIds.length > 0
-                        ? [{ by: "categoryId", values: categoryIds }]
+                        ? [{ by: "category", values: categoryIds }]
                         : []),
                     ],
                   }

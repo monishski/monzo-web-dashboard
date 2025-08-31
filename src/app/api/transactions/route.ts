@@ -28,13 +28,13 @@ const TRANSACTION_SORT_FIELDS = [
   "created",
   "amount",
   "localAmount",
-  "categoryId",
-  "merchantGroupId",
+  "category",
+  "merchantGroup",
 ] as const;
 const TRANSACTION_SEARCH_FIELDS = [
   "description",
-  "categoryId",
-  "merchantGroupId",
+  "category",
+  "merchantGroup",
 ] as const;
 const TRANSACTION_NUMERIC_FILTER_FIELDS = [
   "amount",
@@ -42,11 +42,10 @@ const TRANSACTION_NUMERIC_FILTER_FIELDS = [
 ] as const;
 const TRANSACTION_DATE_FILTER_FIELDS = ["created", "settled"] as const;
 const TRANSACTION_STRING_FILTER_FIELDS = [
-  "categoryId",
-  "merchantGroupId",
+  "category",
+  "merchantGroup",
 ] as const;
 
-// TODO: check if this cross-referecing of tables works with db.query
 const transactionsSortFieldMap: Record<
   (typeof TRANSACTION_SORT_FIELDS)[number],
   PgColumn
@@ -55,23 +54,23 @@ const transactionsSortFieldMap: Record<
   created: monzoTransactions.created,
   amount: monzoTransactions.amount,
   localAmount: monzoTransactions.localAmount,
-  categoryId: monzoCategories.name,
-  merchantGroupId: monzoMerchantGroups.name,
+  category: monzoCategories.name,
+  merchantGroup: monzoMerchantGroups.name,
 };
 const transactionsSearchFieldMap: Record<
   (typeof TRANSACTION_SEARCH_FIELDS)[number],
   PgColumn
 > = {
   description: monzoTransactions.description,
-  categoryId: monzoCategories.name,
-  merchantGroupId: monzoMerchantGroups.name,
+  category: monzoCategories.name,
+  merchantGroup: monzoMerchantGroups.name,
 };
 const transactionsStringFilterFieldMap: Record<
   (typeof TRANSACTION_STRING_FILTER_FIELDS)[number],
   PgColumn
 > = {
-  categoryId: monzoTransactions.categoryId,
-  merchantGroupId: monzoTransactions.merchantGroupId,
+  category: monzoTransactions.categoryId,
+  merchantGroup: monzoTransactions.merchantGroupId,
 };
 
 const TransactionsApiQuerySchema = z.object({

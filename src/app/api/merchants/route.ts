@@ -25,9 +25,9 @@ import {
 } from "@/lib/db";
 import type { Merchant, MerchantGroup } from "@/lib/types";
 
-const MERCHANT_GROUP_SORT_FIELDS = ["name", "categoryId"] as const;
+const MERCHANT_GROUP_SORT_FIELDS = ["name", "category"] as const;
 const MERCHANT_GROUP_SEARCH_FIELDS = ["name"] as const;
-const MERCHANT_GROUP_STRING_FILTER_FIELDS = ["categoryId"] as const;
+const MERCHANT_GROUP_STRING_FILTER_FIELDS = ["category"] as const;
 
 // TODO: this should be based on Client-Server types, NOT Server-DB
 const merchantGroupSortFieldMap: Record<
@@ -35,7 +35,7 @@ const merchantGroupSortFieldMap: Record<
   PgColumn
 > = {
   name: monzoMerchantGroups.name,
-  categoryId: monzoCategories.name,
+  category: monzoCategories.name,
 };
 const merchantGroupSearchFieldMap: Record<
   (typeof MERCHANT_GROUP_SEARCH_FIELDS)[number],
@@ -47,7 +47,7 @@ const merchantGroupStringFilterFieldMap: Record<
   (typeof MERCHANT_GROUP_STRING_FILTER_FIELDS)[number],
   PgColumn
 > = {
-  categoryId: monzoCategories.id,
+  category: monzoCategories.id,
 };
 
 const MerchantGroupsApiQuerySchema = z.object({
