@@ -1,0 +1,8 @@
+---
+description: Cursor Rules for interacting with Drizzles TypeScript ORM
+alwaysApply: false
+---
+
+- For consitency prefer fetching data using SQL-like querying over conventional (not SQL-like) relational query methods (e.g., db.query.[table].findMany({ with: { ... } }))
+- Use db.$count() operator when getting totals
+- Where possible use aggregation helper functions such as count/countDistinct/avg/avgDistinct/sum/sumDistinct/max/min over custom sql`` template for common cases

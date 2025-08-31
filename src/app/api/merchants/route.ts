@@ -1,4 +1,15 @@
-import { and, asc, desc, eq, ilike, inArray, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  countDistinct,
+  desc,
+  eq,
+  ilike,
+  inArray,
+  max,
+  sql,
+} from "drizzle-orm";
 import type { PgColumn } from "drizzle-orm/pg-core";
 import omit from "lodash/omit";
 import * as z from "zod";
@@ -122,10 +133,10 @@ export const POST = withAccount<PaginatedData<MerchantGroup>>(
     )`)
     );
 
-    const [[{ count }], tables] = await Promise.all([
+    const [[{ total }], tables] = await Promise.all([
       db
         .select({
-          count: sql<number>`count(distinct ${monzoMerchantGroups.id})`,
+          total: countDistinct(monzoMerchantGroups.id),
         })
         .from(monzoMerchantGroups)
         .leftJoin(
@@ -137,7 +148,11 @@ export const POST = withAccount<PaginatedData<MerchantGroup>>(
       db
         .select({
           merchantGroup: monzoMerchantGroups,
-          category: monzoCategories,
+          category: {
+            id: monzoCategories.id,
+            name: monzoCategories.name,
+            isMonzo: monzoCategories.isMonzo,
+          },
           merchants: sql<Merchant[]>`(
             SELECT COALESCE(
               json_agg(
@@ -157,25 +172,23 @@ export const POST = withAccount<PaginatedData<MerchantGroup>>(
             FROM ${monzoMerchants} m
             WHERE m.group_id = ${monzoMerchantGroups.id}
           )`,
-          transactionsCount: sql<number>`(
-            SELECT COUNT(*)
-            FROM ${monzoTransactions} t
-            WHERE t.merchant_group_id = ${monzoMerchantGroups.id}
-            AND t.account_id = ${accountId}
-          )`,
-          lastTransactionDate: sql<string | null>`(
-            SELECT MAX(t.created)
-            FROM ${monzoTransactions} t
-            WHERE t.merchant_group_id = ${monzoMerchantGroups.id}
-            AND t.account_id = ${accountId}
-          )`,
+          transactionsCount: count(monzoTransactions.id),
+          lastTransactionDate: max(monzoTransactions.created),
         })
         .from(monzoMerchantGroups)
         .leftJoin(
           monzoCategories,
           eq(monzoMerchantGroups.categoryId, monzoCategories.id)
         )
+        .leftJoin(
+          monzoTransactions,
+          and(
+            eq(monzoTransactions.merchantGroupId, monzoMerchantGroups.id),
+            eq(monzoTransactions.accountId, accountId)
+          )
+        )
         .where(and(...where))
+        .groupBy(monzoMerchantGroups.id, monzoCategories.id)
         .orderBy(...orderBy)
         .offset(offset)
         .limit(limit),
@@ -193,7 +206,7 @@ export const POST = withAccount<PaginatedData<MerchantGroup>>(
 
       return {
         ...omit(merchantGroup, ["accountId", "createdAt", "updatedAt"]),
-        category: category ? omit(category, ["accountId"]) : null,
+        category,
         merchants,
         transactionsCount,
         lastTransactionDate,
@@ -203,7 +216,7 @@ export const POST = withAccount<PaginatedData<MerchantGroup>>(
     return MiddlewareResponse.success({
       data: merchantGroups,
       pagination: {
-        total: count,
+        total,
         page,
         size: limit,
       },

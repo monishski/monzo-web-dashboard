@@ -1,9 +1,15 @@
-import { eq } from "drizzle-orm";
+import { and, count, eq, max } from "drizzle-orm";
+import omit from "lodash/omit";
 
 import { withAccount } from "@/lib/api/middleware";
 import { MiddlewareResponse } from "@/lib/api/response";
 import { db } from "@/lib/db";
-import { monzoMerchantGroups } from "@/lib/db/schema/monzo-schema";
+import {
+  monzoCategories,
+  monzoMerchantGroups,
+  monzoMerchants,
+  monzoTransactions,
+} from "@/lib/db/schema/monzo-schema";
 import type { MerchantAddress, MerchantGroup } from "@/lib/types";
 
 export const GET = withAccount<
@@ -12,45 +18,55 @@ export const GET = withAccount<
 >(async ({ context: { params } }) => {
   const { id: groupId } = await params;
 
-  const dbMerchantGroup = await db.query.monzoMerchantGroups.findFirst({
-    columns: {
-      accountId: false,
-      createdAt: false,
-      updatedAt: false,
-    },
-    with: {
-      merchants: {
-        columns: {
-          accountId: false,
-          createdAt: false,
-          updatedAt: false,
-        },
-      },
-      category: {
-        columns: {
-          accountId: false,
-          createdAt: false,
-          updatedAt: false,
-        },
-      },
-    },
-    where: eq(monzoMerchantGroups.id, groupId),
-  });
+  const [dbMerchantGroup] = await db
+    .select()
+    .from(monzoMerchantGroups)
+    .where(eq(monzoMerchantGroups.id, groupId))
+    .limit(1);
 
   if (!dbMerchantGroup) {
     return MiddlewareResponse.notFound("Merchant group not found");
   }
 
-  const { merchants, ...rest } = dbMerchantGroup;
+  const merchants = await db
+    .select()
+    .from(monzoMerchants)
+    .where(eq(monzoMerchants.groupId, groupId));
+
+  let dbCategory = null;
+  if (dbMerchantGroup.categoryId) {
+    const [category] = await db
+      .select()
+      .from(monzoCategories)
+      .where(eq(monzoCategories.id, dbMerchantGroup.categoryId))
+      .limit(1);
+    dbCategory = category;
+  }
+
+  const [dbTransactions] = await db
+    .select({
+      transactionsCount: count(monzoTransactions.id),
+      lastTransactionDate: max(monzoTransactions.created),
+    })
+    .from(monzoTransactions)
+    .where(
+      and(
+        eq(monzoTransactions.merchantGroupId, groupId),
+        eq(monzoTransactions.accountId, dbMerchantGroup.accountId)
+      )
+    );
+
   const merchantGroup: MerchantGroup = {
-    ...rest,
-    merchants: (Array.isArray(merchants) ? merchants : []).map(
-      (dbMerchant) => ({
-        ...dbMerchant,
-        address: dbMerchant.address as MerchantAddress,
-      })
-    ),
-    category: dbMerchantGroup.category,
+    ...omit(dbMerchantGroup, ["accountId", "createdAt", "updatedAt"]),
+    merchants: merchants.map((merchant) => ({
+      ...omit(merchant, ["accountId", "createdAt", "updatedAt"]),
+      address: merchant.address as MerchantAddress,
+    })),
+    category: dbCategory
+      ? omit(dbCategory, ["accountId", "createdAt", "updatedAt"])
+      : null,
+    transactionsCount: dbTransactions.transactionsCount,
+    lastTransactionDate: dbTransactions.lastTransactionDate,
   };
 
   return MiddlewareResponse.success(merchantGroup);
@@ -78,5 +94,48 @@ export const PUT = withAccount<
     return MiddlewareResponse.notFound("Merchant group not found");
   }
 
-  return MiddlewareResponse.success(dbMerchantGroup);
+  const dbMerchants = await db
+    .select()
+    .from(monzoMerchants)
+    .where(eq(monzoMerchants.groupId, groupId));
+
+  let category = null;
+  if (dbMerchantGroup.categoryId) {
+    const [dbCategory] = await db
+      .select({
+        id: monzoCategories.id,
+        name: monzoCategories.name,
+        isMonzo: monzoCategories.isMonzo,
+      })
+      .from(monzoCategories)
+      .where(eq(monzoCategories.id, dbMerchantGroup.categoryId))
+      .limit(1);
+    category = dbCategory;
+  }
+
+  const [dbTransactions] = await db
+    .select({
+      transactionsCount: count(monzoTransactions.id),
+      lastTransactionDate: max(monzoTransactions.created),
+    })
+    .from(monzoTransactions)
+    .where(
+      and(
+        eq(monzoTransactions.merchantGroupId, groupId),
+        eq(monzoTransactions.accountId, dbMerchantGroup.accountId)
+      )
+    );
+
+  const merchantGroup: MerchantGroup = {
+    ...omit(dbMerchantGroup, ["accountId", "createdAt", "updatedAt"]),
+    merchants: dbMerchants.map((dbMerchant) => ({
+      ...omit(dbMerchant, ["accountId", "createdAt", "updatedAt"]),
+      address: dbMerchant.address as MerchantAddress,
+    })),
+    category,
+    transactionsCount: dbTransactions.transactionsCount,
+    lastTransactionDate: dbTransactions.lastTransactionDate,
+  };
+
+  return MiddlewareResponse.success(merchantGroup);
 });
