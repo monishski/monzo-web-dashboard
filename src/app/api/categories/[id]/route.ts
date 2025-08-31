@@ -12,24 +12,26 @@ export const GET = withAccount<
 >(async ({ context: { params }, accountId }) => {
   const { id: categoryId } = await params;
 
-  const dbCategory = await db.query.monzoCategories.findFirst({
-    columns: { accountId: false },
-    where: and(
-      eq(monzoCategories.accountId, accountId),
-      eq(monzoCategories.id, categoryId)
-    ),
-  });
+  const [category] = await db
+    .select({
+      id: monzoCategories.id,
+      name: monzoCategories.name,
+      isMonzo: monzoCategories.isMonzo,
+      createdAt: monzoCategories.createdAt,
+      updatedAt: monzoCategories.updatedAt,
+    })
+    .from(monzoCategories)
+    .where(
+      and(
+        eq(monzoCategories.accountId, accountId),
+        eq(monzoCategories.id, categoryId)
+      )
+    )
+    .limit(1);
 
-  if (!dbCategory) {
+  if (!category) {
     return MiddlewareResponse.notFound("Category not found");
   }
-
-  const { createdAt: created, updatedAt: updated } = dbCategory;
-  const category: Category = {
-    ...dbCategory,
-    createdAt: created instanceof Date ? created.toISOString() : created,
-    updatedAt: updated instanceof Date ? updated.toISOString() : updated,
-  };
 
   return MiddlewareResponse.success(category);
 });
@@ -47,21 +49,24 @@ export const PUT = withAccount<
     return MiddlewareResponse.badRequest("Name is required");
   }
 
-  const existingCategory = await db.query.monzoCategories.findFirst({
-    where: and(
-      eq(monzoCategories.name, name.trim()),
-      eq(monzoCategories.accountId, accountId),
-      // Exclude the current category being updated
-      not(eq(monzoCategories.id, categoryId))
-    ),
-    columns: { id: true },
-  });
+  const [existingCategory] = await db
+    .select({ id: monzoCategories.id })
+    .from(monzoCategories)
+    .where(
+      and(
+        eq(monzoCategories.name, name.trim()),
+        eq(monzoCategories.accountId, accountId),
+        // Exclude the current category being updated
+        not(eq(monzoCategories.id, categoryId))
+      )
+    )
+    .limit(1);
 
   if (existingCategory) {
     return MiddlewareResponse.conflict("Category name already exists");
   }
 
-  const [dbCategory] = await db
+  const [category] = await db
     .update(monzoCategories)
     .set({ name })
     .where(
@@ -70,16 +75,13 @@ export const PUT = withAccount<
         eq(monzoCategories.accountId, accountId)
       )
     )
-    .returning();
-
-  const { createdAt: created, updatedAt: updated } = dbCategory;
-  const category: Category = {
-    id: dbCategory.id,
-    name: dbCategory.name,
-    isMonzo: dbCategory.isMonzo,
-    createdAt: created instanceof Date ? created.toISOString() : created,
-    updatedAt: updated instanceof Date ? updated.toISOString() : updated,
-  };
+    .returning({
+      id: monzoCategories.id,
+      name: monzoCategories.name,
+      isMonzo: monzoCategories.isMonzo,
+      createdAt: monzoCategories.createdAt,
+      updatedAt: monzoCategories.updatedAt,
+    });
 
   return MiddlewareResponse.success(category);
 });

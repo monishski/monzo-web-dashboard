@@ -17,8 +17,39 @@ export const GET = withAccount<
 >(async ({ context: { params }, accountId }) => {
   const { id: transactionId } = await params;
 
-  const dbTransaction = await db
-    .select()
+  const [_transaction] = await db
+    .select({
+      transaction: {
+        id: monzoTransactions.id,
+        created: monzoTransactions.created,
+        description: monzoTransactions.description,
+        amount: monzoTransactions.amount,
+        currency: monzoTransactions.currency,
+        fees: monzoTransactions.fees,
+        notes: monzoTransactions.notes,
+        monzo_category: monzoTransactions.monzo_category,
+        settled: monzoTransactions.settled,
+        localAmount: monzoTransactions.localAmount,
+        localCurrency: monzoTransactions.localCurrency,
+      },
+      category: {
+        id: monzoCategories.id,
+        name: monzoCategories.name,
+        isMonzo: monzoCategories.isMonzo,
+      },
+      merchant: {
+        id: monzoMerchants.id,
+        groupId: monzoMerchants.groupId,
+        online: monzoMerchants.online,
+        address: monzoMerchants.address,
+      },
+      merchantGroup: {
+        id: monzoMerchantGroups.id,
+        name: monzoMerchantGroups.name,
+        logo: monzoMerchantGroups.logo,
+        emoji: monzoMerchantGroups.emoji,
+      },
+    })
     .from(monzoTransactions)
     .leftJoin(
       monzoCategories,
@@ -40,56 +71,22 @@ export const GET = withAccount<
     )
     .limit(1);
 
-  if (!dbTransaction || dbTransaction.length === 0) {
+  if (!_transaction) {
     return MiddlewareResponse.notFound("Transaction not found");
   }
 
-  const {
-    monzo_transactions,
-    monzo_categories,
-    monzo_merchants,
-    monzo_merchant_groups,
-  } = dbTransaction[0];
-
-  const transaction: Transaction = {
-    ...monzo_transactions,
-    created:
-      monzo_transactions.created instanceof Date
-        ? monzo_transactions.created.toISOString()
-        : monzo_transactions.created,
-    settled:
-      monzo_transactions.settled instanceof Date
-        ? monzo_transactions.settled.toISOString()
-        : monzo_transactions.settled,
-    fees: monzo_transactions.fees as Record<string, unknown>,
-    amount: Number(monzo_transactions.amount),
-    localAmount: Number(monzo_transactions.localAmount),
-    merchant: monzo_merchants
-      ? {
-          id: monzo_merchants.id,
-          groupId: monzo_merchants.groupId,
-          online: monzo_merchants.online,
-          address: monzo_merchants.address as MerchantAddress,
-        }
-      : null,
-    category: monzo_categories
-      ? {
-          id: monzo_categories.id,
-          name: monzo_categories.name,
-          isMonzo: monzo_categories.isMonzo,
-        }
-      : null,
-    merchantGroup: monzo_merchant_groups
-      ? {
-          id: monzo_merchant_groups.id,
-          name: monzo_merchant_groups.name,
-          logo: monzo_merchant_groups.logo,
-          emoji: monzo_merchant_groups.emoji,
-        }
-      : null,
-  };
-
-  return MiddlewareResponse.success(transaction);
+  return MiddlewareResponse.success({
+    ..._transaction.transaction,
+    fees: _transaction.transaction.fees as Record<string, unknown>,
+    amount: Number(_transaction.transaction.amount),
+    localAmount: Number(_transaction.transaction.localAmount),
+    merchant: _transaction.merchant && {
+      ..._transaction.merchant,
+      address: _transaction.merchant.address as MerchantAddress,
+    },
+    category: _transaction.category,
+    merchantGroup: _transaction.merchantGroup,
+  });
 });
 
 export const PUT = withAccount<
@@ -105,36 +102,80 @@ export const PUT = withAccount<
     return MiddlewareResponse.badRequest("Category ID is required");
   }
 
-  const [dbTransaction] = await db
+  const [updatedTransaction] = await db
     .update(monzoTransactions)
     .set({ categoryId })
     .where(eq(monzoTransactions.id, transactionId))
     .returning();
 
-  if (!dbTransaction) {
+  if (!updatedTransaction) {
     return MiddlewareResponse.notFound("Transaction not found");
   }
 
-  const {
-    createdAt: _createdAt,
-    updatedAt: _updatedAt,
-    ...rest
-  } = dbTransaction;
+  const [_transaction] = await db
+    .select({
+      transaction: {
+        id: monzoTransactions.id,
+        created: monzoTransactions.created,
+        description: monzoTransactions.description,
+        amount: monzoTransactions.amount,
+        currency: monzoTransactions.currency,
+        fees: monzoTransactions.fees,
+        notes: monzoTransactions.notes,
+        monzo_category: monzoTransactions.monzo_category,
+        settled: monzoTransactions.settled,
+        localAmount: monzoTransactions.localAmount,
+        localCurrency: monzoTransactions.localCurrency,
+      },
+      category: {
+        id: monzoCategories.id,
+        name: monzoCategories.name,
+        isMonzo: monzoCategories.isMonzo,
+      },
+      merchant: {
+        id: monzoMerchants.id,
+        groupId: monzoMerchants.groupId,
+        online: monzoMerchants.online,
+        address: monzoMerchants.address,
+      },
+      merchantGroup: {
+        id: monzoMerchantGroups.id,
+        name: monzoMerchantGroups.name,
+        logo: monzoMerchantGroups.logo,
+        emoji: monzoMerchantGroups.emoji,
+      },
+    })
+    .from(monzoTransactions)
+    .leftJoin(
+      monzoCategories,
+      eq(monzoTransactions.categoryId, monzoCategories.id)
+    )
+    .leftJoin(
+      monzoMerchants,
+      eq(monzoTransactions.merchantId, monzoMerchants.id)
+    )
+    .leftJoin(
+      monzoMerchantGroups,
+      eq(monzoTransactions.merchantGroupId, monzoMerchantGroups.id)
+    )
+    .where(
+      and(
+        eq(monzoTransactions.id, transactionId),
+        eq(monzoTransactions.accountId, _accountId)
+      )
+    )
+    .limit(1);
 
-  const transaction: Transaction = {
-    ...rest,
-    created:
-      dbTransaction.created instanceof Date
-        ? dbTransaction.created.toISOString()
-        : dbTransaction.created,
-    settled:
-      dbTransaction.settled instanceof Date
-        ? dbTransaction.settled.toISOString()
-        : null,
-    amount: Number(dbTransaction.amount),
-    localAmount: Number(dbTransaction.localAmount),
-    fees: dbTransaction.fees as Record<string, unknown>,
-  };
-
-  return MiddlewareResponse.success(transaction);
+  return MiddlewareResponse.success({
+    ..._transaction.transaction,
+    fees: _transaction.transaction.fees as Record<string, unknown>,
+    amount: Number(_transaction.transaction.amount),
+    localAmount: Number(_transaction.transaction.localAmount),
+    merchant: _transaction.merchant && {
+      ..._transaction.merchant,
+      address: _transaction.merchant.address as MerchantAddress,
+    },
+    category: _transaction.category,
+    merchantGroup: _transaction.merchantGroup,
+  });
 });

@@ -1,10 +1,19 @@
-import { eq } from "drizzle-orm";
+import { and, count, eq, max, sql } from "drizzle-orm";
 
 import { withAccount } from "@/lib/api/middleware";
 import { MiddlewareResponse } from "@/lib/api/response";
 import { db } from "@/lib/db";
-import { monzoMerchantGroups } from "@/lib/db/schema/monzo-schema";
-import type { MerchantAddress, MerchantGroup } from "@/lib/types";
+import {
+  monzoCategories,
+  monzoMerchantGroups,
+  monzoMerchants,
+  monzoTransactions,
+} from "@/lib/db/schema/monzo-schema";
+import type {
+  Merchant,
+  MerchantAddress,
+  MerchantGroup,
+} from "@/lib/types";
 
 export const GET = withAccount<
   MerchantGroup,
@@ -12,48 +21,74 @@ export const GET = withAccount<
 >(async ({ context: { params } }) => {
   const { id: groupId } = await params;
 
-  const dbMerchantGroup = await db.query.monzoMerchantGroups.findFirst({
-    columns: {
-      accountId: false,
-      createdAt: false,
-      updatedAt: false,
-    },
-    with: {
-      merchants: {
-        columns: {
-          accountId: false,
-          createdAt: false,
-          updatedAt: false,
-        },
+  const [_merchantGroup] = await db
+    .select({
+      merchantGroup: {
+        id: monzoMerchantGroups.id,
+        name: monzoMerchantGroups.name,
+        logo: monzoMerchantGroups.logo,
+        emoji: monzoMerchantGroups.emoji,
+        disableFeedback: monzoMerchantGroups.disableFeedback,
+        atm: monzoMerchantGroups.atm,
+        monzo_category: monzoMerchantGroups.monzo_category,
       },
       category: {
-        columns: {
-          accountId: false,
-          createdAt: false,
-          updatedAt: false,
-        },
+        id: monzoCategories.id,
+        name: monzoCategories.name,
+        isMonzo: monzoCategories.isMonzo,
       },
-    },
-    where: eq(monzoMerchantGroups.id, groupId),
-  });
+      merchants: sql<Merchant[]>`(
+            SELECT COALESCE(
+              json_agg(
+                CASE 
+                  WHEN m.id IS NOT NULL 
+                  THEN json_build_object(
+                    'id', m.id,
+                    'groupId', m.group_id,
+                    'online', m.online,
+                    'address', m.address
+                  )
+                  ELSE NULL
+                END
+              ) FILTER (WHERE m.id IS NOT NULL),
+              '[]'::json
+            )
+            FROM ${monzoMerchants} m
+            WHERE m.group_id = ${monzoMerchantGroups.id}
+          )`,
+      transactionsCount: count(monzoTransactions.id),
+      lastTransactionDate: max(monzoTransactions.created),
+    })
+    .from(monzoMerchantGroups)
+    .leftJoin(
+      monzoCategories,
+      eq(monzoMerchantGroups.categoryId, monzoCategories.id)
+    )
+    .leftJoin(
+      monzoTransactions,
+      and(
+        eq(monzoTransactions.merchantGroupId, monzoMerchantGroups.id),
+        eq(monzoTransactions.accountId, monzoMerchantGroups.accountId)
+      )
+    )
+    .where(eq(monzoMerchantGroups.id, groupId))
+    .groupBy(monzoMerchantGroups.id, monzoCategories.id)
+    .limit(1);
 
-  if (!dbMerchantGroup) {
+  if (!_merchantGroup) {
     return MiddlewareResponse.notFound("Merchant group not found");
   }
 
-  const { merchants, ...rest } = dbMerchantGroup;
-  const merchantGroup: MerchantGroup = {
-    ...rest,
-    merchants: (Array.isArray(merchants) ? merchants : []).map(
-      (dbMerchant) => ({
-        ...dbMerchant,
-        address: dbMerchant.address as MerchantAddress,
-      })
-    ),
-    category: dbMerchantGroup.category,
-  };
-
-  return MiddlewareResponse.success(merchantGroup);
+  return MiddlewareResponse.success({
+    ..._merchantGroup.merchantGroup,
+    merchants: _merchantGroup.merchants.map((merchant) => ({
+      ...merchant,
+      address: merchant.address as MerchantAddress,
+    })),
+    category: _merchantGroup.category,
+    transactionsCount: _merchantGroup.transactionsCount,
+    lastTransactionDate: _merchantGroup.lastTransactionDate,
+  });
 });
 
 export const PUT = withAccount<
@@ -68,15 +103,79 @@ export const PUT = withAccount<
     return MiddlewareResponse.badRequest("Category is required");
   }
 
-  const [dbMerchantGroup] = await db
+  // First update the merchant group
+  const [updatedMerchantGroup] = await db
     .update(monzoMerchantGroups)
     .set({ categoryId })
     .where(eq(monzoMerchantGroups.id, groupId))
     .returning();
 
-  if (!dbMerchantGroup) {
+  if (!updatedMerchantGroup) {
     return MiddlewareResponse.notFound("Merchant group not found");
   }
 
-  return MiddlewareResponse.success(dbMerchantGroup);
+  const [_merchantGroup] = await db
+    .select({
+      merchantGroup: {
+        id: monzoMerchantGroups.id,
+        name: monzoMerchantGroups.name,
+        logo: monzoMerchantGroups.logo,
+        emoji: monzoMerchantGroups.emoji,
+        disableFeedback: monzoMerchantGroups.disableFeedback,
+        atm: monzoMerchantGroups.atm,
+        monzo_category: monzoMerchantGroups.monzo_category,
+      },
+      category: {
+        id: monzoCategories.id,
+        name: monzoCategories.name,
+        isMonzo: monzoCategories.isMonzo,
+      },
+      merchants: sql<Merchant[]>`(
+            SELECT COALESCE(
+              json_agg(
+                CASE 
+                  WHEN m.id IS NOT NULL 
+                  THEN json_build_object(
+                    'id', m.id,
+                    'groupId', m.group_id,
+                    'online', m.online,
+                    'address', m.address
+                  )
+                  ELSE NULL
+                END
+              ) FILTER (WHERE m.id IS NOT NULL),
+              '[]'::json
+            )
+            FROM ${monzoMerchants} m
+            WHERE m.group_id = ${monzoMerchantGroups.id}
+          )`,
+      transactionsCount: count(monzoTransactions.id),
+      lastTransactionDate: max(monzoTransactions.created),
+    })
+    .from(monzoMerchantGroups)
+    .leftJoin(
+      monzoCategories,
+      eq(monzoMerchantGroups.categoryId, monzoCategories.id)
+    )
+    .leftJoin(
+      monzoTransactions,
+      and(
+        eq(monzoTransactions.merchantGroupId, monzoMerchantGroups.id),
+        eq(monzoTransactions.accountId, monzoMerchantGroups.accountId)
+      )
+    )
+    .where(eq(monzoMerchantGroups.id, groupId))
+    .groupBy(monzoMerchantGroups.id, monzoCategories.id)
+    .limit(1);
+
+  return MiddlewareResponse.success({
+    ..._merchantGroup.merchantGroup,
+    merchants: _merchantGroup.merchants.map((merchant) => ({
+      ...merchant,
+      address: merchant.address as MerchantAddress,
+    })),
+    category: _merchantGroup.category,
+    transactionsCount: _merchantGroup.transactionsCount,
+    lastTransactionDate: _merchantGroup.lastTransactionDate,
+  });
 });

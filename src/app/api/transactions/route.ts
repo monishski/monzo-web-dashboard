@@ -2,11 +2,11 @@ import {
   and,
   asc,
   between,
+  countDistinct,
   desc,
   eq,
   ilike,
   inArray,
-  sql,
 } from "drizzle-orm";
 import type { PgColumn } from "drizzle-orm/pg-core";
 import * as z from "zod";
@@ -28,13 +28,13 @@ const TRANSACTION_SORT_FIELDS = [
   "created",
   "amount",
   "localAmount",
-  "categoryId",
-  "merchantGroupId",
+  "category",
+  "merchantGroup",
 ] as const;
 const TRANSACTION_SEARCH_FIELDS = [
   "description",
-  "categoryId",
-  "merchantGroupId",
+  "category",
+  "merchantGroup",
 ] as const;
 const TRANSACTION_NUMERIC_FILTER_FIELDS = [
   "amount",
@@ -42,8 +42,8 @@ const TRANSACTION_NUMERIC_FILTER_FIELDS = [
 ] as const;
 const TRANSACTION_DATE_FILTER_FIELDS = ["created", "settled"] as const;
 const TRANSACTION_STRING_FILTER_FIELDS = [
-  "categoryId",
-  "merchantGroupId",
+  "category",
+  "merchantGroup",
 ] as const;
 
 const transactionsSortFieldMap: Record<
@@ -54,23 +54,23 @@ const transactionsSortFieldMap: Record<
   created: monzoTransactions.created,
   amount: monzoTransactions.amount,
   localAmount: monzoTransactions.localAmount,
-  categoryId: monzoCategories.name,
-  merchantGroupId: monzoMerchantGroups.name,
+  category: monzoCategories.name,
+  merchantGroup: monzoMerchantGroups.name,
 };
 const transactionsSearchFieldMap: Record<
   (typeof TRANSACTION_SEARCH_FIELDS)[number],
   PgColumn
 > = {
   description: monzoTransactions.description,
-  categoryId: monzoCategories.name,
-  merchantGroupId: monzoMerchantGroups.name,
+  category: monzoCategories.name,
+  merchantGroup: monzoMerchantGroups.name,
 };
 const transactionsStringFilterFieldMap: Record<
   (typeof TRANSACTION_STRING_FILTER_FIELDS)[number],
   PgColumn
 > = {
-  categoryId: monzoCategories.id,
-  merchantGroupId: monzoMerchantGroups.id,
+  category: monzoTransactions.categoryId,
+  merchantGroup: monzoTransactions.merchantGroupId,
 };
 
 const TransactionsApiQuerySchema = z.object({
@@ -105,8 +105,10 @@ const TransactionsApiQuerySchema = z.object({
         .array(
           z.object({
             by: z.enum(TRANSACTION_DATE_FILTER_FIELDS),
-            from: z.iso.datetime(),
-            to: z.iso.datetime(),
+            from: z
+              .string()
+              .transform((val) => new Date(val).toISOString()),
+            to: z.string().transform((val) => new Date(val).toISOString()),
           })
         )
         .optional(),
@@ -132,58 +134,105 @@ export const POST = withAccount<PaginatedData<Transaction>>(
     // Pagination
     const offset = (page - 1) * limit;
 
-    const where = [
-      eq(monzoTransactions.accountId, accountId),
-      // Search
-      ...(search
-        ? [
-            ilike(
-              transactionsSearchFieldMap[search.by],
-              `%${search.value}%`
-            ),
-          ]
-        : []),
-      // Numeric filters
-      ...(filters?.numeric || []).map((numericFilter) =>
-        between(
-          monzoTransactions[numericFilter.by],
-          numericFilter.from.toString(),
-          numericFilter.to.toString()
-        )
-      ),
-      // Date filters
-      ...(filters?.date || []).map((dateFilter) =>
-        between(
-          monzoTransactions[dateFilter.by],
-          new Date(dateFilter.from),
-          new Date(dateFilter.to)
-        )
-      ),
-      // String filters
-      ...(filters?.string || []).map((stringFilter) =>
-        inArray(
-          transactionsStringFilterFieldMap[stringFilter.by],
-          stringFilter.values
-        )
-      ),
-    ];
+    const where = [eq(monzoTransactions.accountId, accountId)];
+
+    // Search
+    if (search) {
+      where.push(
+        ilike(transactionsSearchFieldMap[search.by], `%${search.value}%`)
+      );
+    }
+
+    // Numeric filters
+    if (filters?.numeric) {
+      filters.numeric.forEach((numericFilter) => {
+        where.push(
+          between(
+            monzoTransactions[numericFilter.by],
+            numericFilter.from.toString(),
+            numericFilter.to.toString()
+          )
+        );
+      });
+    }
+
+    // Date filters
+    if (filters?.date) {
+      filters.date.forEach((dateFilter) => {
+        where.push(
+          between(
+            monzoTransactions[dateFilter.by],
+            dateFilter.from,
+            dateFilter.to
+          )
+        );
+      });
+    }
+
+    // String filters
+    if (filters?.string) {
+      filters.string.forEach((stringFilter) => {
+        where.push(
+          inArray(
+            transactionsStringFilterFieldMap[stringFilter.by],
+            stringFilter.values
+          )
+        );
+      });
+    }
 
     // Sorting
-    const orderBy =
-      sort && sort.length > 0
-        ? [
-            ...sort.map((s) =>
-              s.order === "asc"
-                ? asc(transactionsSortFieldMap[s.by])
-                : desc(transactionsSortFieldMap[s.by])
-            ),
-            desc(monzoTransactions.created),
-          ]
-        : [desc(monzoTransactions.created)];
+    const orderBy = [];
+    if (sort && sort.length > 0) {
+      sort.forEach((s) => {
+        orderBy.push(
+          s.order === "asc"
+            ? asc(transactionsSortFieldMap[s.by])
+            : desc(transactionsSortFieldMap[s.by])
+        );
+      });
+    }
+    orderBy.push(desc(monzoTransactions.created));
 
-    const [dbTransactions, [{ count }]] = await Promise.all([
+    const [[{ total }], transactions] = await Promise.all([
       db
-        .select()
+        .select({ total: countDistinct(monzoTransactions.id) })
+        .from(monzoTransactions)
+        .where(and(...where)),
+
+      db
+        .select({
+          transaction: {
+            id: monzoTransactions.id,
+            created: monzoTransactions.created,
+            description: monzoTransactions.description,
+            amount: monzoTransactions.amount,
+            currency: monzoTransactions.currency,
+            fees: monzoTransactions.fees,
+            notes: monzoTransactions.notes,
+            monzo_category: monzoTransactions.monzo_category,
+            settled: monzoTransactions.settled,
+            localAmount: monzoTransactions.localAmount,
+            localCurrency: monzoTransactions.localCurrency,
+          },
+          category: {
+            id: monzoCategories.id,
+            name: monzoCategories.name,
+            isMonzo: monzoCategories.isMonzo,
+          },
+          merchant: {
+            id: monzoMerchants.id,
+            groupId: monzoMerchants.groupId,
+            online: monzoMerchants.online,
+            address: monzoMerchants.address,
+          },
+          merchantGroup: {
+            id: monzoMerchantGroups.id,
+            name: monzoMerchantGroups.name,
+            logo: monzoMerchantGroups.logo,
+            emoji: monzoMerchantGroups.emoji,
+          },
+        })
         .from(monzoTransactions)
         .leftJoin(
           monzoCategories,
@@ -201,79 +250,28 @@ export const POST = withAccount<PaginatedData<Transaction>>(
         .orderBy(...orderBy)
         .offset(offset)
         .limit(limit),
-
-      db
-        .select({ count: sql<number>`count(*)` })
-        .from(monzoTransactions)
-        .leftJoin(
-          monzoCategories,
-          eq(monzoTransactions.categoryId, monzoCategories.id)
-        )
-        .leftJoin(
-          monzoMerchants,
-          eq(monzoTransactions.merchantId, monzoMerchants.id)
-        )
-        .leftJoin(
-          monzoMerchantGroups,
-          eq(monzoTransactions.merchantGroupId, monzoMerchantGroups.id)
-        )
-        .where(and(...where)),
     ]);
 
-    // Transform the database results into the expected format
-    const transactions: Transaction[] = dbTransactions.map(
-      (dbTransaction) => {
-        const {
-          monzo_transactions,
-          monzo_categories,
-          monzo_merchants,
-          monzo_merchant_groups,
-        } = dbTransaction;
+    return MiddlewareResponse.success({
+      data: transactions.map((_transaction) => {
+        const { transaction, category, merchant, merchantGroup } =
+          _transaction;
 
         return {
-          ...monzo_transactions,
-          created:
-            monzo_transactions.created instanceof Date
-              ? monzo_transactions.created.toISOString()
-              : monzo_transactions.created,
-          settled:
-            monzo_transactions.settled instanceof Date
-              ? monzo_transactions.settled.toISOString()
-              : monzo_transactions.settled,
-          fees: monzo_transactions.fees as Record<string, unknown>,
-          amount: Number(monzo_transactions.amount),
-          localAmount: Number(monzo_transactions.localAmount),
-          merchant: monzo_merchants
-            ? {
-                id: monzo_merchants.id,
-                groupId: monzo_merchants.groupId,
-                online: monzo_merchants.online,
-                address: monzo_merchants.address as MerchantAddress,
-              }
-            : null,
-          category: monzo_categories
-            ? {
-                id: monzo_categories.id,
-                name: monzo_categories.name,
-                isMonzo: monzo_categories.isMonzo,
-              }
-            : null,
-          merchantGroup: monzo_merchant_groups
-            ? {
-                id: monzo_merchant_groups.id,
-                name: monzo_merchant_groups.name,
-                logo: monzo_merchant_groups.logo,
-                emoji: monzo_merchant_groups.emoji,
-              }
-            : null,
+          ...transaction,
+          fees: transaction.fees as Record<string, unknown>,
+          amount: Number(transaction.amount),
+          localAmount: Number(transaction.localAmount),
+          merchant: merchant && {
+            ...merchant,
+            address: merchant.address as MerchantAddress,
+          },
+          category,
+          merchantGroup,
         };
-      }
-    );
-
-    return MiddlewareResponse.success({
-      data: transactions,
+      }),
       pagination: {
-        total: count,
+        total,
         page,
         size: limit,
       },

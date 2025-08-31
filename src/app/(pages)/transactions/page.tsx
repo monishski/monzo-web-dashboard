@@ -8,10 +8,9 @@ import { parseAsArrayOf, parseAsString, useQueryStates } from "nuqs";
 import { DayPicker } from "react-day-picker";
 
 import type { PaginatedData } from "@/lib/api/types";
-import type { Category, Transaction } from "@/lib/types";
+import type { Account, Category, Transaction } from "@/lib/types";
 
-const DEFAULT_START_DATE = "2025-01-01T00:00:00Z";
-const DEFAULT_END_DATE = "2025-12-31T23:59:59Z";
+const DEFAULT_END_DATE = new Date().toISOString();
 
 function TransactionsPage(): JSX.Element {
   const [filters, setFilters] = useQueryStates(
@@ -28,10 +27,12 @@ function TransactionsPage(): JSX.Element {
 
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
+  const [account, setAccount] = useState<Account | null>(null);
   const [transactions, setTransactions] =
     useState<PaginatedData<Transaction> | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [accountLoading, setAccountLoading] = useState(true);
   const [categories, setCategories] = useState<
     { id: string; name: string }[]
   >([]);
@@ -48,17 +49,37 @@ function TransactionsPage(): JSX.Element {
     };
   }, [description]);
 
+  // Fetch account on mount
+  useEffect(() => {
+    const fetchAccount = async (): Promise<void> => {
+      try {
+        const accountRes = await fetch("/api/accounts");
+        if (accountRes.ok) {
+          const { data: accountData } = (await accountRes.json()) as {
+            data: Account;
+          };
+          setAccount(accountData);
+        }
+      } catch {
+        // Optionally handle error
+      } finally {
+        setAccountLoading(false);
+      }
+    };
+    fetchAccount();
+  }, []);
+
   // Fetch categories on mount
   useEffect(() => {
     const fetchCategories = async (): Promise<void> => {
       try {
-        const res = await fetch("/api/categories");
-        if (!res.ok) throw new Error("Failed to fetch categories");
-        const { data: categories } = (await res.json()) as {
-          data: Category[];
-        };
-
-        setCategories(categories);
+        const categoriesRes = await fetch("/api/categories");
+        if (categoriesRes.ok) {
+          const { data: categories } = (await categoriesRes.json()) as {
+            data: Category[];
+          };
+          setCategories(categories);
+        }
       } catch {
         // Optionally handle error
       }
@@ -67,6 +88,9 @@ function TransactionsPage(): JSX.Element {
   }, []);
 
   useEffect(() => {
+    // Don't fetch transactions until account is loaded
+    if (accountLoading) return;
+
     const fetchTransactions = async (): Promise<void> => {
       setLoading(true);
       setError(null);
@@ -94,12 +118,8 @@ function TransactionsPage(): JSX.Element {
                   by: "created",
                   from: startDate
                     ? startDate.toISOString()
-                    : // TODO: this should be account creation date
-                      DEFAULT_START_DATE,
-                  to: endDate
-                    ? endDate.toISOString()
-                    : // TODO: this should be today
-                      DEFAULT_END_DATE,
+                    : account?.created || new Date().toISOString(),
+                  to: endDate ? endDate.toISOString() : DEFAULT_END_DATE,
                 },
               ],
               ...(merchantGroupIds.length > 0 || categoryIds.length > 0
@@ -108,13 +128,13 @@ function TransactionsPage(): JSX.Element {
                       ...(merchantGroupIds.length > 0
                         ? [
                             {
-                              by: "merchantGroupId",
+                              by: "merchantGroup",
                               values: merchantGroupIds,
                             },
                           ]
                         : []),
                       ...(categoryIds.length > 0
-                        ? [{ by: "categoryId", values: categoryIds }]
+                        ? [{ by: "category", values: categoryIds }]
                         : []),
                     ],
                   }
@@ -152,6 +172,8 @@ function TransactionsPage(): JSX.Element {
     categoryIds,
     debouncedDescription,
     merchantGroupIds,
+    account,
+    accountLoading,
   ]);
 
   // Handler for multi-select
@@ -242,11 +264,15 @@ function TransactionsPage(): JSX.Element {
       </div>
       <div>
         <label>
-          Start Date: {startDate?.toISOString() ?? DEFAULT_START_DATE}
+          Start Date:{" "}
+          {startDate?.toISOString() ?? account?.created ?? "Loading..."}
         </label>
         <DayPicker
           mode="single"
-          selected={startDate ?? new Date(DEFAULT_START_DATE)}
+          selected={
+            startDate ??
+            (account?.created ? new Date(account.created) : new Date())
+          }
           onSelect={setStartDate}
         />
       </div>
@@ -274,7 +300,8 @@ function TransactionsPage(): JSX.Element {
           ))}
         </select>
       </div>
-      {loading && <div>Loading...</div>}
+      {accountLoading && <div>Loading account...</div>}
+      {loading && <div>Loading transactions...</div>}
       {error && <div style={{ color: "red" }}>{error}</div>}
       {transactions?.pagination.total}
       <table>

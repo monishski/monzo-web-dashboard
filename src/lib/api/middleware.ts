@@ -19,10 +19,7 @@ export function withErrorHandling<Data, Context = unknown>(
     context: Context
   ) => Promise<ApiResponse<Data>>
 ): Handler<Data, Context> {
-  return async (
-    request,
-    context
-  ): Promise<NextResponse<ApiResponse<Data>>> => {
+  return async (request, context) => {
     try {
       const res = await handler(request, context);
 
@@ -59,9 +56,7 @@ export function withAuth<Data, Context = unknown>(
     userId: string;
   }) => Promise<ApiResponse<Data>>
 ): Handler<Data, Context> {
-  return withErrorHandling(async function (request, context): Promise<
-    ApiResponse<Data>
-  > {
+  return withErrorHandling(async function (request, context) {
     const session = await authServer.api.getSession({
       headers: request.headers,
     });
@@ -83,7 +78,7 @@ export function withAuthAccessToken<Data, Context = unknown>(
     accessToken: string;
   }) => Promise<ApiResponse<Data>>
 ): Handler<Data, Context> {
-  return withAuth(async function (args): Promise<ApiResponse<Data>> {
+  return withAuth(async function (args) {
     const { userId } = args;
 
     const { accessToken } = await authServer.api.getAccessToken({
@@ -106,7 +101,7 @@ export function withAccount<Data, Context = unknown>(
     accountId: string;
   }) => Promise<ApiResponse<Data>>
 ): Handler<Data, Context> {
-  return withAuth(async function (args): Promise<ApiResponse<Data>> {
+  return withAuth(async function (args) {
     const { userId } = args;
 
     const account = await db.query.monzoAccounts.findFirst({
