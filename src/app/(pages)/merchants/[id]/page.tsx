@@ -99,7 +99,9 @@ async function MerchantPage({
         </div>
         <button type="submit">Update</button>
       </form>
-      <Link href={`/merchants/${id}/transactions`}>Merchants</Link>
+      <Link href={`/transactions?merchantGroupIds=${id}`}>
+        Transactions
+      </Link>
     </div>
   );
 }

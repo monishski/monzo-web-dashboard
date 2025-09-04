@@ -1,51 +1,206 @@
-import { eq } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  countDistinct,
+  desc,
+  eq,
+  ilike,
+  inArray,
+  max,
+  sql,
+} from "drizzle-orm";
+import type { PgColumn } from "drizzle-orm/pg-core";
 
 import { withAccount } from "@/lib/api/middleware";
+import { createApiQuerySchema } from "@/lib/api/query-schema";
 import { MiddlewareResponse } from "@/lib/api/response";
-import { db } from "@/lib/db";
-import { monzoMerchants } from "@/lib/db/schema/monzo-schema";
+import type { PaginatedData } from "@/lib/api/types";
+import {
+  db,
+  monzoCategories,
+  monzoMerchantGroups,
+  monzoMerchants,
+  monzoTransactions,
+} from "@/lib/db";
 import type { Merchant, MerchantGroup } from "@/lib/types";
 
-export const GET = withAccount<MerchantGroup[]>(async ({ accountId }) => {
-  const dbMerchantGroups = await db.query.monzoMerchantGroups.findMany({
-    columns: {
-      categoryId: false,
-      accountId: false,
-      createdAt: false,
-      updatedAt: false,
-    },
-    with: {
-      merchants: {
-        columns: {
-          accountId: false,
-          createdAt: false,
-          updatedAt: false,
-        },
-      },
-      category: {
-        columns: {
-          accountId: false,
-          createdAt: false,
-          updatedAt: false,
-        },
-      },
-    },
-    where: eq(monzoMerchants.accountId, accountId),
-  });
+const MERCHANT_GROUP_SORT_FIELDS = ["name", "category"] as const;
+const MERCHANT_GROUP_SEARCH_FIELDS = ["name"] as const;
+const MERCHANT_GROUP_STRING_FILTER_FIELDS = ["category"] as const;
 
-  const merchantGroups: MerchantGroup[] = dbMerchantGroups.map(
-    (dbMerchantGroup) => {
-      const { merchants: dbMerchants } = dbMerchantGroup;
+// TODO: this should be based on Client-Server types, NOT Server-DB
+const merchantGroupSortFieldMap: Record<
+  (typeof MERCHANT_GROUP_SORT_FIELDS)[number],
+  PgColumn
+> = {
+  name: monzoMerchantGroups.name,
+  category: monzoCategories.name,
+};
+const merchantGroupSearchFieldMap: Record<
+  (typeof MERCHANT_GROUP_SEARCH_FIELDS)[number],
+  PgColumn
+> = {
+  name: monzoMerchantGroups.name,
+};
+const merchantGroupStringFilterFieldMap: Record<
+  (typeof MERCHANT_GROUP_STRING_FILTER_FIELDS)[number],
+  PgColumn
+> = {
+  category: monzoCategories.id,
+};
 
-      return {
-        ...dbMerchantGroup,
-        merchants: dbMerchants.map((dbMerchant) => ({
-          ...dbMerchant,
-          address: dbMerchant.address as Merchant["address"],
-        })),
-      };
-    }
-  );
-
-  return MiddlewareResponse.success(merchantGroups);
+const MerchantGroupsApiQuerySchema = createApiQuerySchema({
+  sort: MERCHANT_GROUP_SORT_FIELDS,
+  search: MERCHANT_GROUP_SEARCH_FIELDS,
+  filters: {
+    string: MERCHANT_GROUP_STRING_FILTER_FIELDS,
+  },
 });
+
+export const POST = withAccount<PaginatedData<MerchantGroup>>(
+  async ({ accountId, request }) => {
+    const body = await request.json();
+
+    const { page, limit, sort, search, filters } =
+      MerchantGroupsApiQuerySchema.parse(body);
+
+    // Pagination
+    const offset = (page - 1) * limit;
+
+    const where = [eq(monzoMerchantGroups.accountId, accountId)];
+
+    // Search
+    if (search) {
+      where.push(
+        ilike(merchantGroupSearchFieldMap[search.by], `%${search.value}%`)
+      );
+    }
+
+    // String Filters
+    if (filters?.string) {
+      filters.string.forEach((stringFilter) => {
+        where.push(
+          inArray(
+            merchantGroupStringFilterFieldMap[stringFilter.by],
+            stringFilter.values
+          )
+        );
+      });
+    }
+
+    // Sort
+    const orderBy = [];
+    if (sort && sort.length > 0) {
+      sort.forEach((s) => {
+        orderBy.push(
+          s.order === "asc"
+            ? asc(merchantGroupSortFieldMap[s.by])
+            : desc(merchantGroupSortFieldMap[s.by])
+        );
+      });
+    }
+    orderBy.push(
+      desc(sql<string | null>`(
+      SELECT MAX(t.created)
+      FROM ${monzoTransactions} t
+      WHERE t.merchant_group_id = ${monzoMerchantGroups.id}
+      AND t.account_id = ${accountId}
+    )`)
+    );
+
+    const [[{ total }], merchantGroups] = await Promise.all([
+      db
+        .select({
+          total: countDistinct(monzoMerchantGroups.id),
+        })
+        .from(monzoMerchantGroups)
+        .leftJoin(
+          monzoCategories,
+          eq(monzoMerchantGroups.categoryId, monzoCategories.id)
+        )
+        .where(and(...where)),
+
+      db
+        .select({
+          merchantGroup: {
+            id: monzoMerchantGroups.id,
+            name: monzoMerchantGroups.name,
+            logo: monzoMerchantGroups.logo,
+            emoji: monzoMerchantGroups.emoji,
+            disableFeedback: monzoMerchantGroups.disableFeedback,
+            atm: monzoMerchantGroups.atm,
+            monzo_category: monzoMerchantGroups.monzo_category,
+          },
+          category: {
+            id: monzoCategories.id,
+            name: monzoCategories.name,
+            isMonzo: monzoCategories.isMonzo,
+          },
+          merchants: sql<Merchant[]>`(
+            SELECT COALESCE(
+              json_agg(
+                CASE 
+                  WHEN m.id IS NOT NULL 
+                  THEN json_build_object(
+                    'id', m.id,
+                    'groupId', m.group_id,
+                    'online', m.online,
+                    'address', m.address
+                  )
+                  ELSE NULL
+                END
+              ) FILTER (WHERE m.id IS NOT NULL),
+              '[]'::json
+            )
+            FROM ${monzoMerchants} m
+            WHERE m.group_id = ${monzoMerchantGroups.id}
+          )`,
+          transactionsCount: count(monzoTransactions.id),
+          lastTransactionDate: max(monzoTransactions.created),
+        })
+        .from(monzoMerchantGroups)
+        .leftJoin(
+          monzoCategories,
+          eq(monzoMerchantGroups.categoryId, monzoCategories.id)
+        )
+        .leftJoin(
+          monzoTransactions,
+          and(
+            eq(monzoTransactions.merchantGroupId, monzoMerchantGroups.id),
+            eq(monzoTransactions.accountId, accountId)
+          )
+        )
+        .where(and(...where))
+        .groupBy(monzoMerchantGroups.id, monzoCategories.id)
+        .orderBy(...orderBy)
+        .offset(offset)
+        .limit(limit),
+    ]);
+
+    return MiddlewareResponse.success({
+      data: merchantGroups.map((_merchantGroup) => {
+        const {
+          merchantGroup,
+          category,
+          merchants,
+          transactionsCount,
+          lastTransactionDate,
+        } = _merchantGroup;
+
+        return {
+          ...merchantGroup,
+          category,
+          merchants,
+          transactionsCount,
+          lastTransactionDate,
+        };
+      }),
+      pagination: {
+        total,
+        page,
+        size: limit,
+      },
+    });
+  }
+);

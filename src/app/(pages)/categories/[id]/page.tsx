@@ -104,8 +104,8 @@ async function CategoryPage({
         </div>
         <button type="submit">Update</button>
       </form>
-      <Link href={`/categories/${id}/transactions`}>Transactions</Link>
-      <Link href={`/categories/${id}/merchants`}>Merchants</Link>
+      <Link href={`/transactions?categoryIds=${id}`}>Transactions</Link>
+      <Link href={`/merchants?categoryIds=${id}`}>Merchants</Link>
     </div>
   );
 }

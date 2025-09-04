@@ -17,11 +17,11 @@ export const monzoCategories = pgTable("monzo_categories", {
   accountId: text("account_id").references(() => monzoAccounts.id, {
     onDelete: "cascade",
   }),
-  createdAt: timestamp("created_at")
-    .$defaultFn(() => new Date())
+  createdAt: timestamp("created_at", { mode: "string" })
+    .$defaultFn(() => new Date().toISOString())
     .notNull(),
-  updatedAt: timestamp("updated_at")
-    .$defaultFn(() => new Date())
+  updatedAt: timestamp("updated_at", { mode: "string" })
+    .$defaultFn(() => new Date().toISOString())
     .notNull(),
 });
 
@@ -35,7 +35,7 @@ export const monzoCategoriesRelations = relations(
 
 export const monzoAccounts = pgTable("monzo_accounts", {
   id: text("id").primaryKey(),
-  created: timestamp("created").notNull(),
+  created: timestamp("created", { mode: "string" }).notNull(),
   type: text("type").notNull(),
   ownerType: text("owner_type").notNull(),
   isFlex: boolean("is_flex").notNull(),
@@ -47,11 +47,11 @@ export const monzoAccounts = pgTable("monzo_accounts", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at")
-    .$defaultFn(() => new Date())
+  createdAt: timestamp("created_at", { mode: "string" })
+    .$defaultFn(() => new Date().toISOString())
     .notNull(),
-  updatedAt: timestamp("updated_at")
-    .$defaultFn(() => new Date())
+  updatedAt: timestamp("updated_at", { mode: "string" })
+    .$defaultFn(() => new Date().toISOString())
     .notNull(),
 });
 
@@ -65,11 +65,11 @@ export const monzoMerchants = pgTable("monzo_merchants", {
   accountId: text("account_id")
     .notNull()
     .references(() => monzoAccounts.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at")
-    .$defaultFn(() => new Date())
+  createdAt: timestamp("created_at", { mode: "string" })
+    .$defaultFn(() => new Date().toISOString())
     .notNull(),
-  updatedAt: timestamp("updated_at")
-    .$defaultFn(() => new Date())
+  updatedAt: timestamp("updated_at", { mode: "string" })
+    .$defaultFn(() => new Date().toISOString())
     .notNull(),
 });
 
@@ -97,11 +97,11 @@ export const monzoMerchantGroups = pgTable("monzo_merchant_groups", {
   accountId: text("account_id")
     .notNull()
     .references(() => monzoAccounts.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at")
-    .$defaultFn(() => new Date())
+  createdAt: timestamp("created_at", { mode: "string" })
+    .$defaultFn(() => new Date().toISOString())
     .notNull(),
-  updatedAt: timestamp("updated_at")
-    .$defaultFn(() => new Date())
+  updatedAt: timestamp("updated_at", { mode: "string" })
+    .$defaultFn(() => new Date().toISOString())
     .notNull(),
 });
 
@@ -119,14 +119,14 @@ export const monzoMerchantGroupsRelations = relations(
 
 export const monzoTransactions = pgTable("monzo_transactions", {
   id: text("id").primaryKey(),
-  created: timestamp("created").notNull(),
+  created: timestamp("created", { mode: "string" }).notNull(),
   description: text("description").notNull(),
   amount: numeric("amount").notNull(),
   currency: text("currency").notNull(),
   fees: jsonb("owners").notNull(),
   notes: text("notes"),
   monzo_category: text("monzo_category"),
-  settled: timestamp("settled"),
+  settled: timestamp("settled", { mode: "string" }),
   localAmount: numeric("local_amount").notNull(),
   localCurrency: text("local_currency").notNull(),
   accountId: text("account_id")
@@ -137,11 +137,11 @@ export const monzoTransactions = pgTable("monzo_transactions", {
   merchantGroupId: text("merchant_group_id").references(
     () => monzoMerchantGroups.id
   ),
-  createdAt: timestamp("created_at")
-    .$defaultFn(() => new Date())
+  createdAt: timestamp("created_at", { mode: "string" })
+    .$defaultFn(() => new Date().toISOString())
     .notNull(),
-  updatedAt: timestamp("updated_at")
-    .$defaultFn(() => new Date())
+  updatedAt: timestamp("updated_at", { mode: "string" })
+    .$defaultFn(() => new Date().toISOString())
     .notNull(),
 });
 

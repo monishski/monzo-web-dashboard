@@ -41,6 +41,13 @@ export type MerchantAddress = {
   postcode: string;
 };
 
+export type Merchant = {
+  id: string;
+  groupId: string;
+  online: boolean;
+  address: MerchantAddress;
+};
+
 export type MerchantGroup = {
   id: string;
   name: string;
@@ -51,15 +58,8 @@ export type MerchantGroup = {
   monzo_category: string | null;
   category?: Pick<Category, "id" | "name" | "isMonzo"> | null;
   merchants?: Merchant[];
-  transactions?: Transaction[];
-};
-
-export type Merchant = {
-  id: string;
-  groupId: string;
-  online: boolean;
-  address: MerchantAddress;
-  group?: MerchantGroup;
+  transactionsCount: number;
+  lastTransactionDate: string | null;
 };
 
 export type Transaction = {
