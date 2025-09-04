@@ -11,9 +11,9 @@ import {
   sql,
 } from "drizzle-orm";
 import type { PgColumn } from "drizzle-orm/pg-core";
-import * as z from "zod";
 
 import { withAccount } from "@/lib/api/middleware";
+import { createApiQuerySchema } from "@/lib/api/query-schema";
 import { MiddlewareResponse } from "@/lib/api/response";
 import type { PaginatedData } from "@/lib/api/types";
 import {
@@ -50,35 +50,12 @@ const merchantGroupStringFilterFieldMap: Record<
   category: monzoCategories.id,
 };
 
-const MerchantGroupsApiQuerySchema = z.object({
-  page: z.number().min(1).default(1),
-  limit: z.number().min(1).max(100).default(20),
-  sort: z
-    .array(
-      z.object({
-        by: z.enum(MERCHANT_GROUP_SORT_FIELDS),
-        order: z.enum(["asc", "desc"]),
-      })
-    )
-    .optional(),
-  search: z
-    .object({
-      by: z.enum(MERCHANT_GROUP_SEARCH_FIELDS),
-      value: z.string().min(1).max(100).optional(),
-    })
-    .optional(),
-  filters: z
-    .object({
-      string: z
-        .array(
-          z.object({
-            by: z.enum(MERCHANT_GROUP_STRING_FILTER_FIELDS),
-            values: z.array(z.string()),
-          })
-        )
-        .optional(),
-    })
-    .optional(),
+const MerchantGroupsApiQuerySchema = createApiQuerySchema({
+  sort: MERCHANT_GROUP_SORT_FIELDS,
+  search: MERCHANT_GROUP_SEARCH_FIELDS,
+  filters: {
+    string: MERCHANT_GROUP_STRING_FILTER_FIELDS,
+  },
 });
 
 export const POST = withAccount<PaginatedData<MerchantGroup>>(
