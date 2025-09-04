@@ -9,9 +9,9 @@ import {
   inArray,
 } from "drizzle-orm";
 import type { PgColumn } from "drizzle-orm/pg-core";
-import * as z from "zod";
 
 import { withAccount } from "@/lib/api/middleware";
+import { createApiQuerySchema } from "@/lib/api/query-schema";
 import { MiddlewareResponse } from "@/lib/api/response";
 import type { PaginatedData } from "@/lib/api/types";
 import {
@@ -73,55 +73,14 @@ const transactionsStringFilterFieldMap: Record<
   merchantGroup: monzoTransactions.merchantGroupId,
 };
 
-const TransactionsApiQuerySchema = z.object({
-  page: z.number().min(1).default(1),
-  limit: z.number().min(1).max(100).default(20),
-  sort: z
-    .array(
-      z.object({
-        by: z.enum(TRANSACTION_SORT_FIELDS),
-        order: z.enum(["asc", "desc"]),
-      })
-    )
-    .optional(),
-  search: z
-    .object({
-      by: z.enum(TRANSACTION_SEARCH_FIELDS),
-      value: z.string().min(1).max(100).optional(),
-    })
-    .optional(),
-  filters: z
-    .object({
-      numeric: z
-        .array(
-          z.object({
-            by: z.enum(TRANSACTION_NUMERIC_FILTER_FIELDS),
-            from: z.number(),
-            to: z.number(),
-          })
-        )
-        .optional(),
-      date: z
-        .array(
-          z.object({
-            by: z.enum(TRANSACTION_DATE_FILTER_FIELDS),
-            from: z
-              .string()
-              .transform((val) => new Date(val).toISOString()),
-            to: z.string().transform((val) => new Date(val).toISOString()),
-          })
-        )
-        .optional(),
-      string: z
-        .array(
-          z.object({
-            by: z.enum(TRANSACTION_STRING_FILTER_FIELDS),
-            values: z.array(z.string()),
-          })
-        )
-        .optional(),
-    })
-    .optional(),
+const TransactionsApiQuerySchema = createApiQuerySchema({
+  sort: TRANSACTION_SORT_FIELDS,
+  search: TRANSACTION_SEARCH_FIELDS,
+  filters: {
+    numeric: TRANSACTION_NUMERIC_FILTER_FIELDS,
+    date: TRANSACTION_DATE_FILTER_FIELDS,
+    string: TRANSACTION_STRING_FILTER_FIELDS,
+  },
 });
 
 export const POST = withAccount<PaginatedData<Transaction>>(
