@@ -3,20 +3,24 @@
 import type { JSX } from "react";
 import Link from "next/link";
 
-import { signIn, signOut, useSession } from "@/lib/auth/auth-client";
+import { signIn, signOut /*, useSession*/ } from "@/lib/auth/auth-client";
+
+import { ThemeToggle } from "./theme-toggle";
 
 export default function Home(): JSX.Element {
-  const session = useSession();
+  // const session = useSession();
 
   return (
-    <div className="flex min-h-screen flex-col items-start justify-center p-8">
+    <div className="flex min-h-screen flex-col items-start justify-center gap-2 p-8">
       <h1 className="font-[family-name:var(--font-geist-sans)] text-4xl font-bold">
-        Better Auth
+        Monzo dashboard
       </h1>
 
       <div className="bg-info text-overlay rounded-full px-3 py-0.5">
         Badge
       </div>
+
+      <ThemeToggle />
 
       <Link href="/seed">Seed</Link>
 
@@ -28,7 +32,7 @@ export default function Home(): JSX.Element {
 
       <Link href="/categories">Categories</Link>
 
-      <pre>{JSON.stringify(session, null, 2)}</pre>
+      {/* <pre>{JSON.stringify(session, null, 2)}</pre> */}
       <button
         onClick={async (e) => {
           e.preventDefault();

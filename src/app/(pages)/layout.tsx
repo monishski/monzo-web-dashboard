@@ -19,7 +19,7 @@ export default function RootLayout({
   children,
 }: RootLayoutProps): JSX.Element {
   return (
-    <html lang="en">
+    <html suppressHydrationWarning>
       <body className="bg-background text-font flex min-h-screen">
         <Provider>{children}</Provider>
       </body>
