@@ -1,26 +1,70 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --base-coral-burst: rgb(227, 75, 95); /* #E34B5F; */
+  --base-golden-sand: rgb(231, 206, 156); /* #E7CE9C; */
+  --base-teal-depths: rgb(30, 120, 137); /* #1E7889; */
+  --base-sage-mist: rgb(151, 186, 166); /* #97BAA6; */
+  --base-artic-powder: rgb(241, 246, 244); /* #F1F6F4; */
+  --base-white: rgb(256, 256, 256); /* #FFFFFF; */
+  --base-slate-gray: rgb(74, 85, 103); /* #4A5567; */
+  --base-portal-muted: rgb(125, 145, 160); /* #7D91A0; */
+  --base-blue: rgb(74, 157, 209); /* #4A9DD1; */
+  --base-red: rgb(240, 88, 88); /* #F05858; */
+  --base-green: rgb(27, 166, 74); /* #1BA64A; */
+  --base-orange: rgb(255, 153, 0); /* #FF9900; */
+
+  --primary: var(--base-coral-burst);
+  --secondary: var(--base-golden-sand);
+  --tertiary: var(--base-teal-depths);
+  --quaternary: var(--base-sage-mist);
+  --background: var(--base-artic-powder);
+  --foreground: var(--base-white);
+  --font: var(--base-slate-gray);
+  --muted: var(--base-portal-muted);
+
+  --info: var(--base-blue);
+  --success: var(--base-green);
+  --warning: var(--base-orange);
+  --error: var(--base-red);
+  --positive: var(--base-green);
+  --negative: var(--base-red);
+  --neutral: var(--base-orange);
+}
+
+[data-theme="dark"] {
+  --base-coral-flare: rgb(254 79 63); /* #FE4F3F; */
+  --base-lime-zest: rgb(189 241 50); /* #BDF132; */
+  --base-ocean-depth: rgb(0 126 170); /* #0088AA; */
+  --base-mint-breeze: rgb(76 210 181); /* #4CD2B5; */
+  --base-space-black: rgb(22, 22, 24); /* #161618 */
+  --base-deep-space-navy: rgb(27, 27, 31); /* #1B1B1F */
+  --base-off-white: rgb(240, 240, 245); /* #F0F0F5 */
+  --base-light-gray: rgb(184, 184, 192); /* #B8B8C0 */
+
+  --primary: var(--base-coral-flare);
+  --secondary: var(--base-lime-zest);
+  --tertiary: var(--base-ocean-depth);
+  --quaternary: var(--base-mint-breeze);
+  --background: var(--base-space-black);
+  --foreground: var(--base-off-white);
+  --font: var(--base-light-gray);
 }
 
 @theme inline {
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-tertiary: var(--tertiary);
+  --color-quaternary: var(--quaternary);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  --color-font: var(--font);
+  --color-muted: var(--muted);
+  --color-info: var(--info);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-neutral: var(--neutral);
 }
