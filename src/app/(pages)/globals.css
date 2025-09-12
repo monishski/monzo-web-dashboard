@@ -21,8 +21,8 @@
   --background: var(--base-artic-powder);
   --foreground: var(--base-white);
   --font: var(--base-slate-gray);
-  --muted: var(--base-portal-muted);
 
+  --overlay: var(--base-white);
   --info: var(--base-blue);
   --success: var(--base-green);
   --warning: var(--base-orange);
@@ -47,11 +47,13 @@
   --tertiary: var(--base-ocean-depth);
   --quaternary: var(--base-mint-breeze);
   --background: var(--base-space-black);
-  --foreground: var(--base-off-white);
-  --font: var(--base-light-gray);
+  --foreground: var(--base-deep-space-navy);
+  --font: var(--base-off-white);
+  --muted: var(--base-light-gray);
 }
 
 @theme inline {
+  --color-*: initial;
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);
   --color-tertiary: var(--tertiary);
@@ -60,6 +62,7 @@
   --color-foreground: var(--foreground);
   --color-font: var(--font);
   --color-muted: var(--muted);
+  --color-overlay: var(--overlay);
   --color-info: var(--info);
   --color-success: var(--success);
   --color-warning: var(--warning);

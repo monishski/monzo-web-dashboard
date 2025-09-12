@@ -14,6 +14,10 @@ export default function Home(): JSX.Element {
         Better Auth
       </h1>
 
+      <div className="bg-info text-overlay rounded-full px-3 py-0.5">
+        Badge
+      </div>
+
       <Link href="/seed">Seed</Link>
 
       <Link href="/transactions">Transactions</Link>
