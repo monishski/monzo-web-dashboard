@@ -4,8 +4,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { MoonIcon, SunIcon } from "lucide-react";
 import { useTheme } from "next-themes";
 
-import type { ButtonProps } from "@/components/atoms/button";
-import { Button } from "@/components/atoms/button";
+import type { ButtonProps } from "@/components/atoms";
+import { Button } from "@/components/atoms";
 
 type ThemeButtonProps = ButtonProps;
 

@@ -41,7 +41,7 @@ const DEFAULT_CATEGORIES: {
 
 const DEFAULT_CATEGORIES_IDS = DEFAULT_CATEGORIES.map((c) => c.id);
 
-export function getDatabaseData({
+function getDatabaseData({
   transactions,
   accountId,
 }: {
@@ -73,7 +73,7 @@ export function getDatabaseData({
 
     dbTransactions.push({
       id: transaction.id,
-      created: new Date(transaction.created),
+      created: transaction.created,
       description: transaction.description,
       // TODO: ?Drizzle ORM expects these values as strings to maintain precision?
       amount: transaction.amount.toString(),
@@ -81,7 +81,7 @@ export function getDatabaseData({
       fees: transaction.fees,
       notes: transaction.notes,
       monzo_category: transaction.category || null,
-      settled: transaction.settled ? new Date(transaction.settled) : null,
+      settled: transaction.settled,
       localAmount: transaction.local_amount.toString(),
       localCurrency: transaction.local_currency,
       accountId: transaction.account_id,

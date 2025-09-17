@@ -18,7 +18,7 @@ export const POST = withAuthAccessToken<MonzoDbAccount>(
         .values([
           {
             id: account.id,
-            created: new Date(account.created),
+            created: account.created,
             type: account.type,
             ownerType: account.owner_type,
             isFlex: account.is_flex,
