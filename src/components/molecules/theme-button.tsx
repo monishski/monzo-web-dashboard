@@ -15,7 +15,7 @@ export function ThemeButton(props: ThemeButtonProps): React.JSX.Element {
   return (
     <Button
       variant="ghost"
-      size="icon"
+      icon
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
       {...props}
     >
