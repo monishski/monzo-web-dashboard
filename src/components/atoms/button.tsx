@@ -26,7 +26,7 @@ export const buttonTv = tv({
       lg: "h-11 px-8",
     },
     disabled: {
-      true: '"disabled:pointer-events-none disabled:opacity-50"',
+      true: "disabled:pointer-events-none disabled:opacity-50",
     },
     icon: {
       true: "h-10 w-10",
