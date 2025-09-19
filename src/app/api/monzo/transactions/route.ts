@@ -73,7 +73,7 @@ function getDatabaseData({
 
     dbTransactions.push({
       id: transaction.id,
-      created: transaction.created,
+      created: new Date(transaction.created).toISOString(),
       description: transaction.description,
       // TODO: ?Drizzle ORM expects these values as strings to maintain precision?
       amount: transaction.amount.toString(),
@@ -81,7 +81,9 @@ function getDatabaseData({
       fees: transaction.fees,
       notes: transaction.notes,
       monzo_category: transaction.category || null,
-      settled: transaction.settled,
+      settled: transaction.settled
+        ? new Date(transaction.settled).toISOString()
+        : null,
       localAmount: transaction.local_amount.toString(),
       localCurrency: transaction.local_currency,
       accountId: transaction.account_id,
