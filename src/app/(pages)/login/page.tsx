@@ -3,7 +3,7 @@
 import { LogInIcon } from "lucide-react";
 
 import { signIn } from "@/lib/auth/auth-client";
-import { Button, Paper } from "@/components/atoms";
+import { Button, Paper, Row, Stack } from "@/components/atoms";
 import { ThemeButton } from "@/components/molecules";
 import { Landscape, MonzoLogo } from "@/assets";
 
@@ -19,42 +19,48 @@ export default function LoginPage(): React.JSX.Element {
   };
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center">
-      <Paper className="relative flex h-3/4 w-3/4 gap-4 md:w-1/2">
-        <ThemeButton className="absolute top-4 right-4" />
+    <Stack fullWidth className="min-h-screen">
+      <Paper className="relative h-3/4 w-3/4 md:w-1/2">
+        <Row fullWidth fullHeight>
+          <ThemeButton className="absolute top-4 right-4" />
 
-        <div className="hidden h-full w-1/2 overflow-hidden rounded-xl xl:flex">
-          <Landscape className="h-full w-full object-cover" />
-        </div>
-
-        <div className="flex w-full flex-1 flex-col items-center justify-center gap-4">
-          <MonzoLogo className="h-16 w-16" />
-
-          <div className="flex flex-col gap-1">
-            <h1 className="text-font text-center text-3xl font-semibold">
-              Welcome to Monzo
-            </h1>
-
-            <p className="text-center text-sm">
-              Connect your Monzo account to get started
-            </p>
-          </div>
-
-          <Button
-            className="w-full"
-            variant="secondary"
-            onClick={handleSignIn}
+          {/* Create Container/Image components */}
+          <Stack
+            fullHeight
+            className="hidden w-1/2 overflow-hidden rounded-xl xl:flex"
           >
-            <LogInIcon />
-            Sign in with Monzo
-          </Button>
+            <Landscape className="h-full w-full object-cover" />
+          </Stack>
 
-          <p className="text-muted text-center text-xs">
-            By signing in, you agree to our Terms of Service and Privacy
-            Policy
-          </p>
-        </div>
+          <Stack gap="md" fullWidth grow>
+            <MonzoLogo className="h-16 w-16" />
+
+            <Stack gap="xs">
+              <h1 className="text-font text-center text-3xl font-semibold">
+                Welcome to Monzo
+              </h1>
+
+              <p className="text-center text-sm">
+                Connect your Monzo account to get started
+              </p>
+            </Stack>
+
+            <Button
+              className="w-full"
+              variant="secondary"
+              onClick={handleSignIn}
+            >
+              <LogInIcon />
+              Sign in with Monzo
+            </Button>
+
+            <p className="text-muted text-center text-xs">
+              By signing in, you agree to our Terms of Service and Privacy
+              Policy
+            </p>
+          </Stack>
+        </Row>
       </Paper>
-    </div>
+    </Stack>
   );
 }
