@@ -21,7 +21,7 @@ export default function LoginPage(): React.JSX.Element {
   return (
     <Stack fullWidth className="min-h-screen">
       <Paper className="relative h-3/4 w-3/4 md:w-1/2">
-        <Row fullWidth fullHeight>
+        <Row gap="md" fullWidth fullHeight>
           <ThemeButton className="absolute top-4 right-4" />
 
           {/* Create Container/Image components */}
