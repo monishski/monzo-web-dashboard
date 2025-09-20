@@ -45,11 +45,7 @@ export default function LoginPage(): React.JSX.Element {
               </p>
             </Stack>
 
-            <Button
-              className="w-full"
-              variant="secondary"
-              onClick={handleSignIn}
-            >
+            <Button variant="secondary" fullWidth onClick={handleSignIn}>
               <LogInIcon />
               Sign in with Monzo
             </Button>

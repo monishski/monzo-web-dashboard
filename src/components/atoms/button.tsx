@@ -31,6 +31,9 @@ export const buttonTv = tv({
     icon: {
       true: "h-10 w-10",
     },
+    fullWidth: {
+      true: "w-full",
+    },
   },
   compoundVariants: [
     { size: "sm", icon: true, class: "h-9 w-9" },
@@ -55,6 +58,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       asChild = false,
       icon,
       disabled,
+      fullWidth,
       ...props
     },
     ref
@@ -68,6 +72,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           icon,
           disabled,
           className,
+          fullWidth,
         })}
         ref={ref}
         {...props}
