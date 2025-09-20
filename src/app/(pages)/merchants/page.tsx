@@ -1,7 +1,7 @@
 "use client";
 
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { parseAsArrayOf, parseAsString, useQueryStates } from "nuqs";
@@ -9,7 +9,7 @@ import { parseAsArrayOf, parseAsString, useQueryStates } from "nuqs";
 import type { PaginatedData } from "@/lib/api/types";
 import type { Category, MerchantGroup } from "@/lib/types";
 
-function MerchantsPage(): JSX.Element {
+function MerchantsPageContent(): JSX.Element {
   const [filters, setFilters] = useQueryStates(
     {
       categoryIds: parseAsArrayOf(parseAsString).withDefault([]),
@@ -272,6 +272,14 @@ function MerchantsPage(): JSX.Element {
         </tbody>
       </table>
     </div>
+  );
+}
+
+function MerchantsPage(): JSX.Element {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <MerchantsPageContent />
+    </Suspense>
   );
 }
 

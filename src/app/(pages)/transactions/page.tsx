@@ -1,7 +1,7 @@
 "use client";
 
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { parseAsArrayOf, parseAsString, useQueryStates } from "nuqs";
@@ -12,7 +12,7 @@ import type { Account, Category, Transaction } from "@/lib/types";
 
 const DEFAULT_END_DATE = new Date().toISOString();
 
-function TransactionsPage(): JSX.Element {
+function TransactionsPageContent(): JSX.Element {
   const [filters, setFilters] = useQueryStates(
     {
       merchantGroupIds: parseAsArrayOf(parseAsString).withDefault([]),
@@ -364,6 +364,14 @@ function TransactionsPage(): JSX.Element {
         </tbody>
       </table>
     </div>
+  );
+}
+
+function TransactionsPage(): JSX.Element {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <TransactionsPageContent />
+    </Suspense>
   );
 }
 

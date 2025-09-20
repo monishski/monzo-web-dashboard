@@ -1,5 +1,6 @@
 import js from "@eslint/js";
 import pluginNextJs from "@next/eslint-plugin-next";
+import parser from "@typescript-eslint/parser";
 import eslintConfigPrettier from "eslint-config-prettier/flat";
 import pluginReact from "eslint-plugin-react";
 import pluginReactHooks from "eslint-plugin-react-hooks";
@@ -25,19 +26,50 @@ const eslintConfig = defineConfig([
   },
   // https://typescript-eslint.io/users/configs#recommended
   ...tseslint.configs.recommended,
-  // https://github.com/jsx-eslint/eslint-plugin-react?tab=readme-ov-file#flat-configs
-  pluginReact.configs.flat.recommended,
-  pluginReact.configs.flat["jsx-runtime"],
-  pluginReactHooks.configs["recommended-latest"],
+  // https://github.com/vercel/next.js/discussions/49337#discussioncomment-5998603
   {
-    files: ["**/*.{js,jsx,ts,tsx}"],
-    plugins: { "@next/next": pluginNextJs },
+    plugins: {
+      react: pluginReact,
+    },
+    rules: {
+      ...pluginReact.configs.recommended.rules,
+      ...pluginReact.configs["jsx-runtime"].rules,
+    },
+    settings: {
+      react: {
+        version: "detect",
+      },
+    },
+  },
+  {
+    plugins: {
+      "react-hooks": pluginReactHooks,
+    },
+    rules: pluginReactHooks.configs.recommended.rules,
+  },
+  // REF: https://github.com/vercel/next.js/issues/71763#issuecomment-2476838298
+  {
+    name: "Next.js Plugin",
+    languageOptions: {
+      parser,
+      parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+    },
+    plugins: {
+      "@next/next": pluginNextJs,
+    },
+    files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
     rules: {
       ...pluginNextJs.configs.recommended.rules,
       ...pluginNextJs.configs["core-web-vitals"].rules,
     },
   },
-  // https://prettier.io/docs/integrating-with-linters
+  // R\ed https://prettier.io/docs/integrating-with-linters
   eslintConfigPrettier,
   {
     files: ["**/*.{ts,tsx}"],

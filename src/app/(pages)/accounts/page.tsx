@@ -2,6 +2,8 @@
 
 import { useEffect, useState, type JSX } from "react";
 
+import { ThemeButton } from "@/components/molecules";
+
 function AccountsPage(): JSX.Element {
   const [account, setAccount] = useState(null);
 
@@ -17,6 +19,7 @@ function AccountsPage(): JSX.Element {
 
   return (
     <div>
+      <ThemeButton />
       <pre>{JSON.stringify(account, null, 2)}</pre>
     </div>
   );

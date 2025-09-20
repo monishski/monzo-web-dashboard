@@ -5,7 +5,7 @@ import "react-day-picker/style.css";
 
 import type { JSX } from "react";
 
-import { Provider } from "./provider";
+import { Provider } from "@/components/provider";
 
 export const metadata: Metadata = {
   title: "Monzo dashboard",

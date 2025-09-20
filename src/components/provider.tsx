@@ -12,7 +12,6 @@ export const Provider: React.FC<{ children: React.ReactNode }> = ({
       defaultTheme="system"
       enableSystem
       disableTransitionOnChange
-      themes={["light", "dark"]}
     >
       <NuqsAdapter>{children}</NuqsAdapter>
     </ThemeProvider>

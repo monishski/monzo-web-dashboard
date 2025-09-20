@@ -30,6 +30,7 @@ const prettierConfig = {
     "@ianvs/prettier-plugin-sort-imports",
     "prettier-plugin-tailwindcss",
   ],
+  tailwindFunctions: ["tv"],
 };
 
 export default prettierConfig;
