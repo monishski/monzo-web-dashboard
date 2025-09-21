@@ -1,5 +1,6 @@
 import js from "@eslint/js";
 import pluginNextJs from "@next/eslint-plugin-next";
+import pluginQuery from "@tanstack/eslint-plugin-query";
 import parser from "@typescript-eslint/parser";
 import eslintConfigPrettier from "eslint-config-prettier/flat";
 import pluginReact from "eslint-plugin-react";
@@ -84,6 +85,7 @@ const eslintConfig = defineConfig([
       "no-console": "error",
     },
   },
+  ...pluginQuery.configs["flat/recommended"],
 ]);
 
 export default eslintConfig;
