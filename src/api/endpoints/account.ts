@@ -1,7 +1,6 @@
-import { HttpClient } from "@/lib/http/client";
 import type { Account } from "@/lib/types";
 
-const httpClient = new HttpClient("/api");
+import { httpClient } from "./instance";
 
 export const fetchAccount = async (): Promise<Account> =>
   await httpClient.get<Account>({

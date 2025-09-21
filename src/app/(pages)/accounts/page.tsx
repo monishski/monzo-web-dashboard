@@ -1,6 +1,6 @@
 "use client";
 
-import { useGetAccount } from "@/queries/useGetAccount";
+import { useGetAccount } from "@/api/queries/account/useGetAccount";
 
 export default function AccountsPage(): React.JSX.Element {
   const { data: account, isFetching, isError } = useGetAccount();
