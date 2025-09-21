@@ -5,6 +5,8 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ThemeProvider } from "next-themes";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
+import { useGlobalEffect } from "@/hooks/use-global-effect";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -16,6 +18,8 @@ const queryClient = new QueryClient({
 export const Provider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  useGlobalEffect();
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider
