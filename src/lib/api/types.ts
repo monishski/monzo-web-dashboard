@@ -1,13 +1,13 @@
 export type ApiErrorResponse = {
-  status?: number;
+  status: number;
   success: false;
   error: string;
 };
 
-export type ApiOkResponse<T = undefined> = {
-  status?: number;
+export type ApiOkResponse<T> = {
+  status: number;
   success: true;
-  data?: T;
+  data: T;
 };
 
 export type ApiResponse<T> = ApiErrorResponse | ApiOkResponse<T>;
