@@ -5,7 +5,7 @@ export class MiddlewareResponse {
     data,
     status = 200,
   }: {
-    data?: T;
+    data: T;
     status?: number;
   }): ApiOkResponse<T> {
     return { status, success: true, data };
@@ -15,12 +15,8 @@ export class MiddlewareResponse {
     return this.ok({ data, status: 200 });
   }
 
-  static created<T>(data?: T): ApiOkResponse<T> {
+  static created<T>(data: T): ApiOkResponse<T> {
     return this.ok({ data, status: 201 });
-  }
-
-  static noContent(): ApiOkResponse {
-    return this.ok({ status: 204 });
   }
 
   static error({
