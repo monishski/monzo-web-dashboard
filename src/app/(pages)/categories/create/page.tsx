@@ -1,53 +1,45 @@
+"use client";
+
 import type { JSX } from "react";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-async function createCategory(formData: FormData): Promise<void> {
-  "use server";
-
-  const name = formData.get("name");
-  if (!name || typeof name !== "string") {
-    alert("Name is required");
-    return;
-  }
-
-  const headersList = await headers();
-  const cookie = headersList.get("cookie");
-
-  const response = await fetch("http://localhost:3001/api/categories", {
-    method: "POST",
-    headers: {
-      ...(cookie ? { cookie } : {}),
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ name }),
-  });
-
-  if (!response.ok) {
-    const error = await response.text();
-    alert(error);
-    return;
-  }
-
-  redirect("/categories");
-}
+import { useCreateCategory } from "@/api/queries/categories";
 
 export default function CreateCategoryPage(): JSX.Element {
+  const [name, setName] = useState("");
+  const router = useRouter();
+  const { mutate: createCategory, isPending: isCreating } =
+    useCreateCategory({
+      onSuccess: () => {
+        router.push("/categories");
+      },
+    });
+
+  const handleSubmit = (e: React.FormEvent): void => {
+    e.preventDefault();
+    createCategory({ name: name.trim() });
+  };
+
   return (
     <div>
       <h1>Create New Category</h1>
-      <form action={createCategory}>
+      <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="name">Category Name</label>
           <input
             type="text"
             id="name"
-            name="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             required
             placeholder="Enter category name"
+            disabled={isCreating}
           />
         </div>
-        <button type="submit">Create</button>
+        <button type="submit" disabled={isCreating}>
+          {isCreating ? "Creating..." : "Create"}
+        </button>
       </form>
     </div>
   );
