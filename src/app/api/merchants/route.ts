@@ -10,11 +10,15 @@ import {
   max,
   sql,
 } from "drizzle-orm";
-import type { PgColumn } from "drizzle-orm/pg-core";
 
-import { withAccount } from "@/lib/api/middleware";
-import { createApiQuerySchema } from "@/lib/api/query-schema";
-import { MiddlewareResponse } from "@/lib/api/response";
+import {
+  MerchantGroupsApiQuerySchema,
+  merchantGroupSearchFieldMap,
+  merchantGroupSortFieldMap,
+  merchantGroupStringFilterFieldMap,
+  MiddlewareResponse,
+  withAccount,
+} from "@/lib/api";
 import type { PaginatedData } from "@/lib/api/types";
 import {
   db,
@@ -24,39 +28,6 @@ import {
   monzoTransactions,
 } from "@/lib/db";
 import type { Merchant, MerchantGroup } from "@/lib/types";
-
-const MERCHANT_GROUP_SORT_FIELDS = ["name", "category"] as const;
-const MERCHANT_GROUP_SEARCH_FIELDS = ["name"] as const;
-const MERCHANT_GROUP_STRING_FILTER_FIELDS = ["category"] as const;
-
-// TODO: this should be based on Client-Server types, NOT Server-DB
-const merchantGroupSortFieldMap: Record<
-  (typeof MERCHANT_GROUP_SORT_FIELDS)[number],
-  PgColumn
-> = {
-  name: monzoMerchantGroups.name,
-  category: monzoCategories.name,
-};
-const merchantGroupSearchFieldMap: Record<
-  (typeof MERCHANT_GROUP_SEARCH_FIELDS)[number],
-  PgColumn
-> = {
-  name: monzoMerchantGroups.name,
-};
-const merchantGroupStringFilterFieldMap: Record<
-  (typeof MERCHANT_GROUP_STRING_FILTER_FIELDS)[number],
-  PgColumn
-> = {
-  category: monzoCategories.id,
-};
-
-const MerchantGroupsApiQuerySchema = createApiQuerySchema({
-  sort: MERCHANT_GROUP_SORT_FIELDS,
-  search: MERCHANT_GROUP_SEARCH_FIELDS,
-  filters: {
-    string: MERCHANT_GROUP_STRING_FILTER_FIELDS,
-  },
-});
 
 export const POST = withAccount<PaginatedData<MerchantGroup>>(
   async ({ accountId, request }) => {

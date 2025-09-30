@@ -8,12 +8,16 @@ import {
   ilike,
   inArray,
 } from "drizzle-orm";
-import type { PgColumn } from "drizzle-orm/pg-core";
 
-import { withAccount } from "@/lib/api/middleware";
-import { createApiQuerySchema } from "@/lib/api/query-schema";
-import { MiddlewareResponse } from "@/lib/api/response";
-import type { PaginatedData } from "@/lib/api/types";
+import {
+  MiddlewareResponse,
+  TransactionsApiQuerySchema,
+  transactionsSearchFieldMap,
+  transactionsSortFieldMap,
+  transactionsStringFilterFieldMap,
+  withAccount,
+} from "@/lib/api";
+import type { PaginatedData } from "@/lib/api";
 import {
   db,
   monzoCategories,
@@ -22,66 +26,6 @@ import {
   monzoTransactions,
 } from "@/lib/db";
 import type { MerchantAddress, Transaction } from "@/lib/types";
-
-const TRANSACTION_SORT_FIELDS = [
-  "description",
-  "created",
-  "amount",
-  "localAmount",
-  "category",
-  "merchantGroup",
-] as const;
-const TRANSACTION_SEARCH_FIELDS = [
-  "description",
-  "category",
-  "merchantGroup",
-] as const;
-const TRANSACTION_NUMERIC_FILTER_FIELDS = [
-  "amount",
-  "localAmount",
-] as const;
-const TRANSACTION_DATE_FILTER_FIELDS = ["created", "settled"] as const;
-const TRANSACTION_STRING_FILTER_FIELDS = [
-  "category",
-  "merchantGroup",
-] as const;
-
-const transactionsSortFieldMap: Record<
-  (typeof TRANSACTION_SORT_FIELDS)[number],
-  PgColumn
-> = {
-  description: monzoTransactions.description,
-  created: monzoTransactions.created,
-  amount: monzoTransactions.amount,
-  localAmount: monzoTransactions.localAmount,
-  category: monzoCategories.name,
-  merchantGroup: monzoMerchantGroups.name,
-};
-const transactionsSearchFieldMap: Record<
-  (typeof TRANSACTION_SEARCH_FIELDS)[number],
-  PgColumn
-> = {
-  description: monzoTransactions.description,
-  category: monzoCategories.name,
-  merchantGroup: monzoMerchantGroups.name,
-};
-const transactionsStringFilterFieldMap: Record<
-  (typeof TRANSACTION_STRING_FILTER_FIELDS)[number],
-  PgColumn
-> = {
-  category: monzoTransactions.categoryId,
-  merchantGroup: monzoTransactions.merchantGroupId,
-};
-
-const TransactionsApiQuerySchema = createApiQuerySchema({
-  sort: TRANSACTION_SORT_FIELDS,
-  search: TRANSACTION_SEARCH_FIELDS,
-  filters: {
-    numeric: TRANSACTION_NUMERIC_FILTER_FIELDS,
-    date: TRANSACTION_DATE_FILTER_FIELDS,
-    string: TRANSACTION_STRING_FILTER_FIELDS,
-  },
-});
 
 export const POST = withAccount<PaginatedData<Transaction>>(
   async ({ accountId, request }) => {

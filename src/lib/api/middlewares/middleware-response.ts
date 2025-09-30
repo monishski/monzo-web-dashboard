@@ -1,4 +1,4 @@
-import type { ApiErrorResponse, ApiOkResponse } from "./types";
+import type { ApiErrorResponse, ApiOkResponse } from "../types";
 
 export class MiddlewareResponse {
   static ok<T>({
