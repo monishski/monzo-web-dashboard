@@ -18,15 +18,11 @@ export type ApiQuery<
   limit?: number;
   sort?: { by: Partial<Sort[number]>; order: "asc" | "desc" }[];
   search?: { by: Partial<Search[number]>; value: string };
-  filter?: {
-    numeric?: Partial<
-      Record<NumberFilter[number], { from: number; to: number }>
-    >;
-    date?: Partial<
-      Record<DateFilter[number], { from: string; to: string }>
-    >;
-    boolean?: Partial<Record<BooleanFilter[number], boolean>>;
-    string?: Partial<Record<StringFilter[number], string[]>>;
+  filters?: {
+    numeric?: { by: NumberFilter[number]; from: number; to: number }[];
+    date?: { by: DateFilter[number]; from: string; to: string }[];
+    boolean?: { by: BooleanFilter[number]; value: boolean }[];
+    string?: { by: StringFilter[number]; values: string[] }[];
   };
 };
 

@@ -6,28 +6,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { parseAsArrayOf, parseAsString, useQueryStates } from "nuqs";
 
-import type { PaginatedData } from "@/lib/api/types";
-import type { Category, MerchantGroup } from "@/lib/types";
+import { useGetCategories } from "@/api/queries/categories";
+import { useGetMerchantGroups } from "@/api/queries/merchants";
 
 function MerchantsPageContent(): JSX.Element {
   const [filters, setFilters] = useQueryStates(
-    {
-      categoryIds: parseAsArrayOf(parseAsString).withDefault([]),
-    },
-    {
-      history: "push",
-    }
+    { categoryIds: parseAsArrayOf(parseAsString).withDefault([]) },
+    { history: "push" }
   );
 
   const { categoryIds } = filters;
 
-  const [merchantGroups, setMerchantGroups] =
-    useState<PaginatedData<MerchantGroup> | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [categories, setCategories] = useState<
-    { id: string; name: string }[]
-  >([]);
   const [name, setName] = useState("");
   const [debouncedName, setDebouncedName] = useState("");
 
@@ -41,85 +30,25 @@ function MerchantsPageContent(): JSX.Element {
     };
   }, [name]);
 
-  // Fetch categories on mount
-  useEffect(() => {
-    const fetchCategories = async (): Promise<void> => {
-      try {
-        const res = await fetch("/api/categories");
-        if (!res.ok) throw new Error("Failed to fetch categories");
-        const { data: categories } = (await res.json()) as {
-          data: Category[];
-        };
+  const { data: categories = [] } = useGetCategories();
 
-        setCategories(categories);
-      } catch {
-        // Optionally handle error
-      }
-    };
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
-    const fetchMerchantGroups = async (): Promise<void> => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await fetch("/api/merchants", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            page: 1,
-            limit: 10,
-            // sort: [{ by: "name", order: "asc" }],
-            ...(debouncedName
-              ? {
-                  search: {
-                    by: "name",
-                    value: debouncedName,
-                  },
-                }
-              : {}),
-            filters: {
-              ...(categoryIds.length > 0
-                ? {
-                    string: [
-                      {
-                        by: "category",
-                        values: categoryIds,
-                      },
-                    ],
-                  }
-                : {}),
-            },
-          }),
-        });
-        if (!response.ok) {
-          const error = await response.text();
-          throw Error(JSON.stringify({ error }, null, 2));
-        }
-        const { data } = (await response.json()) as {
-          data: PaginatedData<MerchantGroup>;
-        };
-        setMerchantGroups(data);
-      } catch (err: unknown) {
-        let message = "Unknown error";
-        if (
-          typeof err === "object" &&
-          err &&
-          "message" in err &&
-          typeof (err as { message?: unknown }).message === "string"
-        ) {
-          message = (err as { message: string }).message;
-        }
-        setError(message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchMerchantGroups();
-  }, [debouncedName, categoryIds]);
+  // Fetch merchant groups using react-query
+  const {
+    data: merchantGroups,
+    isLoading: loading,
+    error,
+  } = useGetMerchantGroups({
+    page: 1,
+    limit: 10,
+    ...(debouncedName
+      ? { search: { by: "name", value: debouncedName } }
+      : {}),
+    filters: {
+      ...(categoryIds.length > 0
+        ? { string: [{ by: "category", values: categoryIds }] }
+        : {}),
+    },
+  });
 
   // Handler for multi-select
   const handleCategoryChange = (
@@ -200,7 +129,7 @@ function MerchantsPageContent(): JSX.Element {
         </select>
       </div>
       {loading && <div>Loading...</div>}
-      {error && <div style={{ color: "red" }}>{error}</div>}
+      {error && <div style={{ color: "red" }}>{error.message}</div>}
       {merchantGroups?.pagination.total && (
         <div>Total: {merchantGroups.pagination.total}</div>
       )}
