@@ -10,6 +10,11 @@ import {
   useGetCategory,
   useUpdateCategory,
 } from "@/api/queries/categories";
+import {
+  getCategoriesUrl,
+  getMerchantsUrl,
+  getTransactionsUrl,
+} from "@/routing";
 
 function CategoryPage({
   params,
@@ -24,13 +29,13 @@ function CategoryPage({
   const { mutate: updateCategory, isPending: isUpdating } =
     useUpdateCategory({
       onSuccess: () => {
-        router.push("/categories");
+        router.push(getCategoriesUrl());
       },
     });
   const { mutate: deleteCategory, isPending: isDeleting } =
     useDeleteCategory({
       onSuccess: () => {
-        router.push("/categories");
+        router.push(getCategoriesUrl());
       },
     });
 
@@ -78,8 +83,10 @@ function CategoryPage({
           {isUpdating ? "Updating..." : "Update"}
         </button>
       </form>
-      <Link href={`/transactions?categoryIds=${id}`}>Transactions</Link>
-      <Link href={`/merchants?categoryIds=${id}`}>Merchants</Link>
+      <Link href={getTransactionsUrl({ categoryIds: [id] })}>
+        Transactions
+      </Link>
+      <Link href={getMerchantsUrl({ categoryIds: [id] })}>Merchants</Link>
     </div>
   );
 }

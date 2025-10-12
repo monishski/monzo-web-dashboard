@@ -9,6 +9,7 @@ import {
   useGetMerchantGroup,
   useUpdateMerchantGroup,
 } from "@/api/queries/merchants";
+import { getMerchantUrl, getTransactionsUrl } from "@/routing";
 
 function MerchantPage(): JSX.Element {
   const router = useRouter();
@@ -23,7 +24,7 @@ function MerchantPage(): JSX.Element {
   const { mutate: updateMerchant, isPending: isMerchantUpdating } =
     useUpdateMerchantGroup({
       onSuccess: () => {
-        router.push(`/merchants/${id}`);
+        router.push(getMerchantUrl(id));
       },
     });
 
@@ -69,7 +70,7 @@ function MerchantPage(): JSX.Element {
           {isMerchantUpdating ? "Updating..." : "Update"}
         </button>
       </form>
-      <Link href={`/transactions?merchantGroupIds=${id}`}>
+      <Link href={getTransactionsUrl({ merchantGroupIds: [id] })}>
         Transactions
       </Link>
     </div>

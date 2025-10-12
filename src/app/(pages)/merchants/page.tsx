@@ -8,6 +8,11 @@ import { parseAsArrayOf, parseAsString, useQueryStates } from "nuqs";
 
 import { useGetCategories } from "@/api/queries/categories";
 import { useGetMerchantGroups } from "@/api/queries/merchants";
+import {
+  getCategoryUrl,
+  getMerchantUrl,
+  getTransactionsUrl,
+} from "@/routing";
 
 function MerchantsPageContent(): JSX.Element {
   const [filters, setFilters] = useQueryStates(
@@ -151,7 +156,7 @@ function MerchantsPageContent(): JSX.Element {
           {merchantGroups?.data?.map((merchantGroup) => (
             <tr key={merchantGroup.id}>
               <td>
-                <Link href={`/merchants/${merchantGroup.id}`}>
+                <Link href={getMerchantUrl(merchantGroup.id)}>
                   {merchantGroup.name}
                 </Link>
               </td>
@@ -168,7 +173,7 @@ function MerchantsPageContent(): JSX.Element {
               <td>{merchantGroup.emoji}</td>
               <td>
                 {merchantGroup.category?.id ? (
-                  <Link href={`/categories/${merchantGroup.category.id}`}>
+                  <Link href={getCategoryUrl(merchantGroup.category.id)}>
                     {merchantGroup.category.name}
                   </Link>
                 ) : (
@@ -179,7 +184,9 @@ function MerchantsPageContent(): JSX.Element {
               <td>
                 {merchantGroup.transactionsCount ? (
                   <Link
-                    href={`/transactions?merchantGroupIds=${merchantGroup.id}`}
+                    href={getTransactionsUrl({
+                      merchantGroupIds: [merchantGroup.id],
+                    })}
                     className="text-blue-500 hover:underline"
                   >
                     {merchantGroup.transactionsCount}
