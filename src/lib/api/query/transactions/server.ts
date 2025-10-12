@@ -5,46 +5,16 @@ import {
   monzoMerchantGroups,
   monzoTransactions,
 } from "@/lib/db/schema";
-import type { Transaction } from "@/lib/types";
 
-import type { ApiQuery } from "./types";
-import { createApiQuerySchema } from "./utils";
-
-export type TransactionSortFields = keyof Pick<
-  Transaction,
-  | "description"
-  | "created"
-  | "amount"
-  | "localAmount"
-  | "category"
-  | "merchantGroup"
->;
-export type TransactionSearchFields = keyof Pick<
-  Transaction,
-  "description" | "category" | "merchantGroup"
->;
-export type TransactionNumericFilterFields = keyof Pick<
-  Transaction,
-  "amount" | "localAmount"
->;
-export type TransactionDateFilterFields = keyof Pick<
-  Transaction,
-  "created" | "settled"
->;
-export type TransactionBooleanFilterFields = never;
-export type TransactionStringFilterFields = keyof Pick<
-  Transaction,
-  "category" | "merchantGroup"
->;
-
-export type TransactionApiQuery = ApiQuery<
-  TransactionSortFields[],
-  TransactionSearchFields[],
-  TransactionNumericFilterFields[],
-  TransactionDateFilterFields[],
-  TransactionBooleanFilterFields[],
-  TransactionStringFilterFields[]
->;
+import { createApiQuerySchema } from "../utils";
+import type {
+  TransactionBooleanFilterFields,
+  TransactionDateFilterFields,
+  TransactionNumericFilterFields,
+  TransactionSearchFields,
+  TransactionSortFields,
+  TransactionStringFilterFields,
+} from "./types";
 
 export const TransactionsApiQuerySchema = createApiQuerySchema<
   TransactionSortFields[],

@@ -1,14 +1,15 @@
 "use client";
 
 import type { JSX } from "react";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { parseAsArrayOf, parseAsString, useQueryStates } from "nuqs";
 import { DayPicker } from "react-day-picker";
 
-import type { PaginatedData } from "@/lib/api/types";
-import type { Account, Category, Transaction } from "@/lib/types";
+import { useGetAccount } from "@/api/queries/account/use-get-account";
+import { useGetCategories } from "@/api/queries/categories";
+import { useGetTransactions } from "@/api/queries/transactions";
 
 const DEFAULT_END_DATE = new Date().toISOString();
 
@@ -18,28 +19,72 @@ function TransactionsPageContent(): JSX.Element {
       merchantGroupIds: parseAsArrayOf(parseAsString).withDefault([]),
       categoryIds: parseAsArrayOf(parseAsString).withDefault([]),
     },
-    {
-      history: "push",
-    }
+    { history: "push" }
   );
 
   const { merchantGroupIds, categoryIds } = filters;
 
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
-  const [account, setAccount] = useState<Account | null>(null);
-  const [transactions, setTransactions] =
-    useState<PaginatedData<Transaction> | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [accountLoading, setAccountLoading] = useState(true);
-  const [categories, setCategories] = useState<
-    { id: string; name: string }[]
-  >([]);
   const [description, setDescription] = useState("");
   const [debouncedDescription, setDebouncedDescription] = useState("");
 
-  // Debounce description input
+  const { data: account, isLoading: accountLoading } = useGetAccount();
+  const { data: categories = [] } = useGetCategories();
+
+  const queryParams = useMemo(() => {
+    const now = new Date().toISOString();
+    const fromDate = startDate
+      ? startDate.toISOString()
+      : account?.created || now;
+    const toDate = endDate ? endDate.toISOString() : now;
+
+    return {
+      sort: [{ by: "created" as const, order: "desc" as const }],
+      ...(debouncedDescription
+        ? {
+            search: {
+              by: "description" as const,
+              value: debouncedDescription,
+            },
+          }
+        : {}),
+      filters: {
+        date: [{ by: "created" as const, from: fromDate, to: toDate }],
+        ...(merchantGroupIds.length > 0 || categoryIds.length > 0
+          ? {
+              string: [
+                ...(merchantGroupIds.length > 0
+                  ? [
+                      {
+                        by: "merchantGroup" as const,
+                        values: merchantGroupIds,
+                      },
+                    ]
+                  : []),
+                ...(categoryIds.length > 0
+                  ? [{ by: "category" as const, values: categoryIds }]
+                  : []),
+              ],
+            }
+          : {}),
+      },
+    };
+  }, [
+    startDate,
+    endDate,
+    account?.created,
+    debouncedDescription,
+    merchantGroupIds,
+    categoryIds,
+  ]);
+
+  const {
+    data: transactions,
+    isLoading: loading,
+    error,
+  } = useGetTransactions(queryParams);
+
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedDescription(description);
@@ -49,177 +94,17 @@ function TransactionsPageContent(): JSX.Element {
     };
   }, [description]);
 
-  // Fetch account on mount
-  useEffect(() => {
-    const fetchAccount = async (): Promise<void> => {
-      try {
-        const accountRes = await fetch("/api/accounts");
-        if (accountRes.ok) {
-          const { data: accountData } = (await accountRes.json()) as {
-            data: Account;
-          };
-          setAccount(accountData);
-        }
-      } catch {
-        // Optionally handle error
-      } finally {
-        setAccountLoading(false);
-      }
-    };
-    fetchAccount();
-  }, []);
-
-  // Fetch categories on mount
-  useEffect(() => {
-    const fetchCategories = async (): Promise<void> => {
-      try {
-        const categoriesRes = await fetch("/api/categories");
-        if (categoriesRes.ok) {
-          const { data: categories } = (await categoriesRes.json()) as {
-            data: Category[];
-          };
-          setCategories(categories);
-        }
-      } catch {
-        // Optionally handle error
-      }
-    };
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
-    // Don't fetch transactions until account is loaded
-    if (accountLoading) return;
-
-    const fetchTransactions = async (): Promise<void> => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await fetch("/api/transactions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            page: 1,
-            limit: 10,
-            sort: [{ by: "created", order: "desc" }],
-            ...(debouncedDescription
-              ? {
-                  search: {
-                    by: "description",
-                    value: debouncedDescription,
-                  },
-                }
-              : {}),
-            filters: {
-              date: [
-                {
-                  by: "created",
-                  from: startDate
-                    ? startDate.toISOString()
-                    : account?.created || new Date().toISOString(),
-                  to: endDate ? endDate.toISOString() : DEFAULT_END_DATE,
-                },
-              ],
-              ...(merchantGroupIds.length > 0 || categoryIds.length > 0
-                ? {
-                    string: [
-                      ...(merchantGroupIds.length > 0
-                        ? [
-                            {
-                              by: "merchantGroup",
-                              values: merchantGroupIds,
-                            },
-                          ]
-                        : []),
-                      ...(categoryIds.length > 0
-                        ? [{ by: "category", values: categoryIds }]
-                        : []),
-                    ],
-                  }
-                : {}),
-            },
-          }),
-        });
-        if (!response.ok) {
-          const error = await response.text();
-          throw Error(JSON.stringify({ error }, null, 2));
-        }
-        const { data } = (await response.json()) as {
-          data: PaginatedData<Transaction>;
-        };
-        setTransactions(data);
-      } catch (err: unknown) {
-        let message = "Unknown error";
-        if (
-          typeof err === "object" &&
-          err &&
-          "message" in err &&
-          typeof (err as { message?: unknown }).message === "string"
-        ) {
-          message = (err as { message: string }).message;
-        }
-        setError(message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchTransactions();
-  }, [
-    startDate,
-    endDate,
-    categoryIds,
-    debouncedDescription,
-    merchantGroupIds,
-    account,
-    accountLoading,
-  ]);
-
-  // Handler for multi-select
-  const handleCategoryChange = (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ): void => {
-    const selected = Array.from(
-      e.target.selectedOptions,
-      (option) => option.value
-    );
-    setFilters({
-      ...filters,
-      categoryIds: selected,
-    });
-  };
-
-  const clearMerchantGroupFilter = (): void => {
-    setFilters({
-      ...filters,
-      merchantGroupIds: [],
-    });
-  };
-
-  // Clear category filter
-  const clearCategoryFilter = (): void => {
-    setFilters({
-      ...filters,
-      categoryIds: [],
-    });
-  };
-
-  // Clear all filters
-  const clearAllFilters = (): void => {
-    setFilters(null);
-  };
-
   return (
     <div>
-      {/* Show merchant group filter if active */}
       {merchantGroupIds.length > 0 && (
         <div className="mb-4 rounded border border-blue-300 bg-blue-100 p-2">
           <span>
             Filtered by merchant groups: {merchantGroupIds.join(", ")}
           </span>
           <button
-            onClick={clearMerchantGroupFilter}
+            onClick={(): void => {
+              setFilters({ ...filters, merchantGroupIds: [] });
+            }}
             className="ml-2 rounded bg-blue-500 px-2 py-1 text-sm text-white"
           >
             Clear
@@ -227,12 +112,13 @@ function TransactionsPageContent(): JSX.Element {
         </div>
       )}
 
-      {/* Show category filter if active */}
       {categoryIds.length > 0 && (
         <div className="mb-4 rounded border border-green-300 bg-green-100 p-2">
           <span>Filtered by categories: {categoryIds.join(", ")}</span>
           <button
-            onClick={clearCategoryFilter}
+            onClick={(): void => {
+              setFilters({ ...filters, categoryIds: [] });
+            }}
             className="ml-2 rounded bg-green-500 px-2 py-1 text-sm text-white"
           >
             Clear
@@ -240,11 +126,12 @@ function TransactionsPageContent(): JSX.Element {
         </div>
       )}
 
-      {/* Clear all filters button */}
       {(merchantGroupIds.length > 0 || categoryIds.length > 0) && (
         <div className="mb-4">
           <button
-            onClick={clearAllFilters}
+            onClick={(): void => {
+              setFilters(null);
+            }}
             className="rounded bg-gray-500 px-3 py-1 text-sm text-white"
           >
             Clear All Filters
@@ -291,7 +178,13 @@ function TransactionsPageContent(): JSX.Element {
         <select
           multiple
           value={categoryIds}
-          onChange={handleCategoryChange}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
+            const selected = Array.from(
+              e.target.selectedOptions,
+              (option) => option.value
+            );
+            setFilters({ ...filters, categoryIds: selected });
+          }}
         >
           {categories.map((cat) => (
             <option key={cat.id} value={cat.id}>
@@ -302,7 +195,7 @@ function TransactionsPageContent(): JSX.Element {
       </div>
       {accountLoading && <div>Loading account...</div>}
       {loading && <div>Loading transactions...</div>}
-      {error && <div style={{ color: "red" }}>{error}</div>}
+      {error && <div style={{ color: "red" }}>{error.message}</div>}
       {transactions?.pagination.total}
       <table>
         <thead>

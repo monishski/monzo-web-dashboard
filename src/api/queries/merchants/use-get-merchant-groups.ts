@@ -1,8 +1,8 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 
-import type { MerchantGroupApiQuery } from "@/lib/api";
-import type { PaginatedData } from "@/lib/api/types";
+import type { MerchantGroupApiQuery } from "@/lib/api/query/merchants/client";
+import type { PaginatedData } from "@/lib/api/types/response";
 import type { MerchantGroup } from "@/lib/types";
 import { fetchMerchantGroups } from "@/api/endpoints/merchants";
 

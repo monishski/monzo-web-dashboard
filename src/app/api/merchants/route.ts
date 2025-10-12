@@ -11,15 +11,14 @@ import {
   sql,
 } from "drizzle-orm";
 
+import { MiddlewareResponse, withAccount } from "@/lib/api";
 import {
   MerchantGroupsApiQuerySchema,
   merchantGroupSearchFieldMap,
   merchantGroupSortFieldMap,
   merchantGroupStringFilterFieldMap,
-  MiddlewareResponse,
-  withAccount,
-} from "@/lib/api";
-import type { PaginatedData } from "@/lib/api/types";
+} from "@/lib/api/query/merchants/server";
+import type { PaginatedData } from "@/lib/api/types/response";
 import {
   db,
   monzoCategories,

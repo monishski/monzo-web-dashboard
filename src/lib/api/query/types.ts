@@ -16,8 +16,8 @@ export type ApiQuery<
 > = {
   page?: number;
   limit?: number;
-  sort?: { by: Partial<Sort[number]>; order: "asc" | "desc" }[];
-  search?: { by: Partial<Search[number]>; value: string };
+  sort?: { by: Sort[number]; order: "asc" | "desc" }[];
+  search?: { by: Search[number]; value: string };
   filters?: {
     numeric?: { by: NumberFilter[number]; from: number; to: number }[];
     date?: { by: DateFilter[number]; from: string; to: string }[];

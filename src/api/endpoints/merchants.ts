@@ -1,4 +1,5 @@
-import type { MerchantGroupApiQuery, PaginatedData } from "@/lib/api";
+import type { MerchantGroupApiQuery } from "@/lib/api/query/merchants/client";
+import type { PaginatedData } from "@/lib/api/types/response";
 import type { Category, MerchantGroup } from "@/lib/types";
 
 import { apiHttpClient } from "./client";

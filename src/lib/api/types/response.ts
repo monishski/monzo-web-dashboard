@@ -20,3 +20,9 @@ export type PaginatedData<T> = {
     size: number;
   };
 };
+
+export enum BulkUpdateTransactionScope {
+  ALL = "all",
+  PAST = "past",
+  FUTURE = "future",
+}

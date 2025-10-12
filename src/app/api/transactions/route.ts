@@ -9,15 +9,14 @@ import {
   inArray,
 } from "drizzle-orm";
 
+import { MiddlewareResponse, withAccount } from "@/lib/api";
 import {
-  MiddlewareResponse,
   TransactionsApiQuerySchema,
   transactionsSearchFieldMap,
   transactionsSortFieldMap,
   transactionsStringFilterFieldMap,
-  withAccount,
-} from "@/lib/api";
-import type { PaginatedData } from "@/lib/api";
+} from "@/lib/api/query/transactions/server";
+import type { PaginatedData } from "@/lib/api/types/response";
 import {
   db,
   monzoCategories,
