@@ -3,7 +3,7 @@
 import type { JSX } from "react";
 import Link from "next/link";
 
-import { useGetCategories } from "@/api/queries/categories";
+import { useGetCategories } from "@/api/queries";
 import { getCategoryUrl, getCreateCategoryUrl } from "@/routing";
 
 function CategoriesPage(): JSX.Element {

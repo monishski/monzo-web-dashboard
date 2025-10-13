@@ -6,12 +6,12 @@ import { redirect, useParams } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
 
 import { BulkUpdateTransactionScope } from "@/lib/api/types/response";
-import { useGetCategories } from "@/api/queries/categories";
 import {
   useBulkUpdateTransactions,
+  useGetCategories,
   useGetTransaction,
   useUpdateTransaction,
-} from "@/api/queries/transactions";
+} from "@/api/queries";
 import { getTransactionsUrl, getTransactionUrl } from "@/routing";
 
 const TransactionPage: React.FC = () => {

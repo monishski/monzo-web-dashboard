@@ -4,11 +4,11 @@ import { useState, type JSX } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 
-import { useGetCategories } from "@/api/queries/categories";
 import {
+  useGetCategories,
   useGetMerchantGroup,
   useUpdateMerchantGroup,
-} from "@/api/queries/merchants";
+} from "@/api/queries";
 import { getMerchantUrl, getTransactionsUrl } from "@/routing";
 
 function MerchantPage(): JSX.Element {

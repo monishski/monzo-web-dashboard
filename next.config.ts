@@ -14,6 +14,7 @@ const nextConfig: NextConfig = {
     optimizePackageImports: [
       "@/components/atoms",
       "@/components/molecules",
+      "@/api/queries",
       "@/assets/svgs",
     ],
   },

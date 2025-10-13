@@ -9,7 +9,7 @@ import {
   useDeleteCategory,
   useGetCategory,
   useUpdateCategory,
-} from "@/api/queries/categories";
+} from "@/api/queries";
 import {
   getCategoriesUrl,
   getMerchantsUrl,

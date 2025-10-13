@@ -6,8 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { parseAsArrayOf, parseAsString, useQueryStates } from "nuqs";
 
-import { useGetCategories } from "@/api/queries/categories";
-import { useGetMerchantGroups } from "@/api/queries/merchants";
+import { useGetCategories, useGetMerchantGroups } from "@/api/queries";
 import {
   getCategoryUrl,
   getMerchantUrl,
