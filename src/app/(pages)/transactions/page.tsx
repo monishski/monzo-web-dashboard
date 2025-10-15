@@ -7,9 +7,16 @@ import Link from "next/link";
 import { parseAsArrayOf, parseAsString, useQueryStates } from "nuqs";
 import { DayPicker } from "react-day-picker";
 
-import { useGetAccount } from "@/api/queries/account/use-get-account";
-import { useGetCategories } from "@/api/queries/categories";
-import { useGetTransactions } from "@/api/queries/transactions";
+import {
+  useGetAccount,
+  useGetCategories,
+  useGetTransactions,
+} from "@/api/queries";
+import {
+  getCategoryUrl,
+  getMerchantUrl,
+  getTransactionUrl,
+} from "@/routing";
 
 const DEFAULT_END_DATE = new Date().toISOString();
 
@@ -214,7 +221,7 @@ function TransactionsPageContent(): JSX.Element {
           {transactions?.data?.map((tx) => (
             <tr key={tx.id}>
               <td>
-                <Link href={`/transactions/${tx.id}`}>
+                <Link href={getTransactionUrl(tx.id)}>
                   {tx.description}
                 </Link>
               </td>
@@ -223,7 +230,7 @@ function TransactionsPageContent(): JSX.Element {
               <td>{tx.settled}</td>
               <td>
                 {tx.category?.id ? (
-                  <Link href={`/categories/${tx.category.id}`}>
+                  <Link href={getCategoryUrl(tx.category.id)}>
                     {tx.category?.name ?? ""}
                   </Link>
                 ) : (
@@ -232,7 +239,7 @@ function TransactionsPageContent(): JSX.Element {
               </td>
               <td>
                 {tx.merchantGroup?.id ? (
-                  <Link href={`/merchants/${tx.merchantGroup.id}`}>
+                  <Link href={getMerchantUrl(tx.merchantGroup.id)}>
                     <div className="flex flex-nowrap items-center gap-2">
                       {tx.merchantGroup?.logo && (
                         <Image

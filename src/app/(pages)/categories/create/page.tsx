@@ -4,7 +4,8 @@ import type { JSX } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { useCreateCategory } from "@/api/queries/categories";
+import { useCreateCategory } from "@/api/queries";
+import { getCategoriesUrl } from "@/routing";
 
 export default function CreateCategoryPage(): JSX.Element {
   const [name, setName] = useState("");
@@ -12,7 +13,7 @@ export default function CreateCategoryPage(): JSX.Element {
   const { mutate: createCategory, isPending: isCreating } =
     useCreateCategory({
       onSuccess: () => {
-        router.push("/categories");
+        router.push(getCategoriesUrl());
       },
     });
 

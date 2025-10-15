@@ -3,7 +3,8 @@
 import type { JSX } from "react";
 import Link from "next/link";
 
-import { useGetCategories } from "@/api/queries/categories";
+import { useGetCategories } from "@/api/queries";
+import { getCategoryUrl, getCreateCategoryUrl } from "@/routing";
 
 function CategoriesPage(): JSX.Element {
   const { data: categories, isLoading, error } = useGetCategories();
@@ -13,16 +14,14 @@ function CategoriesPage(): JSX.Element {
 
   return (
     <div>
-      <Link href="/categories/create">Create new category</Link>
+      <Link href={getCreateCategoryUrl()}>Create new category</Link>
 
       {categories &&
         categories.length > 0 &&
         categories.map((category) => (
           <div key={category.id}>
             <pre>{JSON.stringify(category, null, 2)}</pre>
-            <Link href={`/categories/${category.id}`}>
-              {category.name}
-            </Link>
+            <Link href={getCategoryUrl(category.id)}>{category.name}</Link>
           </div>
         ))}
     </div>

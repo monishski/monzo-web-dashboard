@@ -6,12 +6,13 @@ import { redirect, useParams } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
 
 import { BulkUpdateTransactionScope } from "@/lib/api/types/response";
-import { useGetCategories } from "@/api/queries/categories";
 import {
   useBulkUpdateTransactions,
+  useGetCategories,
   useGetTransaction,
   useUpdateTransaction,
-} from "@/api/queries/transactions";
+} from "@/api/queries";
+import { getTransactionsUrl, getTransactionUrl } from "@/routing";
 
 const TransactionPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -34,7 +35,7 @@ const TransactionPage: React.FC = () => {
     error: updateTransactionError,
   } = useUpdateTransaction({
     onSuccess: () => {
-      redirect(`/transactions/${id}`);
+      redirect(getTransactionUrl(id));
     },
   });
   const {
@@ -43,7 +44,7 @@ const TransactionPage: React.FC = () => {
     error: bulkUpdateTransactionError,
   } = useBulkUpdateTransactions({
     onSuccess: () => {
-      redirect(`/transactions/${id}`);
+      redirect(getTransactionUrl(id));
     },
   });
 
@@ -210,7 +211,7 @@ const TransactionPage: React.FC = () => {
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
-      <Link href="/transactions">Back to Transactions</Link>
+      <Link href={getTransactionsUrl()}>Back to Transactions</Link>
     </div>
   );
 };
