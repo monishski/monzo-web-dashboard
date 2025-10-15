@@ -1,7 +1,6 @@
 import { eq } from "drizzle-orm";
 
-import { withAuth } from "@/lib/api/middleware";
-import { MiddlewareResponse } from "@/lib/api/response";
+import { MiddlewareResponse, withAuth } from "@/lib/api";
 import { db, monzoAccounts } from "@/lib/db";
 import type { Account } from "@/lib/types";
 

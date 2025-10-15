@@ -28,41 +28,41 @@ export class HttpClient {
     return res.data;
   }
 
-  async post<Data = undefined, Response = undefined>({
+  async post<Payload, Response = undefined>({
     url,
-    data,
+    payload,
     config,
   }: {
     url: string;
-    data: Data;
+    payload: Payload;
     config?: AxiosRequestConfig;
   }): Promise<Response> {
     const res = await this.instance.post<
       Response,
-      AxiosResponse<Response, Data>,
-      Data
-    >(url, data, config);
+      AxiosResponse<Response, Payload>,
+      Payload
+    >(url, payload, config);
     return res.data;
   }
 
-  async put<Data = undefined, Response = undefined>({
+  async put<Payload, Response = undefined>({
     url,
-    data,
+    payload,
     config,
   }: {
     url: string;
-    data: Data;
+    payload: Payload;
     config?: AxiosRequestConfig;
   }): Promise<Response> {
     const res = await this.instance.put<
       Response,
-      AxiosResponse<Response, Data>,
-      Data
-    >(url, data, config);
+      AxiosResponse<Response, Payload>,
+      Payload
+    >(url, payload, config);
     return res.data;
   }
 
-  async delete<Response>({
+  async delete<Response = undefined>({
     url,
     config,
   }: {

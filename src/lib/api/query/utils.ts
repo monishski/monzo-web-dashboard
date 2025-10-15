@@ -1,6 +1,6 @@
 import z from "zod";
 
-import type { ApiQuerySchema } from "./types";
+import { SortOrder, type ApiQuerySchema } from "./types";
 
 export const createApiQuerySchema = <
   Sort extends readonly string[] = readonly string[],
@@ -37,7 +37,7 @@ export const createApiQuerySchema = <
       .array(
         z.object({
           by: z.enum(sort ?? ([] as unknown as Sort)),
-          order: z.enum(["asc", "desc"]),
+          order: z.enum([SortOrder.ASC, SortOrder.DESC]),
         })
       )
       .default([]),

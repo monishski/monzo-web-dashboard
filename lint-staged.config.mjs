@@ -1,4 +1,4 @@
 export default {
-  "*.{js,jsx,ts,tsx}": ["pnpm lint", "pnpm prettier"],
-  "*.{json,md,yml,yaml}": ["pnpm prettier"],
+  "*.{js,jsx,ts,tsx}": ["eslint .", "prettier --write"],
+  "*.{json,md,yml,yaml}": ["prettier --write"],
 };

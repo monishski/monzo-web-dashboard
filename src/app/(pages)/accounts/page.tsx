@@ -1,27 +1,18 @@
 "use client";
 
-import { useEffect, useState, type JSX } from "react";
+import { useGetAccount } from "@/api/queries/account/use-get-account";
 
-import { ThemeButton } from "@/components/molecules";
-
-function AccountsPage(): JSX.Element {
-  const [account, setAccount] = useState(null);
-
-  useEffect(() => {
-    const fetchAccount = async (): Promise<void> => {
-      const response = await fetch("/api/accounts");
-      if (!response.ok) throw Error("Failed to fetch accounts");
-      const { data: account } = await response.json();
-      setAccount(account);
-    };
-    fetchAccount();
-  }, [setAccount]);
+export default function AccountsPage(): React.JSX.Element {
+  const { data: account, isFetching, isError } = useGetAccount();
 
   return (
     <div>
-      <ThemeButton />
-      <pre>{JSON.stringify(account, null, 2)}</pre>
+      {isFetching && <p>Loading...</p>}
+      {isError && <p>Error fetching account</p>}
+      {!isFetching && !isError && !account && <p>No account found</p>}
+      {!isFetching && !isError && account && (
+        <pre>{JSON.stringify(account, null, 2)}</pre>
+      )}
     </div>
   );
 }
-export default AccountsPage;

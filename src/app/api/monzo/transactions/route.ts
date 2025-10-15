@@ -1,5 +1,4 @@
-import { withAuthAccessToken } from "@/lib/api/middleware";
-import { MiddlewareResponse } from "@/lib/api/response";
+import { MiddlewareResponse, withAuthAccessToken } from "@/lib/api";
 import type {
   MonzoDbCategory,
   MonzoDbMerchant,
@@ -141,7 +140,7 @@ function getDatabaseData({
   };
 }
 
-export const POST = withAuthAccessToken(
+export const POST = withAuthAccessToken<{ transactionCount: number }>(
   async ({ request, accessToken }) => {
     try {
       const { accountId, accountCreated } = await request.json();
@@ -179,7 +178,9 @@ export const POST = withAuthAccessToken(
           .returning();
       });
 
-      return MiddlewareResponse.created();
+      return MiddlewareResponse.created({
+        transactionCount: _monzoTransactions.length,
+      });
     } catch (err) {
       if (err instanceof MonzoApiError) {
         const { status, error } = err;

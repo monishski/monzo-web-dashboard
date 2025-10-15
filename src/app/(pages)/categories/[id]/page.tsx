@@ -1,108 +1,82 @@
-"use server";
+"use client";
 
 import type { JSX } from "react";
-import { headers } from "next/headers";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 
-async function deleteCategory(id: string): Promise<void> {
-  "use server";
+import {
+  useDeleteCategory,
+  useGetCategory,
+  useUpdateCategory,
+} from "@/api/queries/categories";
 
-  const headersList = await headers();
-  const cookie = headersList.get("cookie");
-
-  const response = await fetch(
-    `http://localhost:3001/api/categories/${id}`,
-    {
-      method: "DELETE",
-      headers: {
-        ...(cookie ? { cookie } : {}),
-      },
-    }
-  );
-
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(error);
-  }
-
-  redirect("/categories");
-}
-
-async function updateCategory(
-  id: string,
-  formData: FormData
-): Promise<void> {
-  "use server";
-
-  const name = formData.get("name");
-  if (!name || typeof name !== "string") {
-    throw new Error("Name is required");
-  }
-
-  const headersList = await headers();
-  const cookie = headersList.get("cookie");
-
-  const response = await fetch(
-    `http://localhost:3001/api/categories/${id}`,
-    {
-      method: "PUT",
-      headers: {
-        ...(cookie ? { cookie } : {}),
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ name }),
-    }
-  );
-
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(error);
-  }
-
-  redirect("/categories");
-}
-
-async function CategoryPage({
+function CategoryPage({
   params,
 }: {
   params: Promise<{ id: string }>;
-}): Promise<JSX.Element> {
-  const { id } = await params;
+}): JSX.Element {
+  const [id, setId] = useState<string>("");
+  const [name, setName] = useState("");
+  const router = useRouter();
 
-  const categoryRes = await fetch(
-    `http://localhost:3001/api/categories/${id}`,
-    { headers: await headers() }
-  );
-  if (!categoryRes.ok) {
-    const error = await categoryRes.text();
-    throw new Error(JSON.stringify(error, null, 2));
-  }
-  const { data: category } = await categoryRes.json();
+  const { data: category, isLoading, error } = useGetCategory(id);
+  const { mutate: updateCategory, isPending: isUpdating } =
+    useUpdateCategory({
+      onSuccess: () => {
+        router.push("/categories");
+      },
+    });
+  const { mutate: deleteCategory, isPending: isDeleting } =
+    useDeleteCategory({
+      onSuccess: () => {
+        router.push("/categories");
+      },
+    });
 
-  const updateCategoryWithId = updateCategory.bind(null, id);
-  const deleteCategoryWithId = deleteCategory.bind(null, id);
+  useEffect(() => {
+    params.then(({ id }) => setId(id));
+  }, [params]);
+
+  useEffect(() => {
+    if (category) setName(category.name);
+  }, [category]);
+
+  const handleUpdate = (e: React.FormEvent): void => {
+    e.preventDefault();
+    updateCategory({ id, name: name.trim() });
+  };
+
+  const handleDelete = (): void => {
+    deleteCategory(id);
+  };
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+  if (!category) return <div>Category not found</div>;
 
   return (
     <div>
       <pre>{JSON.stringify(category, null, 2)}</pre>
-      <form action={deleteCategoryWithId}>
-        <button type="submit">Delete</button>
-      </form>
+      <button onClick={handleDelete} disabled={isDeleting}>
+        {isDeleting ? "Deleting..." : "Delete"}
+      </button>
       <h1>Edit</h1>
-      <form action={updateCategoryWithId}>
+      <form onSubmit={handleUpdate}>
         <div>
           <label htmlFor="name">Category Name</label>
           <input
             type="text"
             id="name"
-            name="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             required
             placeholder="Enter category name"
-            defaultValue={category.name}
           />
         </div>
-        <button type="submit">Update</button>
+        <button type="submit" disabled={isUpdating}>
+          {isUpdating ? "Updating..." : "Update"}
+        </button>
       </form>
       <Link href={`/transactions?categoryIds=${id}`}>Transactions</Link>
       <Link href={`/merchants?categoryIds=${id}`}>Merchants</Link>

@@ -1,7 +1,6 @@
 import { and, eq } from "drizzle-orm";
 
-import { withAccount } from "@/lib/api/middleware";
-import { MiddlewareResponse } from "@/lib/api/response";
+import { MiddlewareResponse, withAccount } from "@/lib/api";
 import { db, monzoCategories } from "@/lib/db";
 import type { Category } from "@/lib/types";
 

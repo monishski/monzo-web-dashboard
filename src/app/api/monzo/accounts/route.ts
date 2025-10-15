@@ -1,5 +1,4 @@
-import { withAuthAccessToken } from "@/lib/api/middleware";
-import { MiddlewareResponse } from "@/lib/api/response";
+import { MiddlewareResponse, withAuthAccessToken } from "@/lib/api";
 import { db, monzoAccounts } from "@/lib/db";
 import type { MonzoDbAccount } from "@/lib/db";
 import { fetchMonzoAccount, MonzoApiError } from "@/lib/http/monzo";

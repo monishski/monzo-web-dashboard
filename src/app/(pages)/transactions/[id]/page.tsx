@@ -1,96 +1,60 @@
 "use client";
 
-import type React from "react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
 
-import type { Category, Transaction } from "@/lib/types";
+import { BulkUpdateTransactionScope } from "@/lib/api/types/response";
+import { useGetCategories } from "@/api/queries/categories";
+import {
+  useBulkUpdateTransactions,
+  useGetTransaction,
+  useUpdateTransaction,
+} from "@/api/queries/transactions";
 
 const TransactionPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
 
-  const [transaction, setTransaction] = useState<Transaction | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [modalOpen, setModalOpen] = useState<boolean>(false);
-  const [selectedScope, setSelectedScope] = useState<string>("single");
-  const [submitting, setSubmitting] = useState<boolean>(false);
-  const [submitError, setSubmitError] = useState<string>("");
+  const [selectedScope, setSelectedScope] = useState<
+    "single" | BulkUpdateTransactionScope
+  >("single");
 
-  useEffect((): void => {
-    async function fetchData(): Promise<void> {
-      setLoading(true);
-      try {
-        const tRes = await fetch(`/api/transactions/${id}`);
-        if (!tRes.ok) throw new Error(await tRes.text());
-        const { data: t } = await tRes.json();
-        setTransaction(t);
-        setSelectedCategory(t.category?.id || "");
-        const cRes = await fetch(`/api/categories`);
-        if (!cRes.ok) throw new Error(await cRes.text());
-        const { data: c } = await cRes.json();
-        setCategories(c);
-      } catch (e: unknown) {
-        if (e instanceof Error) {
-          setError(e.message);
-        } else {
-          setError("An unknown error occurred");
-        }
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData();
-  }, [id]);
+  const {
+    data: transaction,
+    isLoading: loading,
+    error,
+  } = useGetTransaction(id);
+  const { data: categories = [] } = useGetCategories();
+  const {
+    mutate: updateTransaction,
+    isPending: isUpdatingTransaction,
+    error: updateTransactionError,
+  } = useUpdateTransaction({
+    onSuccess: () => {
+      redirect(`/transactions/${id}`);
+    },
+  });
+  const {
+    mutate: bulkUpdateTransactions,
+    isPending: isBulkUpdatingTransactions,
+    error: bulkUpdateTransactionError,
+  } = useBulkUpdateTransactions({
+    onSuccess: () => {
+      redirect(`/transactions/${id}`);
+    },
+  });
 
-  const handleUpdate = async (): Promise<void> => {
-    setSubmitting(true);
-    setSubmitError("");
-    try {
-      if (selectedScope === "single") {
-        // PUT /api/transactions/:id
-        const res = await fetch(`/api/transactions/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ categoryId: selectedCategory }),
-        });
-        if (!res.ok) throw new Error(await res.text());
-      } else {
-        // POST /api/transactions/bulk
-        const scopeMap: Record<string, string> = {
-          all: "all",
-          past: "past",
-          future: "future",
-        };
-        const res = await fetch(`/api/transactions/bulk`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            transactionId: id,
-            categoryId: selectedCategory,
-            scope: scopeMap[selectedScope],
-          }),
-        });
-        if (!res.ok) throw new Error(await res.text());
-      }
-      window.location.href = `/transactions/${id}`;
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        setSubmitError(e.message);
-      } else {
-        setSubmitError("An unknown error occurred");
-      }
-    } finally {
-      setSubmitting(false);
+  useEffect(() => {
+    if (transaction?.category?.id) {
+      setSelectedCategory(transaction.category.id);
     }
-  };
+  }, [transaction]);
 
   if (loading) return <div>Loading...</div>;
-  if (error) return <div style={{ color: "red" }}>{error}</div>;
+  if (error) return <div style={{ color: "red" }}>{error.message}</div>;
   if (!transaction) return <div>Transaction not found</div>;
 
   return (
@@ -143,12 +107,7 @@ const TransactionPage: React.FC = () => {
             }}
           >
             <Dialog.Title>How should this update be applied?</Dialog.Title>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleUpdate();
-              }}
-            >
+            <form>
               <div style={{ margin: "16px 0" }}>
                 <label style={{ display: "block", marginBottom: 8 }}>
                   <input
@@ -164,9 +123,13 @@ const TransactionPage: React.FC = () => {
                   <input
                     type="radio"
                     name="scope"
-                    value="all"
-                    checked={selectedScope === "all"}
-                    onChange={() => setSelectedScope("all")}
+                    value={BulkUpdateTransactionScope.ALL}
+                    checked={
+                      selectedScope === BulkUpdateTransactionScope.ALL
+                    }
+                    onChange={() =>
+                      setSelectedScope(BulkUpdateTransactionScope.ALL)
+                    }
                   />
                   All related transactions (past & future)
                 </label>
@@ -174,9 +137,13 @@ const TransactionPage: React.FC = () => {
                   <input
                     type="radio"
                     name="scope"
-                    value="past"
-                    checked={selectedScope === "past"}
-                    onChange={() => setSelectedScope("past")}
+                    value={BulkUpdateTransactionScope.PAST}
+                    checked={
+                      selectedScope === BulkUpdateTransactionScope.PAST
+                    }
+                    onChange={() =>
+                      setSelectedScope(BulkUpdateTransactionScope.PAST)
+                    }
                   />
                   Current and all previous transactions
                 </label>
@@ -184,22 +151,57 @@ const TransactionPage: React.FC = () => {
                   <input
                     type="radio"
                     name="scope"
-                    value="future"
-                    checked={selectedScope === "future"}
-                    onChange={() => setSelectedScope("future")}
+                    value={BulkUpdateTransactionScope.FUTURE}
+                    checked={
+                      selectedScope === BulkUpdateTransactionScope.FUTURE
+                    }
+                    onChange={() =>
+                      setSelectedScope(BulkUpdateTransactionScope.FUTURE)
+                    }
                   />
                   Current and all future transactions
                 </label>
               </div>
-              {submitError && (
-                <div style={{ color: "red" }}>{submitError}</div>
+              {(updateTransactionError || bulkUpdateTransactionError) && (
+                <div style={{ color: "red" }}>
+                  {updateTransactionError?.message ||
+                    bulkUpdateTransactionError?.message}
+                </div>
               )}
               <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-                <button type="submit" disabled={submitting}>
-                  {submitting ? "Updating..." : "Confirm"}
+                <button
+                  type="submit"
+                  disabled={
+                    isUpdatingTransaction || isBulkUpdatingTransactions
+                  }
+                  onClick={(e) => {
+                    e.preventDefault();
+
+                    if (selectedScope === "single") {
+                      updateTransaction({
+                        id,
+                        categoryId: selectedCategory,
+                      });
+                    } else {
+                      bulkUpdateTransactions({
+                        transactionId: id,
+                        categoryId: selectedCategory,
+                        scope: selectedScope,
+                      });
+                    }
+                  }}
+                >
+                  {isUpdatingTransaction || isBulkUpdatingTransactions
+                    ? "Updating..."
+                    : "Confirm"}
                 </button>
                 <Dialog.Close asChild>
-                  <button type="button" disabled={submitting}>
+                  <button
+                    type="button"
+                    disabled={
+                      isUpdatingTransaction || isBulkUpdatingTransactions
+                    }
+                  >
                     Cancel
                   </button>
                 </Dialog.Close>

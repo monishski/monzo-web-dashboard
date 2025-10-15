@@ -1,15 +1,9 @@
 import { and, eq, gte, lte } from "drizzle-orm";
 import * as z from "zod";
 
-import { withAccount } from "@/lib/api/middleware";
-import { MiddlewareResponse } from "@/lib/api/response";
+import { MiddlewareResponse, withAccount } from "@/lib/api";
+import { BulkUpdateTransactionScope } from "@/lib/api/types/response";
 import { db, monzoMerchantGroups, monzoTransactions } from "@/lib/db";
-
-enum BulkUpdateTransactionScope {
-  ALL = "all",
-  PAST = "past",
-  FUTURE = "future",
-}
 
 const BulkUpdateTransactionsSchema = z.object({
   transactionId: z.string(),

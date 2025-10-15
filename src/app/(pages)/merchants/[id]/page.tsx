@@ -1,103 +1,73 @@
-"use server";
+"use client";
 
-import type { JSX } from "react";
-import { headers } from "next/headers";
+import { useState, type JSX } from "react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
-import type { Category } from "@/lib/types";
+import { useGetCategories } from "@/api/queries/categories";
+import {
+  useGetMerchantGroup,
+  useUpdateMerchantGroup,
+} from "@/api/queries/merchants";
 
-async function updateMerchantGroupCategory(
-  id: string,
-  formData: FormData
-): Promise<void> {
-  "use server";
+function MerchantPage(): JSX.Element {
+  const router = useRouter();
+  const { id } = useParams<{ id: string }>();
 
-  const categoryId = formData.get("categoryId");
-  if (!categoryId || typeof categoryId !== "string") {
-    throw new Error("Category is required");
-  }
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
 
-  const headersList = await headers();
-  const cookie = headersList.get("cookie");
-
-  const response = await fetch(
-    `http://localhost:3001/api/merchants/${id}`,
-    {
-      method: "PUT",
-      headers: {
-        ...(cookie ? { cookie } : {}),
-        "Content-Type": "application/json",
+  const { data: merchantGroup, isLoading: isMerchantsLoading } =
+    useGetMerchantGroup(id);
+  const { data: categories, isLoading: isCategoriesLoading } =
+    useGetCategories();
+  const { mutate: updateMerchant, isPending: isMerchantUpdating } =
+    useUpdateMerchantGroup({
+      onSuccess: () => {
+        router.push(`/merchants/${id}`);
       },
-      body: JSON.stringify({ categoryId }),
-    }
-  );
+    });
 
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(error);
-  }
-
-  redirect(`/merchants/${id}`);
-}
-
-async function MerchantPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}): Promise<JSX.Element> {
-  const { id } = await params;
-
-  // Fetch merchant group
-  const merchantGroupRes = await fetch(
-    `http://localhost:3001/api/merchants/${id}`,
-    { headers: await headers() }
-  );
-  if (!merchantGroupRes.ok) {
-    const error = await merchantGroupRes.text();
-    throw new Error(JSON.stringify(error, null, 2));
-  }
-  const { data: merchantGroup } = await merchantGroupRes.json();
-
-  // Fetch categories
-  const categoriesRes = await fetch(
-    `http://localhost:3001/api/categories`,
-    { headers: await headers() }
-  );
-  if (!categoriesRes.ok) {
-    const error = await categoriesRes.text();
-    throw new Error(JSON.stringify(error, null, 2));
-  }
-  const { data: categories } = (await categoriesRes.json()) as {
-    data: Category[];
+  const handleSubmit = (e: React.FormEvent<HTMLButtonElement>): void => {
+    e.preventDefault();
+    updateMerchant({ id, categoryId: selectedCategory });
   };
 
-  const updateCategoryWithId = updateMerchantGroupCategory.bind(null, id);
+  if (isMerchantsLoading || isCategoriesLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div>
       <pre>{JSON.stringify(merchantGroup, null, 2)}</pre>
       <h1>Edit Merchant Group Category</h1>
-      <form action={updateCategoryWithId}>
+      <form>
         <div>
           <label htmlFor="categoryId">Category</label>
           <select
             id="categoryId"
             name="categoryId"
             required
-            defaultValue={merchantGroup.category?.id || ""}
+            defaultValue={merchantGroup?.category?.id || ""}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            value={selectedCategory}
           >
             <option value="" disabled>
               Select a category
             </option>
-            {categories.map((cat) => (
+            {categories?.map((cat) => (
               <option key={cat.id} value={cat.id}>
                 {cat.name}
               </option>
             ))}
           </select>
         </div>
-        <button type="submit">Update</button>
+        <button
+          type="submit"
+          onClick={handleSubmit}
+          disabled={isMerchantUpdating}
+        >
+          {isMerchantUpdating ? "Updating..." : "Update"}
+        </button>
       </form>
       <Link href={`/transactions?merchantGroupIds=${id}`}>
         Transactions

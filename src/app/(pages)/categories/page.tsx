@@ -1,26 +1,22 @@
+"use client";
+
 import type { JSX } from "react";
-import { headers } from "next/headers";
 import Link from "next/link";
 
-import type { Category } from "@/lib/types";
+import { useGetCategories } from "@/api/queries/categories";
 
-async function CategoriesPage(): Promise<JSX.Element> {
-  const response = await fetch("http://localhost:3001/api/categories", {
-    headers: await headers(),
-  });
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(JSON.stringify(error, null, 2));
-  }
-  const { data: categories } = (await response.json()) as {
-    data: Category[];
-  };
+function CategoriesPage(): JSX.Element {
+  const { data: categories, isLoading, error } = useGetCategories();
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
 
   return (
     <div>
       <Link href="/categories/create">Create new category</Link>
 
-      {categories.length > 0 &&
+      {categories &&
+        categories.length > 0 &&
         categories.map((category) => (
           <div key={category.id}>
             <pre>{JSON.stringify(category, null, 2)}</pre>
