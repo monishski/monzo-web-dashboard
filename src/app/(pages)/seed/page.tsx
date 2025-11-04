@@ -46,12 +46,37 @@ function SeedingPage(): JSX.Element {
     }
   };
 
+  const handleSyncTransactions = async (): Promise<void> => {
+    const accountResponse = await fetch("/api/accounts");
+    if (!accountResponse.ok) {
+      const error = await accountResponse.text();
+      throw Error(error);
+    }
+    const { data: account } = await accountResponse.json();
+
+    const transactionResponse = await fetch(
+      "/api/monzo/transactions/sync",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          accountId: account.id,
+          accountCreated: account.created,
+        }),
+      }
+    );
+    if (!transactionResponse.ok) {
+      const error = await transactionResponse.text();
+      throw Error(error);
+    }
+  };
+
   return (
-    <div>
+    <div className="flex flex-col gap-1">
       <button onClick={handleSeed}>Seed data</button>
       <button onClick={handleSeedTransactions}>
         Seed only transactions
       </button>
+      <button onClick={handleSyncTransactions}>Sync transactions</button>
     </div>
   );
 }

@@ -62,16 +62,20 @@ export const fetchMonzoAccount = async (
   }
 };
 
-export const fetchMonzoTransactions = async (
-  accessToken: string,
-  accountId: string,
-  accountCreated: string
-): Promise<MonzoTransaction[]> => {
+export const fetchMonzoTransactions = async ({
+  accessToken,
+  accountId,
+  since,
+}: {
+  accessToken: string;
+  accountId: string;
+  since: string;
+}): Promise<MonzoTransaction[]> => {
   try {
     const transactionsMap: Record<string, MonzoTransaction> = {};
-    let since = new Date(accountCreated); // Start date
+    let sinceDate = new Date(since); // Start date
     // Max difference between since and before is 12 months (1 year)
-    let before = dayjs(since).add(11, "month").toDate(); // End date
+    let before = dayjs(sinceDate).add(11, "month").toDate(); // End date
     const now = new Date();
 
     while (true) {
@@ -81,7 +85,7 @@ export const fetchMonzoTransactions = async (
           account_id: accountId,
           limit: 100,
           before: before > now ? now.toISOString() : before.toISOString(), // Required
-          since: since.toISOString(),
+          since: sinceDate.toISOString(),
         },
         { arrayFormat: "brackets" }
       );
@@ -105,13 +109,13 @@ export const fetchMonzoTransactions = async (
           transactionsMap[id] = transaction;
           newTransactionsFound = true;
           const txnCreated = new Date(created);
-          if (txnCreated > since) {
-            since = txnCreated;
+          if (txnCreated > sinceDate) {
+            sinceDate = txnCreated;
           }
         }
       }
 
-      before = dayjs(since).add(11, "month").toDate();
+      before = dayjs(sinceDate).add(11, "month").toDate();
 
       if (!newTransactionsFound) break;
     }
