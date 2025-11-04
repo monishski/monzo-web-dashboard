@@ -1,6 +1,6 @@
 import type { Category } from "@/lib/types";
 
-import { apiHttpClient } from "./client";
+import { apiHttpClient } from "./api-http-client";
 
 export const fetchCategories = async (): Promise<Category[]> =>
   await apiHttpClient.get({

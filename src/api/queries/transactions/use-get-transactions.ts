@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { TransactionApiQuery } from "@/lib/api/query/transactions/client";
 import type { PaginatedData } from "@/lib/api/types/response";
 import type { Transaction } from "@/lib/types";
-import { fetchTransactions } from "@/api/endpoints/transactions";
+import { fetchTransactions } from "@/api/endpoints/client/transactions";
 
 import { transactionsQueryKeys } from "./query-key.factory";
 

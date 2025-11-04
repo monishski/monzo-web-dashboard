@@ -2,7 +2,7 @@ import type { UseMutationResult } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import type { Category } from "@/lib/types";
-import { deleteCategory } from "@/api/endpoints/categories";
+import { deleteCategory } from "@/api/endpoints/client/categories";
 
 import { categoriesQueryKeys } from "./query-key.factory";
 

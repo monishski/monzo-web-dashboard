@@ -2,7 +2,7 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 
 import type { Account } from "@/lib/types";
-import { fetchAccount } from "@/api/endpoints/account";
+import { fetchAccount } from "@/api/endpoints/client/account";
 
 import { accountQueryKeys } from "./query-key.factory";
 

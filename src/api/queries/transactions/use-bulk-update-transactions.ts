@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import type { BulkUpdateTransactionScope } from "@/lib/api/types/response";
 import type { Category, Transaction } from "@/lib/types";
-import { bulkUpdateTransactions } from "@/api/endpoints/transactions";
+import { bulkUpdateTransactions } from "@/api/endpoints/client/transactions";
 
 import { transactionsQueryKeys } from "./query-key.factory";
 

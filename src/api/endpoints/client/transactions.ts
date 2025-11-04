@@ -5,7 +5,7 @@ import type {
 } from "@/lib/api/types/response";
 import type { Category, MerchantGroup, Transaction } from "@/lib/types";
 
-import { apiHttpClient } from "./client";
+import { apiHttpClient } from "./api-http-client";
 
 export const fetchTransactions = async (
   query: TransactionApiQuery
