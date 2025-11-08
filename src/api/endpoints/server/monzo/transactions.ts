@@ -2,65 +2,13 @@ import { AxiosError } from "axios";
 import dayjs from "dayjs";
 import qs from "qs";
 
-import { HttpClient } from "./client";
-import type { MonzoAccount, MonzoTransaction } from "./types";
+import type {
+  MonzoError,
+  MonzoTransaction,
+} from "@/lib/api/types/monzo-entities";
 
-const monzoHttpClient = new HttpClient(process.env.MONZO_API_URL);
-
-type MonzoError = {
-  code: string;
-  error: string;
-  error_description?: string;
-  message: string;
-  retryable?: Record<string, unknown>;
-  marshal_count?: number;
-  params?: Record<string, unknown>;
-};
-
-export class MonzoApiError extends Error {
-  status: number;
-  error: MonzoError;
-
-  constructor({ status, error }: { status: number; error: MonzoError }) {
-    super(error.message);
-
-    this.status = status;
-    this.error = error;
-  }
-}
-
-export const fetchMonzoAccount = async (
-  accessToken: string | undefined
-): Promise<MonzoAccount | null> => {
-  try {
-    const { accounts } = await monzoHttpClient.get<{
-      accounts: MonzoAccount[];
-    }>({
-      url: "/accounts",
-      config: {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      },
-    });
-
-    const retailAccount = accounts?.find(
-      (account) => account.type === "uk_retail"
-    );
-
-    return retailAccount ?? null;
-  } catch (err) {
-    if (err instanceof AxiosError && err.response) {
-      const { status, data } = err.response;
-      throw new MonzoApiError({
-        status,
-        error: data as MonzoError,
-      });
-    }
-
-    throw err;
-  }
-};
+import { MonzoApiError } from "./monzo-api-error";
+import { monzoHttpClient } from "./monzo-http-client";
 
 export const fetchMonzoTransactions = async ({
   accessToken,

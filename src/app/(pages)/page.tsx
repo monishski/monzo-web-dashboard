@@ -3,6 +3,7 @@
 import type { JSX } from "react";
 import Link from "next/link";
 
+import { signOut } from "@/lib/auth/auth-client";
 import {
   getAccountsUrl,
   getCategoriesUrl,
@@ -27,6 +28,8 @@ export default function Home(): JSX.Element {
       <Link href={getMerchantsUrl()}>Merchants</Link>
 
       <Link href={getCategoriesUrl()}>Categories</Link>
+
+      <button onClick={() => signOut()}>Sign out</button>
     </div>
   );
 }

@@ -1,5 +1,15 @@
 import type { AccountOwner, AccountType } from "@/lib/types";
 
+export type MonzoError = {
+  code: string;
+  error: string;
+  error_description?: string;
+  message: string;
+  retryable?: Record<string, unknown>;
+  marshal_count?: number;
+  params?: Record<string, unknown>;
+};
+
 type MonzoAccountIban = {
   unformatted: string;
   formatted: string;

@@ -1,4 +1,5 @@
 import { MiddlewareResponse, withAuthAccessToken } from "@/lib/api";
+import type { MonzoTransaction } from "@/lib/api/types/monzo-entities";
 import type {
   MonzoDbCategory,
   MonzoDbMerchant,
@@ -12,8 +13,10 @@ import {
   monzoMerchants,
   monzoTransactions,
 } from "@/lib/db/schema/monzo-schema";
-import { fetchMonzoTransactions, MonzoApiError } from "@/lib/http/monzo";
-import type { MonzoTransaction } from "@/lib/http/types";
+import {
+  fetchMonzoTransactions,
+  MonzoApiError,
+} from "@/api/endpoints/server/monzo";
 
 const DEFAULT_CATEGORIES: {
   id: string;
