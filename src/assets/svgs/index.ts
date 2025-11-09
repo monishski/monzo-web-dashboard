@@ -1,2 +1,2 @@
-export * from "./monzo-logo";
-export * from "./landscape";
+export * from "./monzo-logo-svg";
+export * from "./landscape-svg";

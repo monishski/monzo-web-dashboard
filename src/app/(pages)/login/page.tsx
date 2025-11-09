@@ -5,7 +5,7 @@ import { LogInIcon } from "lucide-react";
 import { signIn } from "@/lib/auth/auth-client";
 import { Button, Paper, Row, Stack } from "@/components/atoms";
 import { ThemeButton } from "@/components/molecules";
-import { Landscape, MonzoLogo } from "@/assets";
+import { LandscapeSVG, MonzoLogoSVG } from "@/assets";
 
 export default function LoginPage(): React.JSX.Element {
   const handleSignIn = async (
@@ -24,16 +24,15 @@ export default function LoginPage(): React.JSX.Element {
         <Row gap="md" fullWidth fullHeight>
           <ThemeButton className="absolute top-4 right-4" />
 
-          {/* Create Container/Image components */}
           <Stack
             fullHeight
             className="hidden w-1/2 overflow-hidden rounded-xl xl:flex"
           >
-            <Landscape className="h-full w-full object-cover" />
+            <LandscapeSVG className="h-full w-full object-cover" />
           </Stack>
 
           <Stack gap="md" fullWidth grow>
-            <MonzoLogo className="h-16 w-16" />
+            <MonzoLogoSVG className="h-16 w-16" />
 
             <Stack gap="xs">
               <h1 className="text-font text-center text-3xl font-semibold">
