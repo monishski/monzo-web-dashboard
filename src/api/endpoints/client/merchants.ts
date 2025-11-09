@@ -2,7 +2,7 @@ import type { MerchantGroupApiQuery } from "@/lib/api/query/merchants/client";
 import type { PaginatedData } from "@/lib/api/types/response";
 import type { Category, MerchantGroup } from "@/lib/types";
 
-import { apiHttpClient } from "./client";
+import { apiHttpClient } from "./api-http-client";
 
 export const fetchMerchantGroups = async (
   query: MerchantGroupApiQuery

@@ -1,4 +1,5 @@
 import { MiddlewareResponse, withAuthAccessToken } from "@/lib/api";
+import type { MonzoTransaction } from "@/lib/api/types/monzo-entities";
 import type {
   MonzoDbCategory,
   MonzoDbMerchant,
@@ -12,8 +13,10 @@ import {
   monzoMerchants,
   monzoTransactions,
 } from "@/lib/db/schema/monzo-schema";
-import { fetchMonzoTransactions, MonzoApiError } from "@/lib/http/monzo";
-import type { MonzoTransaction } from "@/lib/http/types";
+import {
+  fetchMonzoTransactions,
+  MonzoApiError,
+} from "@/api/endpoints/server/monzo";
 
 const DEFAULT_CATEGORIES: {
   id: string;
@@ -106,7 +109,7 @@ function getDatabaseData({
       });
     }
 
-    if (merchant && !dbMerchantsMap.has(merchant.id)) {
+    if (!!merchant && !dbMerchantsMap.has(merchant.id)) {
       dbMerchantsMap.set(merchant.id, {
         id: merchant.id,
         groupId: merchant.group_id,
@@ -116,7 +119,7 @@ function getDatabaseData({
       });
     }
 
-    if (merchant && !dbMerchantGroupsMap.has(merchant.group_id)) {
+    if (!!merchant && !dbMerchantGroupsMap.has(merchant.group_id)) {
       dbMerchantGroupsMap.set(merchant.group_id, {
         id: merchant.group_id,
         name: merchant.name,
@@ -148,11 +151,11 @@ export const POST = withAuthAccessToken<{ transactionCount: number }>(
         return MiddlewareResponse.badRequest("Account is required");
       }
 
-      const _monzoTransactions = await fetchMonzoTransactions(
+      const _monzoTransactions = await fetchMonzoTransactions({
         accessToken,
         accountId,
-        accountCreated
-      );
+        since: accountCreated,
+      });
 
       if (!_monzoTransactions || _monzoTransactions.length === 0) {
         return MiddlewareResponse.badRequest("No transactions found");

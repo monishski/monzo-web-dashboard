@@ -1,7 +1,10 @@
 import { MiddlewareResponse, withAuthAccessToken } from "@/lib/api";
 import { db, monzoAccounts } from "@/lib/db";
 import type { MonzoDbAccount } from "@/lib/db";
-import { fetchMonzoAccount, MonzoApiError } from "@/lib/http/monzo";
+import {
+  fetchMonzoAccount,
+  MonzoApiError,
+} from "@/api/endpoints/server/monzo";
 
 export const POST = withAuthAccessToken<MonzoDbAccount>(
   async ({ userId, accessToken }) => {

@@ -2,7 +2,7 @@ import type { UseMutationResult } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import type { MerchantGroup } from "@/lib/types";
-import { updateMerchantGroup } from "@/api/endpoints/merchants";
+import { updateMerchantGroup } from "@/api/endpoints/client/merchants";
 
 import { merchantsQueryKeys } from "./query-key.factory";
 

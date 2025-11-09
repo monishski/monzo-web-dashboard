@@ -2,7 +2,7 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 
 import type { Category } from "@/lib/types";
-import { fetchCategory } from "@/api/endpoints/categories";
+import { fetchCategory } from "@/api/endpoints/client/categories";
 
 import { categoriesQueryKeys } from "./query-key.factory";
 

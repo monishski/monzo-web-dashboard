@@ -1,7 +1,7 @@
 import type { AxiosRequestConfig } from "axios";
 
+import { HttpClient } from "@/lib/api/http-client";
 import type { ApiResponse } from "@/lib/api/types";
-import { HttpClient } from "@/lib/http/client";
 
 export class ApiHttpClient extends HttpClient {
   constructor() {
