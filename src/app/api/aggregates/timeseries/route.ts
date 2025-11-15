@@ -56,7 +56,7 @@ export const POST = withAccount<TimeSeriesAggregate[]>(
       ),
       category_agg AS (
         SELECT
-          date_trunc('${sql.raw(period)}', t.created) as time,
+          cat_sum.time,
           json_agg(
             json_build_object(
               'id', c.id,
@@ -65,9 +65,7 @@ export const POST = withAccount<TimeSeriesAggregate[]>(
               'count', cat_sum.count
             )
           ) FILTER (WHERE c.id IS NOT NULL) as categories
-        FROM ${monzoTransactions} t
-        LEFT JOIN ${monzoCategories} c ON t.category_id = c.id
-        INNER JOIN (
+        FROM (
           SELECT
             date_trunc('${sql.raw(period)}', t2.created) as time,
             t2.category_id,
@@ -79,16 +77,13 @@ export const POST = withAccount<TimeSeriesAggregate[]>(
             ${categoryFilter}
             ${merchantGroupFilter}
           GROUP BY date_trunc('${sql.raw(period)}', t2.created), t2.category_id
-        ) cat_sum ON cat_sum.time = date_trunc('${sql.raw(period)}', t.created) AND cat_sum.category_id = c.id
-        WHERE t.account_id = ${accountId}
-          AND t.created BETWEEN ${date.from} AND ${date.to}
-          ${categoryFilter}
-          ${merchantGroupFilter}
-        GROUP BY date_trunc('${sql.raw(period)}', t.created)
+        ) cat_sum
+        LEFT JOIN ${monzoCategories} c ON cat_sum.category_id = c.id
+        GROUP BY cat_sum.time
       ),
       merchant_agg AS (
         SELECT
-          date_trunc('${sql.raw(period)}', t.created) as time,
+          mg_sum.time,
           json_agg(
             json_build_object(
               'id', mg.id,
@@ -99,9 +94,7 @@ export const POST = withAccount<TimeSeriesAggregate[]>(
               'count', mg_sum.count
             )
           ) FILTER (WHERE mg.id IS NOT NULL) as merchantGroups
-        FROM ${monzoTransactions} t
-        LEFT JOIN ${monzoMerchantGroups} mg ON t.merchant_group_id = mg.id
-        INNER JOIN (
+        FROM (
           SELECT
             date_trunc('${sql.raw(period)}', t2.created) as time,
             t2.merchant_group_id,
@@ -113,12 +106,9 @@ export const POST = withAccount<TimeSeriesAggregate[]>(
             ${categoryFilter}
             ${merchantGroupFilter}
           GROUP BY date_trunc('${sql.raw(period)}', t2.created), t2.merchant_group_id
-        ) mg_sum ON mg_sum.time = date_trunc('${sql.raw(period)}', t.created) AND mg_sum.merchant_group_id = mg.id
-        WHERE t.account_id = ${accountId}
-          AND t.created BETWEEN ${date.from} AND ${date.to}
-          ${categoryFilter}
-          ${merchantGroupFilter}
-        GROUP BY date_trunc('${sql.raw(period)}', t.created)
+        ) mg_sum
+        LEFT JOIN ${monzoMerchantGroups} mg ON mg_sum.merchant_group_id = mg.id
+        GROUP BY mg_sum.time
       )
       SELECT
         tb.time,
