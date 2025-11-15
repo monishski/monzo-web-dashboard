@@ -81,3 +81,32 @@ export type Transaction = {
     "id" | "name" | "logo" | "emoji"
   > | null;
 };
+
+type TransactionAggregate = {
+  amount: number;
+  count: number;
+};
+
+export type MerchantGroupAggregate = Pick<
+  MerchantGroup,
+  "id" | "name" | "logo" | "emoji"
+> &
+  TransactionAggregate & {
+    categories?: (Pick<Category, "id" | "name"> & TransactionAggregate)[];
+  };
+
+export type CategoryAggregate = Pick<Category, "id" | "name"> &
+  TransactionAggregate & {
+    merchantGroups?: (Pick<
+      MerchantGroup,
+      "id" | "name" | "logo" | "emoji"
+    > &
+      TransactionAggregate)[];
+  };
+
+export type TimeSeriesAggregate = {
+  time: string;
+} & TransactionAggregate & {
+    categories: CategoryAggregate[];
+    merchantGroups: MerchantGroupAggregate[];
+  };

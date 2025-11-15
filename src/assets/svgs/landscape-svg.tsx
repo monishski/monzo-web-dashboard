@@ -1,4 +1,4 @@
-export function Landscape(
+export function LandscapeSVG(
   props: React.ComponentProps<"svg">
 ): React.JSX.Element {
   return (

@@ -1,4 +1,4 @@
-export function MonzoLogo(
+export function MonzoLogoSVG(
   props: React.ComponentProps<"svg">
 ): React.JSX.Element {
   return (

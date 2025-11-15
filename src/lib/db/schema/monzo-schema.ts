@@ -121,13 +121,13 @@ export const monzoTransactions = pgTable("monzo_transactions", {
   id: text("id").primaryKey(),
   created: timestamp("created", { mode: "string" }).notNull(),
   description: text("description").notNull(),
-  amount: numeric("amount").notNull(),
+  amount: numeric("amount", { mode: "number" }).notNull(),
   currency: text("currency").notNull(),
   fees: jsonb("owners").notNull(),
   notes: text("notes"),
   monzo_category: text("monzo_category"),
   settled: timestamp("settled", { mode: "string" }),
-  localAmount: numeric("local_amount").notNull(),
+  localAmount: numeric("local_amount", { mode: "number" }).notNull(),
   localCurrency: text("local_currency").notNull(),
   accountId: text("account_id")
     .notNull()

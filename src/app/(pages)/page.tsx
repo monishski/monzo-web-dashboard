@@ -7,8 +7,11 @@ import { signOut } from "@/lib/auth/auth-client";
 import {
   getAccountsUrl,
   getCategoriesUrl,
+  getCategoryAggregatesUrl,
+  getMerchantGroupAggregatesUrl,
   getMerchantsUrl,
   getSeedUrl,
+  getTimeSeriesAggregatesUrl,
   getTransactionsUrl,
 } from "@/routing";
 
@@ -28,6 +31,18 @@ export default function Home(): JSX.Element {
       <Link href={getMerchantsUrl()}>Merchants</Link>
 
       <Link href={getCategoriesUrl()}>Categories</Link>
+
+      <h2 className="mt-4 text-2xl font-semibold">Aggregates</h2>
+
+      <Link href={getCategoryAggregatesUrl()}>Category Aggregates</Link>
+
+      <Link href={getMerchantGroupAggregatesUrl()}>
+        Merchant Group Aggregates
+      </Link>
+
+      <Link href={getTimeSeriesAggregatesUrl()}>
+        TimeSeries Aggregates
+      </Link>
 
       <button onClick={() => signOut()}>Sign out</button>
     </div>
