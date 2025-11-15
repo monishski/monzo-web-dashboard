@@ -64,6 +64,7 @@ export const POST = withAccount<TimeSeriesAggregate[]>(
               'amount', cat_sum.amount,
               'count', cat_sum.count
             )
+            ORDER BY cat_sum.amount DESC
           ) FILTER (WHERE c.id IS NOT NULL) as categories
         FROM (
           SELECT
@@ -93,6 +94,7 @@ export const POST = withAccount<TimeSeriesAggregate[]>(
               'amount', mg_sum.amount,
               'count', mg_sum.count
             )
+            ORDER BY mg_sum.amount DESC
           ) FILTER (WHERE mg.id IS NOT NULL) as merchantGroups
         FROM (
           SELECT
