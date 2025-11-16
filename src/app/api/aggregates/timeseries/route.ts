@@ -64,8 +64,8 @@ export const POST = withAccount<TimeSeriesAggregate[]>(
               'amount', cat_sum.amount,
               'count', cat_sum.count
             )
-            ORDER BY cat_sum.amount DESC
-          ) FILTER (WHERE c.id IS NOT NULL) as categories
+            ORDER BY cat_sum.amount ASC
+          ) FILTER (WHERE c.id IS NOT NULL AND cat_sum.amount != 0) as categories
         FROM (
           SELECT
             date_trunc('${sql.raw(period)}', t2.created) as time,
@@ -94,8 +94,8 @@ export const POST = withAccount<TimeSeriesAggregate[]>(
               'amount', mg_sum.amount,
               'count', mg_sum.count
             )
-            ORDER BY mg_sum.amount DESC
-          ) FILTER (WHERE mg.id IS NOT NULL) as merchantGroups
+            ORDER BY mg_sum.amount ASC
+          ) FILTER (WHERE mg.id IS NOT NULL AND mg_sum.amount != 0) as merchantGroups
         FROM (
           SELECT
             date_trunc('${sql.raw(period)}', t2.created) as time,
