@@ -37,7 +37,7 @@ const aggregateSchema = {
 export const TimeSeriesAggregateApiQuerySchema = z
   .object({
     ...aggregateSchema,
-    date: dateSchema.default(getDefaultDateRangeForPeriod()),
+    date: dateSchema,
     period: z.enum(Period),
   })
   .transform((data) => {
