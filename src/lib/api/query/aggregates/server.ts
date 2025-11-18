@@ -29,7 +29,9 @@ const dateSchema = z.object({
 });
 
 const aggregateSchema = {
-  date: dateSchema.default(getDefaultDateRangeForPeriod()),
+  date: dateSchema
+    .optional()
+    .default(() => getDefaultDateRangeForPeriod()),
   categoryIds: z.array(z.string()).optional(),
   merchantGroupIds: z.array(z.string()).optional(),
 };
@@ -37,7 +39,7 @@ const aggregateSchema = {
 export const TimeSeriesAggregateApiQuerySchema = z
   .object({
     ...aggregateSchema,
-    date: dateSchema,
+    date: dateSchema.optional(),
     period: z.enum(Period),
   })
   .transform((data) => {
