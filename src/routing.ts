@@ -45,3 +45,12 @@ export const getCategoryUrl = (id: Category["id"]): string =>
 export const getCategoriesUrl = (): string => "/categories";
 
 export const getCreateCategoryUrl = (): string => "/categories/create";
+
+export const getCategoryAggregatesUrl = (): string =>
+  "/aggregates/categories";
+
+export const getMerchantGroupAggregatesUrl = (): string =>
+  "/aggregates/merchants";
+
+export const getTimeSeriesAggregatesUrl = (): string =>
+  "/aggregates/timeseries";
