@@ -1,11 +1,26 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { LogInIcon } from "lucide-react";
 
 import { signIn } from "@/lib/auth/auth-client";
-import { Button, Paper, Row, Stack } from "@/components/atoms";
-import { ThemeButton } from "@/components/molecules";
+import {
+  Button,
+  Heading,
+  Paper,
+  Row,
+  Stack,
+  Text,
+} from "@/components/atoms";
 import { LandscapeSVG, MonzoLogoSVG } from "@/assets";
+
+const ThemeButton = dynamic(
+  () =>
+    import("@/components/molecules/theme-button").then(
+      (module) => module.ThemeButton
+    ),
+  { ssr: false }
+);
 
 export default function LoginPage(): React.JSX.Element {
   const handleSignIn = async (
@@ -35,13 +50,13 @@ export default function LoginPage(): React.JSX.Element {
             <MonzoLogoSVG className="h-16 w-16" />
 
             <Stack gap="xs">
-              <h1 className="text-font text-center text-3xl font-semibold">
+              <Heading align="center" weight="semibold">
                 Welcome to Monzo
-              </h1>
+              </Heading>
 
-              <p className="text-center text-sm">
+              <Text size="sm" align="center">
                 Connect your Monzo account to get started
-              </p>
+              </Text>
             </Stack>
 
             <Button variant="secondary" fullWidth onClick={handleSignIn}>
@@ -49,10 +64,10 @@ export default function LoginPage(): React.JSX.Element {
               Sign in with Monzo
             </Button>
 
-            <p className="text-muted text-center text-xs">
+            <Text size="sm" align="center" color="muted">
               By signing in, you agree to our Terms of Service and Privacy
               Policy
-            </p>
+            </Text>
           </Stack>
         </Row>
       </Paper>

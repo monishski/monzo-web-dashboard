@@ -8,7 +8,7 @@ import type { JSX } from "react";
 import { Provider } from "@/components/provider";
 
 export const metadata: Metadata = {
-  title: "Monzo dashboard",
+  title: "Monzo Dashboard",
 };
 
 type RootLayoutProps = Readonly<{

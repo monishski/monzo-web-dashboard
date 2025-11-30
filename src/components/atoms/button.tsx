@@ -1,10 +1,13 @@
-import * as React from "react";
+import { forwardRef } from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { tv, type VariantProps } from "tailwind-variants";
 
+import type { ComponentPropsWithAsProp } from "@/types/utils";
+
 export const buttonTv = tv({
   base: [
-    "ring-offset-background inline-flex cursor-pointer items-center justify-center gap-2 rounded-md transition-colors active:scale-95",
+    "ring-offset-background inline-flex cursor-pointer items-center justify-center gap-2 rounded-md",
+    "transition-colors duration-150 ease-in-out active:scale-95",
     "text-sm font-medium whitespace-nowrap",
     "focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none",
     "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
@@ -46,26 +49,26 @@ export const buttonTv = tv({
   },
 });
 
-export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
-  VariantProps<typeof buttonTv> & { asChild?: boolean };
+export type ButtonProps = ComponentPropsWithAsProp<"button"> &
+  VariantProps<typeof buttonTv>;
 
-export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
       className,
       variant,
       size,
-      asChild = false,
       icon,
       disabled,
       fullWidth,
+      asChild = false,
       ...props
     },
     ref
   ) => {
-    const Comp = asChild ? Slot : "button";
+    const Component = asChild ? Slot : "button";
     return (
-      <Comp
+      <Component
         className={buttonTv({
           variant,
           size,
