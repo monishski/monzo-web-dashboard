@@ -12,7 +12,8 @@
     "drizzle:generate": "drizzle-kit generate --config drizzle.session.config.ts",
     "drizzle:migrate": "drizzle-kit migrate --config drizzle.session.config.ts",
     "drizzle:studio": "drizzle-kit studio --config drizzle.session.config.ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "storybook": "storybook dev -p 6006"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.14",
