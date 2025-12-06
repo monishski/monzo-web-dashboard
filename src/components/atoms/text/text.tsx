@@ -11,12 +11,12 @@ export const Text = forwardRef<
   HTMLParagraphElement & HTMLSpanElement,
   TextProps
 >(({ children, className, as = "span", ...props }, ref) => {
-  const Component = as;
-
   const { variantProps, componentProps } = getVariantProps(
     props,
     textVariants.variantKeys
   );
+
+  const Component = as;
 
   return (
     <Component

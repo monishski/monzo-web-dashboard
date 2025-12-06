@@ -52,12 +52,8 @@ export const Default: Story = {
   ),
   args: {
     children: "Text",
-    as: "span",
-    size: "base",
-    weight: "normal",
+    ...textVariants.defaultVariants,
     align: "center",
-    color: "font",
-    fullWidth: true,
   },
 };
 

@@ -1,14 +1,20 @@
-type PolymorphicAsProp<E extends React.ElementType> = {
+import type {
+  ComponentProps,
+  ComponentPropsWithoutRef,
+  ElementType,
+  PropsWithChildren,
+} from "react";
+
+type PolymorphicAsProp<E extends ElementType> = {
   as?: E;
 };
 
-export type PolymorphicProps<E extends React.ElementType> =
-  React.PropsWithChildren<
-    React.ComponentPropsWithoutRef<E> & PolymorphicAsProp<E>
-  >;
+export type PolymorphicProps<E extends ElementType> = PropsWithChildren<
+  ComponentPropsWithoutRef<E> & PolymorphicAsProp<E>
+>;
 
-export type ComponentPropsWithAsProp<E extends React.ElementType> =
-  React.ComponentProps<E> & {
+export type ComponentPropsWithAsProp<E extends ElementType> =
+  ComponentProps<E> & {
     asChild?: boolean;
   };
 
