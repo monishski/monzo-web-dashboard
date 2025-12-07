@@ -16,6 +16,7 @@ const variantArgTypes = getVariantArgTypes<TextVariantsProps>({
     align: "Text alignment",
     color: "Text color",
     fullWidth: "Expand to full width",
+    truncate: "Truncate text",
   },
 });
 
@@ -46,7 +47,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: (args) => (
-    <Stack className="w-64">
+    <Stack className="oveflow-hidden w-64">
       <Text {...args} />
     </Stack>
   ),
@@ -93,6 +94,8 @@ export const Colors: Story = {
       <Text color="font">Font</Text>
       <Text color="muted">Muted</Text>
       <Text color="primary">Primary</Text>
+      <Text color="secondary">Secondary</Text>
+      <Text color="overlay">Overlay</Text>
       <Text color="error">Error</Text>
       <Text color="success">Success</Text>
       <Text color="warning">Warning</Text>

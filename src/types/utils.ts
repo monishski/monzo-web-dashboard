@@ -1,5 +1,4 @@
 import type {
-  ComponentProps,
   ComponentPropsWithoutRef,
   ElementType,
   PropsWithChildren,
@@ -14,7 +13,7 @@ export type PolymorphicProps<E extends ElementType> = PropsWithChildren<
 >;
 
 export type ComponentPropsWithAsProp<E extends ElementType> =
-  ComponentProps<E> & {
+  ComponentPropsWithoutRef<E> & {
     asChild?: boolean;
   };
 

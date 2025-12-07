@@ -15,18 +15,17 @@ export function getVariantArgTypes<VariantProps>({
 }): ArgTypes<VariantProps> {
   return getObjectKeys(variants).reduce((acc, key) => {
     const options = getObjectKeys(variants[key]);
+    const isBoolean = options.some((option) =>
+      ["true", "false"].includes(String(option))
+    );
     acc[key] = {
-      control: options.some((option) =>
-        ["true", "false"].includes(String(option))
-      )
-        ? "boolean"
-        : "select",
+      control: isBoolean ? "boolean" : "select",
       options,
       description: descriptions?.[key],
       table: {
         defaultValue: { summary: String(defaultVariants[key]) },
         // REF: https://stackoverflow.com/a/75285864
-        type: { summary: options.join(" | ") },
+        type: { summary: isBoolean ? "boolean" : options.join(" | ") },
       },
     };
     return acc;

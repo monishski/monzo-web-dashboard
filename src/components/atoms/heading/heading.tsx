@@ -1,4 +1,4 @@
-import type { ComponentPropsWithRef } from "react";
+import type { ComponentPropsWithoutRef } from "react";
 import { forwardRef } from "react";
 
 import { getVariantProps } from "@/utils/tailwind-variants";
@@ -6,13 +6,13 @@ import { getVariantProps } from "@/utils/tailwind-variants";
 import type { HeadingVariantsProps } from "./heading.variants";
 import { headingVariants } from "./heading.variants";
 
-export type HeadingProps = ComponentPropsWithRef<
+export type HeadingProps = ComponentPropsWithoutRef<
   "h1" | "h2" | "h3" | "h4" | "h5" | "h6"
 > &
   HeadingVariantsProps;
 
 export const Heading = forwardRef<HTMLHeadingElement, HeadingProps>(
-  ({ className, children, ...props }, ref) => {
+  ({ children, className, ...props }, ref) => {
     const { variantProps, componentProps } = getVariantProps(
       props,
       headingVariants.variantKeys
