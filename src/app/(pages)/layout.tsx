@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import "./globals.css";
+import "@/styles/globals.css";
 import "react-day-picker/style.css";
 
 import type { JSX } from "react";
