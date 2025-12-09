@@ -21,6 +21,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     return (
       <Component
+        disabled={variantProps.disabled}
         className={buttonVariants({
           ...variantProps,
           className,

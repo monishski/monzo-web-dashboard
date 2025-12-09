@@ -8,12 +8,12 @@ import { textVariants } from "../text";
 
 export const buttonVariantVariantMap = {
   // TODO: avoid using opacities (see Radix how Radix colour tokens map to utilities https://www.radix-ui.com/colors)
-  primary: "bg-primary hover:bg-primary/90",
-  secondary: "bg-secondary hover:bg-secondary/70",
-  outline: "border-edge hover:bg-background-hover border",
-  ghost: "hover:bg-background-hover",
+  primary: "bg-primary hover:bg-primary-hover",
+  secondary: "bg-secondary hover:bg-secondary-hover",
+  outline: "border-edge hover:bg-secondary-hover border",
+  ghost: "hover:bg-secondary-hover",
   link: "underline-offset-4 hover:underline",
-  destructive: "bg-negative hover:bg-negative/90",
+  destructive: "bg-negative hover:bg-negative-hover",
 } as const;
 
 export const buttonSizesVariantMap = {
