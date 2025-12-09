@@ -16,6 +16,7 @@ const variantArgTypes = getVariantArgTypes<HeadingVariantsProps>({
     align: "Text alignment",
     color: "Text color",
     fullWidth: "Expand to full width",
+    truncate: "Stop text expanding beyond width of container",
   },
 });
 
