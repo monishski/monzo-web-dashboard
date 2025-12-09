@@ -1,8 +1,18 @@
 import type { Preview } from "@storybook/nextjs-vite";
 
-import "../src/app/(pages)/globals.css";
+import "@/styles/globals.css";
+
+import { withThemeByDataAttribute } from "@storybook/addon-themes";
+import type { Renderer } from "storybook/internal/types";
 
 const preview: Preview = {
+  decorators: [
+    withThemeByDataAttribute<Renderer>({
+      themes: { light: "light", dark: "dark" },
+      defaultTheme: "dark",
+      attributeName: "data-theme",
+    }),
+  ],
   parameters: {
     controls: {
       matchers: {
@@ -10,7 +20,6 @@ const preview: Preview = {
         date: /Date$/i,
       },
     },
-
     a11y: {
       // 'todo' - show a11y violations in the test UI only
       // 'error' - fail CI on a11y violations
