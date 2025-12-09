@@ -36,7 +36,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: (args) => (
-    <Stack className="w-64">
+    <Stack className="bg-background w-64 rounded-lg p-4">
       <Heading {...args} />
     </Stack>
   ),
@@ -49,7 +49,7 @@ export const Default: Story = {
 
 export const Levels: Story = {
   render: () => (
-    <Stack>
+    <Stack className="bg-background rounded-lg p-4">
       <Heading as="h1">Heading</Heading>
       <Heading as="h2">Heading</Heading>
       <Heading as="h3">Heading</Heading>
@@ -62,7 +62,7 @@ export const Levels: Story = {
 
 export const Weights: Story = {
   render: () => (
-    <Stack>
+    <Stack className="bg-background rounded-lg p-4">
       <Heading weight="bold">Bold</Heading>
       <Heading weight="semibold">Semibold</Heading>
     </Stack>
@@ -71,7 +71,7 @@ export const Weights: Story = {
 
 export const Alignment: Story = {
   render: () => (
-    <Stack className="w-64">
+    <Stack className="bg-background w-64 rounded-lg p-4">
       <Heading align="left">Left</Heading>
       <Heading align="center">Center</Heading>
       <Heading align="right">Right</Heading>
@@ -81,7 +81,7 @@ export const Alignment: Story = {
 
 export const Colors: Story = {
   render: () => (
-    <Stack>
+    <Stack className="bg-background rounded-lg p-4">
       <Heading color="font">Font</Heading>
       <Heading color="muted">Muted</Heading>
       <Heading color="primary">Primary</Heading>

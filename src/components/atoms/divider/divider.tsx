@@ -1,5 +1,6 @@
 "use client";
 
+import type { ComponentProps } from "react";
 import * as SeparatorPrimitive from "@radix-ui/react-separator";
 
 import { getVariantProps } from "@/utils/tailwind-variants";
@@ -7,7 +8,7 @@ import { getVariantProps } from "@/utils/tailwind-variants";
 import type { DividerVariantsProps } from "./divider.variants";
 import { dividerVariants } from "./divider.variants";
 
-type DividerProps = React.ComponentProps<typeof SeparatorPrimitive.Root> &
+type DividerProps = ComponentProps<typeof SeparatorPrimitive.Root> &
   DividerVariantsProps;
 
 export function Divider({
