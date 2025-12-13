@@ -12,12 +12,14 @@
     "drizzle:generate": "drizzle-kit generate --config drizzle.session.config.ts",
     "drizzle:migrate": "drizzle-kit migrate --config drizzle.session.config.ts",
     "drizzle:studio": "drizzle-kit studio --config drizzle.session.config.ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "storybook": "storybook dev -p 6006"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-separator": "^1.1.7",
     "@radix-ui/react-slot": "^1.2.3",
+    "@storybook/nextjs-vite": "^10.1.4",
     "@tanstack/react-query": "^5.89.0",
     "@tanstack/react-query-devtools": "^5.89.0",
     "axios": "^1.10.0",
@@ -38,7 +40,7 @@
     "react-day-picker": "^9.8.1",
     "react-dom": "19.2.0",
     "tailwind-merge": "^3.3.1",
-    "tailwind-variants": "^3.1.1",
+    "tailwind-variants": "^3.2.2",
     "zod": "^4.0.5"
   },
   "devDependencies": {

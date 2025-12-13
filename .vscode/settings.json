@@ -18,5 +18,16 @@
   },
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+  },
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "tailwindCSS.classFunctions": ["tv"],
+  "tailwindCSS.experimental.classRegex": [
+    // Enable intellisense for variant maps
+    [
+      "(?:\\w+VariantMap)\\s*=\\s*\\{([\\s\\S]*)\\}(?:\\s*as\\s*const)?",
+      ":\\s*['\"`]([^'\"`]*)['\"`]"
+    ]
+  ]
 }

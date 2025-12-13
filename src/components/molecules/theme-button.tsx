@@ -19,7 +19,7 @@ export function ThemeButton(props: ThemeButtonProps): React.JSX.Element {
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
       {...props}
     >
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="popLayout">
         <motion.div
           key={theme}
           initial={{ y: -20, scale: 0.8, opacity: 0 }}

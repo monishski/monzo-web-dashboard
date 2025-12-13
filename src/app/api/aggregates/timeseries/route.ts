@@ -37,8 +37,8 @@ export const POST = withAccount<TimeSeriesAggregate[]>(
       WITH time_buckets AS (
         SELECT date_trunc('${sql.raw(period)}', generate_series) as time
         FROM generate_series(
-          date_trunc('${sql.raw(period)}', ${date.from}::timestamp),
-          date_trunc('${sql.raw(period)}', ${date.to}::timestamp),
+          date_trunc('${sql.raw(period)}', ${date?.from}::timestamp),
+          date_trunc('${sql.raw(period)}', ${date?.to}::timestamp),
           '${sql.raw(interval)}'::interval
         )
       ),
@@ -49,7 +49,7 @@ export const POST = withAccount<TimeSeriesAggregate[]>(
           COUNT(*)::int as count
         FROM ${monzoTransactions} t
         WHERE t.account_id = ${accountId}
-          AND t.created BETWEEN ${date.from} AND ${date.to}
+          AND t.created BETWEEN ${date?.from} AND ${date?.to}
           ${categoryFilter}
           ${merchantGroupFilter}
         GROUP BY date_trunc('${sql.raw(period)}', t.created)
@@ -74,7 +74,7 @@ export const POST = withAccount<TimeSeriesAggregate[]>(
             COUNT(*)::int as count
           FROM ${monzoTransactions} t2
           WHERE t2.account_id = ${accountId}
-            AND t2.created BETWEEN ${date.from} AND ${date.to}
+            AND t2.created BETWEEN ${date?.from} AND ${date?.to}
             ${categoryFilter}
             ${merchantGroupFilter}
           GROUP BY date_trunc('${sql.raw(period)}', t2.created), t2.category_id
@@ -104,7 +104,7 @@ export const POST = withAccount<TimeSeriesAggregate[]>(
             COUNT(*)::int as count
           FROM ${monzoTransactions} t2
           WHERE t2.account_id = ${accountId}
-            AND t2.created BETWEEN ${date.from} AND ${date.to}
+            AND t2.created BETWEEN ${date?.from} AND ${date?.to}
             ${categoryFilter}
             ${merchantGroupFilter}
           GROUP BY date_trunc('${sql.raw(period)}', t2.created), t2.merchant_group_id
