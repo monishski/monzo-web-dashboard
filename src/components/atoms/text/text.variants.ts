@@ -2,6 +2,7 @@ import type { VariantProps } from "tailwind-variants";
 import { tv } from "tailwind-variants";
 
 export const textSizesVariantMap = {
+  xs: "text-xs",
   sm: "text-sm",
   base: "text-base",
   lg: "text-lg",

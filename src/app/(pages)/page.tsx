@@ -3,6 +3,7 @@
 import type { JSX } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { Mail } from "lucide-react";
 
 import { signOut } from "@/lib/auth/auth-client";
 import { Button } from "@/components/atoms";
@@ -35,7 +36,13 @@ export default function Home(): JSX.Element {
 
       <ThemeButton />
 
-      <Input placeholder="Email" aria-invalid={true} />
+      <Input
+        id="email"
+        placeholder="Email"
+        label="Email"
+        labelIcon={<Mail size={16} />}
+        disabled
+      />
 
       <Button>Hello</Button>
 
