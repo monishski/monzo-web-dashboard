@@ -35,7 +35,7 @@ const buttonVariantToTextColor: Record<
   keyof typeof buttonVariantVariantMap,
   keyof typeof textColorsVariantMap
 > = {
-  primary: "overlay",
+  primary: "secondary",
   secondary: "primary",
   outline: "primary",
   ghost: "primary",

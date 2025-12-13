@@ -17,7 +17,7 @@
   --color-background: var(--base-gray-100);
   --color-foreground: var(--base-white);
   --color-font: var(--base-gray-900);
-  --color-muted: var(--base-gray-700);
+  --color-muted: var(--base-gray-500);
   --color-edge: var(--base-gray-200);
   --color-overlay: var(--base-gray-50);
   --color-info: var(--base-blue-500);
@@ -50,9 +50,9 @@
       --color-background: var(--base-slate-950);
       --color-foreground: var(--base-slate-900);
       --color-font: var(--base-slate-200);
-      --color-muted: var(--base-slate-400);
+      --color-muted: var(--base-slate-500);
       --color-edge: var(--base-slate-800);
-      --color-overlay: var(--base-slate-900);
+      --color-overlay: var(--base-slate-200);
 
       --color-info-hover: var(--base-blue-400);
       --color-success-hover: var(--base-green-400);

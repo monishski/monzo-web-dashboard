@@ -6,6 +6,7 @@ import Link from "next/link";
 
 import { signOut } from "@/lib/auth/auth-client";
 import { Button } from "@/components/atoms";
+import { Input } from "@/components/atoms/input/input";
 import {
   getAccountsUrl,
   getCategoriesUrl,
@@ -33,6 +34,8 @@ export default function Home(): JSX.Element {
       </h1>
 
       <ThemeButton />
+
+      <Input placeholder="Email" aria-invalid={true} />
 
       <Button>Hello</Button>
 
