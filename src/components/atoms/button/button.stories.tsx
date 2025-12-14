@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { Download, Heart, Settings } from "lucide-react";
+import { Download, Settings } from "lucide-react";
 
 import { getVariantArgTypes } from "@/utils/storybook";
 
@@ -9,13 +9,15 @@ import type { ButtonVariantsProps } from "./button.variants";
 import { buttonVariants } from "./button.variants";
 
 const variantArgTypes = getVariantArgTypes<ButtonVariantsProps>({
-  variants: buttonVariants.variants,
+  variants: {
+    ...buttonVariants.extend.variants,
+    ...buttonVariants.variants,
+  },
   defaultVariants: buttonVariants.defaultVariants,
   descriptions: {
     variant: "Button variant",
     size: "Button size",
     disabled: "Disable button",
-    icon: "Display icon",
     fullWidth: "Expand to full width",
   },
 });
@@ -46,10 +48,10 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: () => {
+  render: (args) => {
     return (
       <Row className="bg-background w-64 rounded-lg p-4">
-        <Button>Button</Button>
+        <Button {...args} />
       </Row>
     );
   },
@@ -117,22 +119,6 @@ export const WithIcons: Story = {
       <Button>
         <Settings />
         Settings
-      </Button>
-    </Row>
-  ),
-};
-
-export const Icon: Story = {
-  render: () => (
-    <Row className="bg-background rounded-lg p-4">
-      <Button icon size="sm">
-        <Heart />
-      </Button>
-      <Button icon size="md">
-        <Heart />
-      </Button>
-      <Button icon size="lg">
-        <Heart />
       </Button>
     </Row>
   ),

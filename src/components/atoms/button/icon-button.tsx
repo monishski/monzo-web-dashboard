@@ -4,17 +4,17 @@ import { Slot } from "@radix-ui/react-slot";
 import { getVariantProps } from "@/utils/tailwind-variants";
 import type { ComponentPropsWithAsProp } from "@/types/utils";
 
-import type { ButtonVariantsProps } from "./button.variants";
-import { buttonVariants } from "./button.variants";
+import type { IconButtonVariantsProps } from "./icon-button.variants";
+import { iconButtonVariants } from "./icon-button.variants";
 
-export type ButtonProps = ComponentPropsWithAsProp<"button"> &
-  ButtonVariantsProps;
+export type IconButtonProps = ComponentPropsWithAsProp<"button"> &
+  IconButtonVariantsProps;
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
   ({ className, asChild = false, ...props }, ref) => {
     const { variantProps, componentProps } = getVariantProps(props, [
-      ...buttonVariants.extend.variantKeys,
-      ...buttonVariants.variantKeys,
+      ...iconButtonVariants.extend.variantKeys,
+      ...iconButtonVariants.variantKeys,
     ]);
 
     const Component = asChild ? Slot : "button";
@@ -22,7 +22,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <Component
         disabled={variantProps.disabled}
-        className={buttonVariants({
+        className={iconButtonVariants({
           ...variantProps,
           className,
         })}
@@ -33,4 +33,4 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   }
 );
 
-Button.displayName = "Button";
+IconButton.displayName = "IconButton";
