@@ -8,7 +8,7 @@ import type { TextVariantsProps } from "./text.variants";
 import { textVariants } from "./text.variants";
 
 const variantArgTypes = getVariantArgTypes<TextVariantsProps>({
-  variants: textVariants.variants,
+  variants: { ...textVariants.extend.variants, ...textVariants.variants },
   defaultVariants: textVariants.defaultVariants,
   descriptions: {
     size: "Font size",
@@ -21,7 +21,7 @@ const variantArgTypes = getVariantArgTypes<TextVariantsProps>({
 });
 
 const meta = {
-  title: "Components/Atoms/Text",
+  title: "Components/Atoms/Typography/Text",
   component: Text,
   parameters: {
     layout: "centered",

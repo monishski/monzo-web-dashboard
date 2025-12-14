@@ -22,7 +22,7 @@ const variantArgTypes = getVariantArgTypes<IconButtonVariantsProps>({
 });
 
 const meta = {
-  title: "Components/Atoms/IconButton",
+  title: "Components/Atoms/Button/IconButton",
   component: IconButton,
   parameters: {
     layout: "centered",

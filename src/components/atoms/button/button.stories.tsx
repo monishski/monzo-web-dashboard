@@ -23,7 +23,7 @@ const variantArgTypes = getVariantArgTypes<ButtonVariantsProps>({
 });
 
 const meta = {
-  title: "Components/Atoms/Button",
+  title: "Components/Atoms/Button/Button",
   component: Button,
   parameters: {
     layout: "centered",

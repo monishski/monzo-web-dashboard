@@ -8,8 +8,14 @@ import type { HeadingVariantsProps } from "./heading.variants";
 import { headingVariants } from "./heading.variants";
 
 const variantArgTypes = getVariantArgTypes<HeadingVariantsProps>({
-  variants: headingVariants.variants,
-  defaultVariants: headingVariants.defaultVariants,
+  variants: {
+    ...headingVariants.extend.variants,
+    ...headingVariants.variants,
+  },
+  defaultVariants: {
+    ...headingVariants.extend.defaultVariants,
+    ...headingVariants.defaultVariants,
+  },
   descriptions: {
     as: "Heading HTML element",
     weight: "Font weight",
@@ -21,7 +27,7 @@ const variantArgTypes = getVariantArgTypes<HeadingVariantsProps>({
 });
 
 const meta = {
-  title: "Components/Atoms/Heading",
+  title: "Components/Atoms/Typography/Heading",
   component: Heading,
   parameters: {
     layout: "centered",
