@@ -5,3 +5,4 @@ export * from "./divider";
 export * from "./flex";
 export * from "./typography";
 export * from "./label";
+export * from "./spinner";
