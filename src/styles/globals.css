@@ -10,30 +10,49 @@
   --color-brand-beta: var(--base-gold);
   --color-brand-gamma: var(--base-teal);
   --color-brand-delta: var(--base-sage);
+
   --color-primary: var(--base-gray-900);
   --color-primary-hover: var(--base-gray-700);
+
   --color-secondary: var(--base-gray-100);
   --color-secondary-hover: var(--base-gray-200);
+
   --color-background: var(--base-gray-100);
   --color-foreground: var(--base-white);
+
   --color-font: var(--base-gray-900);
   --color-muted: var(--base-gray-500);
+
   --color-edge: var(--base-gray-200);
   --color-overlay: var(--base-gray-50);
+
   --color-info: var(--base-blue-500);
-  --color-info-hover: var(--base-blue-600);
+  --color-info-hover: var(--base-blue-200);
+  --color-info-backdrop: var(--base-blue-100);
+
   --color-success: var(--base-green-500);
-  --color-success-hover: var(--base-green-600);
+  --color-success-hover: var(--base-green-200);
+  --color-success-backdrop: var(--base-green-100);
+
   --color-warning: var(--base-orange-500);
-  --color-warning-hover: var(--base-orange-600);
+  --color-warning-hover: var(--base-orange-200);
+  --color-warning-backdrop: var(--base-orange-100);
+
   --color-error: var(--base-red-500);
-  --color-error-hover: var(--base-red-600);
+  --color-error-hover: var(--base-red-200);
+  --color-error-backdrop: var(--base-red-100);
+
   --color-positive: var(--base-green-500);
-  --color-positive-hover: var(--base-green-600);
+  --color-positive-hover: var(--base-green-200);
+  --color-positive-backdrop: var(--bar-green-100);
+
   --color-negative: var(--base-red-500);
-  --color-negative-hover: var(--base-red-600);
+  --color-negative-hover: var(--base-red-200);
+  --color-negative-backdrop: var(--base-red-100);
+
   --color-neutral: var(--base-orange-500);
-  --color-neutral-hover: var(--base-orange-600);
+  --color-neutral-hover: var(--base-orange-200);
+  --color-neutral-backdrop: var(--base-orange-100);
 }
 
 @layer theme {
@@ -44,23 +63,48 @@
       --color-brand-gamma: var(--base-ocean);
       --color-brand-delta: var(--base-mint);
       --color-primary: var(--base-slate-100);
-      --color-primary-hover: var(--base-slate-200);
-      --color-secondary: var(--base-slate-800);
-      --color-secondary-hover: var(--base-slate-700);
+
+      --color-primary-hover: var(--base-slate-300);
+
+      --color-secondary: var(--base-slate-700);
+      --color-secondary-hover: var(--base-slate-800);
+
       --color-background: var(--base-slate-950);
       --color-foreground: var(--base-slate-900);
+
       --color-font: var(--base-slate-200);
       --color-muted: var(--base-slate-500);
-      --color-edge: var(--base-slate-800);
+
+      --color-edge: var(--base-slate-600);
       --color-overlay: var(--base-slate-200);
 
-      --color-info-hover: var(--base-blue-400);
-      --color-success-hover: var(--base-green-400);
-      --color-warning-hover: var(--base-orange-400);
-      --color-error-hover: var(--base-red-400);
-      --color-positive-hover: var(--base-green-400);
-      --color-negative-hover: var(--base-red-400);
-      --color-neutral-hover: var(--base-orange-400);
+      --color-info: var(--base-blue-500);
+      --color-info-hover: var(--base-blue-800);
+      --color-info-backdrop: var(--base-blue-900);
+
+      --color-success: var(--base-green-500);
+      --color-success-hover: var(--base-green-800);
+      --color-success-backdrop: var(--base-green-900);
+
+      --color-warning: var(--base-orange-500);
+      --color-warning-hover: var(--base-orange-800);
+      --color-warning-backdrop: var(--base-orange-900);
+
+      --color-error: var(--base-red-500);
+      --color-error-hover: var(--base-red-800);
+      --color-error-backdrop: var(--base-red-900);
+
+      --color-positive: var(--base-green-500);
+      --color-positive-hover: var(--base-green-800);
+      --color-positive-backdrop: var(--base-green-900);
+
+      --color-negative: var(--base-red-500);
+      --color-negative-hover: var(--base-red-800);
+      --color-negative-backdrop: var(--base-red-900);
+
+      --color-neutral: var(--base-orange-500);
+      --color-neutral-hover: var(--base-orange-800);
+      --color-neutral-backdrop: var(--base-orange-900);
     }
   }
 }

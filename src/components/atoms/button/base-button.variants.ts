@@ -13,8 +13,8 @@ export const baseButtonVariants = tv({
       secondary: "bg-secondary hover:bg-secondary-hover text-primary",
       outline: "border-edge hover:bg-secondary-hover text-primary border",
       ghost: "hover:bg-secondary-hover text-primary",
-      link: "text-primary underline-offset-4 hover:underline",
-      destructive: "bg-negative hover:bg-negative-hover text-overlay",
+      destructive:
+        "bg-negative-backdrop hover:bg-negative-hover !text-negative text-semibold",
     },
     disabled: {
       true: "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",

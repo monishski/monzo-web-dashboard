@@ -23,7 +23,7 @@ export type BooleanToString<T> = T extends boolean ? "true" | "false" : T;
 // Without having to pass all sorts of generics
 export type PropsToVariants<T> = {
   [K in keyof T]: Exclude<T[K], undefined> extends boolean
-    ? { true: string; false?: string }
+    ? { true: unknown; false?: unknown }
     : {
         [V in BooleanToString<Exclude<T[K], undefined>> & string]: string;
       };

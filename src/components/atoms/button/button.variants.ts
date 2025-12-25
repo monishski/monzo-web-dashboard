@@ -15,6 +15,9 @@ export const buttonVariants = tv({
     fullWidth: {
       true: "w-full",
     },
+    variant: {
+      link: "text-primary underline-offset-4 hover:underline",
+    },
   },
   defaultVariants: {
     size: "md",

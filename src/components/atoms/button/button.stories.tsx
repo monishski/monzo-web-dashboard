@@ -12,6 +12,10 @@ const variantArgTypes = getVariantArgTypes<ButtonVariantsProps>({
   variants: {
     ...buttonVariants.extend.variants,
     ...buttonVariants.variants,
+    variant: {
+      ...buttonVariants.extend.variants.variant,
+      ...buttonVariants.variants.variant,
+    },
   },
   defaultVariants: buttonVariants.defaultVariants,
   descriptions: {
@@ -50,7 +54,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: (args) => {
     return (
-      <Row className="bg-background w-64 rounded-lg p-4">
+      <Row className="w-64 p-4">
         <Button {...args} />
       </Row>
     );
@@ -63,7 +67,7 @@ export const Default: Story = {
 
 export const Variants: Story = {
   render: () => (
-    <Row className="bg-background rounded-lg p-4">
+    <Row className="p-4">
       <Button variant="primary">Primary</Button>
       <Button variant="secondary">Secondary</Button>
       <Button variant="outline">Outline</Button>
@@ -76,7 +80,7 @@ export const Variants: Story = {
 
 export const Disabled: Story = {
   render: () => (
-    <Row className="bg-background rounded-lg p-4">
+    <Row className="p-4">
       <Button disabled variant="primary">
         Primary
       </Button>
@@ -101,7 +105,7 @@ export const Disabled: Story = {
 
 export const Sizes: Story = {
   render: () => (
-    <Row className="bg-background rounded-lg p-4">
+    <Row className="p-4">
       <Button size="sm">Small</Button>
       <Button size="md">Medium</Button>
       <Button size="lg">Large</Button>
@@ -111,7 +115,7 @@ export const Sizes: Story = {
 
 export const WithIcons: Story = {
   render: () => (
-    <Row className="bg-background rounded-lg p-4">
+    <Row className="p-4">
       <Button>
         Download
         <Download />

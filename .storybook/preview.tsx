@@ -20,6 +20,9 @@ const preview: Preview = {
   // REF: https://github.com/storybookjs/storybook/discussions/28495#discussioncomment-11184489
   parameters: {
     docs: {
+      canvas: {
+        className: "!bg-background",
+      },
       container: ({ children, context, ...props }) => {
         const el = document.querySelector("html");
         const theme =

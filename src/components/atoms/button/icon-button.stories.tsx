@@ -49,7 +49,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: (args) => {
     return (
-      <Row className="bg-background w-64 rounded-lg p-4">
+      <Row className="w-64 p-4">
         <IconButton {...args} />
       </Row>
     );
@@ -62,7 +62,7 @@ export const Default: Story = {
 
 export const Variants: Story = {
   render: () => (
-    <Row className="bg-background rounded-lg p-4">
+    <Row className="p-4">
       <IconButton variant="primary">
         <Heart />
       </IconButton>
@@ -75,9 +75,6 @@ export const Variants: Story = {
       <IconButton variant="ghost">
         <Heart />
       </IconButton>
-      <IconButton variant="link">
-        <Heart />
-      </IconButton>
       <IconButton variant="destructive">
         <Heart />
       </IconButton>
@@ -87,7 +84,7 @@ export const Variants: Story = {
 
 export const Disabled: Story = {
   render: () => (
-    <Row className="bg-background rounded-lg p-4">
+    <Row className="p-4">
       <IconButton disabled variant="primary">
         <Heart />
       </IconButton>
@@ -100,9 +97,6 @@ export const Disabled: Story = {
       <IconButton disabled variant="ghost">
         <Heart />
       </IconButton>
-      <IconButton disabled variant="link">
-        <Heart />
-      </IconButton>
       <IconButton disabled variant="destructive">
         <Heart />
       </IconButton>
@@ -112,7 +106,7 @@ export const Disabled: Story = {
 
 export const Sizes: Story = {
   render: () => (
-    <Row className="bg-background rounded-lg p-4">
+    <Row className="p-4">
       <IconButton size="2xs">
         <Heart />
       </IconButton>
