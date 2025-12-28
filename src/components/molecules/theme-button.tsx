@@ -4,18 +4,17 @@ import { AnimatePresence, motion } from "framer-motion";
 import { MoonIcon, SunIcon } from "lucide-react";
 import { useTheme } from "next-themes";
 
-import type { ButtonProps } from "@/components/atoms";
-import { Button } from "@/components/atoms";
+import type { IconButtonProps } from "@/components/atoms";
+import { IconButton } from "@/components/atoms";
 
-type ThemeButtonProps = ButtonProps;
+type ThemeButtonProps = IconButtonProps;
 
 export function ThemeButton(props: ThemeButtonProps): React.JSX.Element {
   const { theme, setTheme } = useTheme();
 
   return (
-    <Button
+    <IconButton
       variant="ghost"
-      icon
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
       {...props}
     >
@@ -30,6 +29,6 @@ export function ThemeButton(props: ThemeButtonProps): React.JSX.Element {
           {theme === "light" ? <MoonIcon /> : <SunIcon />}
         </motion.div>
       </AnimatePresence>
-    </Button>
+    </IconButton>
   );
 }

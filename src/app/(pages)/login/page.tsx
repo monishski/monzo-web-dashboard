@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import dynamic from "next/dynamic";
 import { LogInIcon } from "lucide-react";
 
@@ -9,6 +10,7 @@ import {
   Heading,
   Paper,
   Row,
+  Spinner,
   Stack,
   Text,
 } from "@/components/atoms";
@@ -23,14 +25,18 @@ const ThemeButton = dynamic(
 );
 
 export default function LoginPage(): React.JSX.Element {
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleSignIn = async (
     e: React.MouseEvent<HTMLButtonElement>
   ): Promise<void> => {
     e.preventDefault();
+    setIsLoading(true);
     await signIn.oauth2({
       providerId: "monzo",
       callbackURL: "/",
     });
+    setIsLoading(false);
   };
 
   return (
@@ -46,11 +52,11 @@ export default function LoginPage(): React.JSX.Element {
             <LandscapeSVG className="h-full w-full object-cover" />
           </Stack>
 
-          <Stack gap="md" fullWidth grow>
+          <Stack gap="lg" fullWidth grow>
             <MonzoLogoSVG className="h-16 w-16" />
 
             <Stack gap="xs">
-              <Heading align="center" weight="semibold">
+              <Heading align="center" weight="bold">
                 Welcome to Monzo
               </Heading>
 
@@ -59,8 +65,13 @@ export default function LoginPage(): React.JSX.Element {
               </Text>
             </Stack>
 
-            <Button variant="secondary" fullWidth onClick={handleSignIn}>
-              <LogInIcon />
+            <Button
+              variant="secondary"
+              fullWidth
+              onClick={handleSignIn}
+              disabled={isLoading}
+            >
+              {isLoading ? <Spinner /> : <LogInIcon />}
               Sign in with Monzo
             </Button>
 

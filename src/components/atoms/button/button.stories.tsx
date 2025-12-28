@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { Download, Heart, Settings } from "lucide-react";
+import { Download, Settings } from "lucide-react";
 
 import { getVariantArgTypes } from "@/utils/storybook";
 
@@ -9,19 +9,25 @@ import type { ButtonVariantsProps } from "./button.variants";
 import { buttonVariants } from "./button.variants";
 
 const variantArgTypes = getVariantArgTypes<ButtonVariantsProps>({
-  variants: buttonVariants.variants,
+  variants: {
+    ...buttonVariants.extend.variants,
+    ...buttonVariants.variants,
+    variant: {
+      ...buttonVariants.extend.variants.variant,
+      ...buttonVariants.variants.variant,
+    },
+  },
   defaultVariants: buttonVariants.defaultVariants,
   descriptions: {
     variant: "Button variant",
     size: "Button size",
     disabled: "Disable button",
-    icon: "Display icon",
     fullWidth: "Expand to full width",
   },
 });
 
 const meta = {
-  title: "Components/Atoms/Button",
+  title: "Components/Atoms/Button/Button",
   component: Button,
   parameters: {
     layout: "centered",
@@ -46,10 +52,10 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: () => {
+  render: (args) => {
     return (
-      <Row className="w-64">
-        <Button>Button</Button>
+      <Row className="w-64 p-4">
+        <Button {...args} />
       </Row>
     );
   },
@@ -61,7 +67,7 @@ export const Default: Story = {
 
 export const Variants: Story = {
   render: () => (
-    <Row>
+    <Row className="p-4">
       <Button variant="primary">Primary</Button>
       <Button variant="secondary">Secondary</Button>
       <Button variant="outline">Outline</Button>
@@ -74,7 +80,7 @@ export const Variants: Story = {
 
 export const Disabled: Story = {
   render: () => (
-    <Row>
+    <Row className="p-4">
       <Button disabled variant="primary">
         Primary
       </Button>
@@ -99,7 +105,7 @@ export const Disabled: Story = {
 
 export const Sizes: Story = {
   render: () => (
-    <Row>
+    <Row className="p-4">
       <Button size="sm">Small</Button>
       <Button size="md">Medium</Button>
       <Button size="lg">Large</Button>
@@ -109,7 +115,7 @@ export const Sizes: Story = {
 
 export const WithIcons: Story = {
   render: () => (
-    <Row>
+    <Row className="p-4">
       <Button>
         Download
         <Download />
@@ -117,22 +123,6 @@ export const WithIcons: Story = {
       <Button>
         <Settings />
         Settings
-      </Button>
-    </Row>
-  ),
-};
-
-export const Icon: Story = {
-  render: () => (
-    <Row>
-      <Button icon size="sm">
-        <Heart />
-      </Button>
-      <Button icon size="md">
-        <Heart />
-      </Button>
-      <Button icon size="lg">
-        <Heart />
       </Button>
     </Row>
   ),

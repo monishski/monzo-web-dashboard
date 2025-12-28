@@ -8,7 +8,7 @@ import type { TextVariantsProps } from "./text.variants";
 import { textVariants } from "./text.variants";
 
 const variantArgTypes = getVariantArgTypes<TextVariantsProps>({
-  variants: textVariants.variants,
+  variants: { ...textVariants.extend.variants, ...textVariants.variants },
   defaultVariants: textVariants.defaultVariants,
   descriptions: {
     size: "Font size",
@@ -21,7 +21,7 @@ const variantArgTypes = getVariantArgTypes<TextVariantsProps>({
 });
 
 const meta = {
-  title: "Components/Atoms/Text",
+  title: "Components/Atoms/Typography/Text",
   component: Text,
   parameters: {
     layout: "centered",
@@ -47,7 +47,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: (args) => (
-    <Stack className="oveflow-hidden w-64">
+    <Stack className="bg-background oveflow-hidden w-64 rounded-lg p-4">
       <Text {...args} />
     </Stack>
   ),
@@ -60,7 +60,7 @@ export const Default: Story = {
 
 export const Sizes: Story = {
   render: () => (
-    <Stack>
+    <Stack className="bg-background rounded-lg p-4">
       <Text size="lg">Large</Text>
       <Text size="base">Base</Text>
       <Text size="sm">Small</Text>
@@ -70,7 +70,7 @@ export const Sizes: Story = {
 
 export const Weights: Story = {
   render: () => (
-    <Stack>
+    <Stack className="bg-background rounded-lg p-4">
       <Text weight="semibold">Semibold</Text>
       <Text weight="medium">Medium</Text>
       <Text weight="normal">Normal</Text>
@@ -80,7 +80,7 @@ export const Weights: Story = {
 
 export const Alignment: Story = {
   render: () => (
-    <Stack className="w-64">
+    <Stack className="bg-background w-64 rounded-lg p-4">
       <Text align="left">Left</Text>
       <Text align="center">Center</Text>
       <Text align="right">Right</Text>
@@ -90,7 +90,7 @@ export const Alignment: Story = {
 
 export const Colors: Story = {
   render: () => (
-    <Stack>
+    <Stack className="bg-background rounded-lg p-4">
       <Text color="font">Font</Text>
       <Text color="muted">Muted</Text>
       <Text color="primary">Primary</Text>

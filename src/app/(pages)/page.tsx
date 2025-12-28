@@ -5,7 +5,6 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 
 import { signOut } from "@/lib/auth/auth-client";
-import { Button } from "@/components/atoms";
 import {
   getAccountsUrl,
   getCategoriesUrl,
@@ -33,8 +32,6 @@ export default function Home(): JSX.Element {
       </h1>
 
       <ThemeButton />
-
-      <Button>Hello</Button>
 
       <Link href={getSeedUrl()}>Seed</Link>
 
