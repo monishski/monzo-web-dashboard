@@ -44,7 +44,7 @@
 
   --color-positive: var(--base-green-500);
   --color-positive-hover: var(--base-green-200);
-  --color-positive-backdrop: var(--bar-green-100);
+  --color-positive-backdrop: var(--base-green-100);
 
   --color-negative: var(--base-red-500);
   --color-negative-hover: var(--base-red-200);
