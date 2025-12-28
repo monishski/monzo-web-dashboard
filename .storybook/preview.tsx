@@ -21,7 +21,7 @@ const preview: Preview = {
   parameters: {
     docs: {
       canvas: {
-        className: "!bg-background",
+        className: "!bg-background !text-font",
       },
       container: ({ children, context, ...props }) => {
         const el = document.querySelector("html");

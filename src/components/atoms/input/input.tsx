@@ -1,88 +1,132 @@
 import type { ComponentProps } from "react";
-import React from "react";
-import type { VariantProps } from "tailwind-variants";
-import { tv } from "tailwind-variants";
+import React, { useRef } from "react";
+import { X } from "lucide-react";
 
 import { getVariantProps } from "@/utils/tailwind-variants";
 
-import { Stack } from "../flex";
+import { IconButton } from "../button";
+import { Row, Stack } from "../flex";
 import { Label } from "../label";
-import { Text } from "../text";
-import { textVariants } from "../text/text.variants";
+import { Text } from "../typography";
+import { inputVariants, type InputVariantsProps } from "./input.variants";
 
-export const inputVariants = tv({
-  slots: {
-    inputGroup: "group",
-    input: [
-      textVariants({ size: "sm" }),
-      "peer bg-background border-edge h-9 w-full rounded-lg border px-3 py-1 shadow-xs transition-[color,box-shadow]",
-      "placeholder:text-muted",
-      "selection:bg-primary selection:text-secondary",
-      "focus-visible:ring-edge focus-visible:border-primary focus-visible:ring-[3px] focus-visible:outline-none",
-    ],
-  },
-  variants: {
-    disabled: {
-      true: {
-        input:
-          "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
-      },
-    },
-    error: {
-      true: {
-        input: [
-          "ring-error/20 border-error ring-[3px]",
-          "focus-visible:ring-error/10 focus-visible:border-error",
-        ],
-      },
-    },
-  },
-});
-
-export type InputVariantProps = VariantProps<typeof inputVariants>;
+const RequiredAterisk = (): React.JSX.Element => (
+  <Text
+    size="base"
+    weight="semibold"
+    color="error"
+    className="w-min select-none"
+  >
+    *
+  </Text>
+);
 
 type InputProps = {
   label: string;
   labelIcon?: React.ReactNode;
+  required?: boolean;
+  description?: string;
+  subdescription?: string;
   error?: string;
+  actions?: React.ReactNode;
+  leftIcon?: React.ReactNode;
+  rightIconButton?: React.ReactNode;
+  onClear?: () => void;
 } & ComponentProps<"input"> &
-  Omit<InputVariantProps, "error">;
+  Omit<InputVariantsProps, "error">;
 
 export function Input({
   className,
   label,
   labelIcon,
+  required,
+  description,
+  subdescription,
   error,
+  actions,
+  leftIcon,
+  rightIconButton,
+  onClear,
   ...props
 }: InputProps): React.JSX.Element {
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const { variantProps, componentProps: inputProps } = getVariantProps(
     props,
     inputVariants.variantKeys
   );
 
-  const { inputGroup, input } = inputVariants({
+  const {
+    inputGroup,
+    inputLabel,
+    input,
+    inputLeftIcon,
+    inputRightIconButtons,
+    inputDescription,
+  } = inputVariants({
     ...variantProps,
+    hasLeftIcon: Boolean(leftIcon),
+    hasRightIconButton: Boolean(rightIconButton),
     error: Boolean(error),
     className,
   });
 
+  const handleClear = (e: React.MouseEvent<HTMLButtonElement>): void => {
+    e.preventDefault();
+    e.stopPropagation();
+    onClear?.();
+    if (inputRef.current) {
+      inputRef.current.value = "";
+    }
+  };
+
   return (
     <Stack
-      gap="xs"
       fullWidth
       className={inputGroup()}
       data-disabled={JSON.stringify(variantProps.disabled)}
       data-invalid={JSON.stringify(Boolean(error))}
     >
-      <Label htmlFor={props.id}>
-        {labelIcon}
-        {label}
-      </Label>
-      <input
-        className={input()}
-        disabled={variantProps.disabled}
-        {...inputProps}
-      />
+      <Row align="end" justify="between" fullWidth>
+        <Stack gap="none">
+          <Label htmlFor={props.id} className={inputLabel()}>
+            {labelIcon}
+            {label}
+            {required && <RequiredAterisk />}
+          </Label>
+          <Text size="sm" className={inputDescription()}>
+            {description}
+          </Text>
+        </Stack>
+        {actions}
+      </Row>
+      <Row fullWidth className="relative">
+        <Row className={inputLeftIcon()}>{leftIcon}</Row>
+        <input
+          ref={inputRef}
+          className={input()}
+          disabled={variantProps.disabled}
+          {...inputProps}
+        />
+        <Row gap="xs" className={inputRightIconButtons()}>
+          {!!inputProps.value && (
+            <IconButton
+              variant="ghost"
+              size="2xs"
+              onClick={handleClear}
+              aria-label="Clear input"
+            >
+              <X />
+            </IconButton>
+          )}
+          {rightIconButton}
+        </Row>
+      </Row>
+      {subdescription && !error && (
+        <Text size="sm" color="muted">
+          {subdescription}
+        </Text>
+      )}
       {error && (
         <Text size="xs" color="error">
           {error}

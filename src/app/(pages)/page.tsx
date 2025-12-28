@@ -3,11 +3,8 @@
 import type { JSX } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { Mail } from "lucide-react";
 
 import { signOut } from "@/lib/auth/auth-client";
-import { Button } from "@/components/atoms";
-import { Input } from "@/components/atoms/input/input";
 import {
   getAccountsUrl,
   getCategoriesUrl,
@@ -35,16 +32,6 @@ export default function Home(): JSX.Element {
       </h1>
 
       <ThemeButton />
-
-      <Input
-        id="email"
-        placeholder="Email"
-        label="Email"
-        labelIcon={<Mail size={16} />}
-        disabled
-      />
-
-      <Button>Hello</Button>
 
       <Link href={getSeedUrl()}>Seed</Link>
 
