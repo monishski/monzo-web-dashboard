@@ -6,3 +6,4 @@ export * from "./flex";
 export * from "./typography";
 export * from "./label";
 export * from "./spinner";
+export * from "./popover";

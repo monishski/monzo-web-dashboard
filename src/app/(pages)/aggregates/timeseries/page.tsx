@@ -11,7 +11,7 @@ function TimeSeriesAggregatesPage(): JSX.Element {
     () => ({
       period: Period.MONTH,
       date: {
-        from: new Date(new Date().getFullYear(), 0, 1).toISOString(), // Start of current year
+        from: new Date(new Date().getFullYear() - 1, 0, 1).toISOString(), // Start of current year
         to: new Date().toISOString(), // Now
       },
     }),

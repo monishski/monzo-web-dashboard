@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
 @import "./palette.css";
 
@@ -75,7 +76,7 @@
       --color-font: var(--base-slate-200);
       --color-muted: var(--base-slate-500);
 
-      --color-edge: var(--base-slate-600);
+      --color-edge: var(--base-slate-700);
       --color-overlay: var(--base-slate-200);
 
       --color-info: var(--base-blue-500);
