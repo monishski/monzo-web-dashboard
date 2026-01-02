@@ -18,7 +18,7 @@
   --color-secondary: var(--base-gray-100);
   --color-secondary-hover: var(--base-gray-200);
 
-  --color-background: var(--base-gray-100);
+  --color-background: var(--base-gray-50);
   --color-foreground: var(--base-white);
 
   --color-font: var(--base-gray-900);
