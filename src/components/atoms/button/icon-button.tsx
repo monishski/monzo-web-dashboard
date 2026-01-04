@@ -19,11 +19,15 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
 
     const Component = asChild ? Slot : "button";
 
+    const disabled =
+      variantProps.disabled || Boolean(componentProps["aria-disabled"]);
+
     return (
       <Component
-        disabled={variantProps.disabled}
+        disabled={disabled}
         className={iconButtonVariants({
           ...variantProps,
+          disabled,
           className,
         })}
         ref={ref}

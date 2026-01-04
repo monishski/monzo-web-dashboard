@@ -21,7 +21,8 @@ const variantArgTypes = getVariantArgTypes<ButtonVariantsProps>({
   descriptions: {
     variant: "Button variant",
     size: "Button size",
-    disabled: "Disable button",
+    disabled: "Disable state",
+    active: "Active state",
     fullWidth: "Expand to full width",
   },
 });
@@ -97,6 +98,28 @@ export const Disabled: Story = {
         Link
       </Button>
       <Button disabled variant="destructive">
+        Destructive
+      </Button>
+    </Row>
+  ),
+};
+
+export const Active: Story = {
+  render: () => (
+    <Row className="p-4">
+      <Button active variant="primary">
+        Primary
+      </Button>
+      <Button active variant="secondary">
+        Secondary
+      </Button>
+      <Button active variant="outline">
+        Outline
+      </Button>
+      <Button active variant="ghost">
+        Ghost
+      </Button>
+      <Button active variant="destructive">
         Destructive
       </Button>
     </Row>

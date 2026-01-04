@@ -19,7 +19,17 @@ export const baseButtonVariants = tv({
     disabled: {
       true: "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
     },
+    active: {
+      true: "ring-brand",
+    },
   },
+  compoundVariants: [
+    { active: true, variant: "primary", class: "bg-primary-hover" },
+    { active: true, variant: "secondary", class: "bg-secondary-hover" },
+    { active: true, variant: "outline", class: "bg-secondary-hover" },
+    { active: true, variant: "ghost", class: "bg-secondary-hover" },
+    { active: true, variant: "destructive", class: "bg-negative-hover" },
+  ],
   defaultVariants: {
     variant: "primary",
     disabled: false,

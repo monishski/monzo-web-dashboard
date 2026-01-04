@@ -5,7 +5,7 @@ export const calendarVariants = tv({
   slots: {
     root: "group/calendar w-fit bg-transparent p-3",
     months: "relative flex flex-col gap-4 md:flex-row",
-    month: "flex w-full flex-col gap-4",
+    month: "flex flex-col gap-4",
     nav: "absolute inset-x-0 top-0 flex w-full items-center justify-between gap-1",
     buttonPrevious: "",
     buttonNext: "",
