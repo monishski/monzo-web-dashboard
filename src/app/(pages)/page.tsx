@@ -5,6 +5,12 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 
 import { signOut } from "@/lib/auth/auth-client";
+import { Button } from "@/components/atoms/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/atoms/popover";
 import {
   getAccountsUrl,
   getCategoriesUrl,
@@ -32,6 +38,24 @@ export default function Home(): JSX.Element {
       </h1>
 
       <ThemeButton />
+
+      {/* Popover Example */}
+      <div className="my-4 flex gap-4">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline">Open Popover</Button>
+          </PopoverTrigger>
+          <PopoverContent>
+            <div className="space-y-2">
+              <h3 className="font-semibold">Default Popover</h3>
+              <p className="text-muted-foreground text-sm">
+                This is a popover with the default medium width. You can
+                place any content here.
+              </p>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
 
       <Link href={getSeedUrl()}>Seed</Link>
 

@@ -2,6 +2,7 @@ import { forwardRef } from "react";
 import { Slot } from "@radix-ui/react-slot";
 
 import { getVariantProps } from "@/utils/tailwind-variants";
+import { isTruthy } from "@/utils/validity";
 import type { ComponentPropsWithAsProp } from "@/types/utils";
 
 import type { ButtonVariantsProps } from "./button.variants";
@@ -19,11 +20,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const Component = asChild ? Slot : "button";
 
+    const disabled =
+      variantProps.disabled || isTruthy(componentProps["aria-disabled"]);
+
     return (
       <Component
-        disabled={variantProps.disabled}
+        disabled={disabled}
         className={buttonVariants({
           ...variantProps,
+          disabled,
           className,
         })}
         ref={ref}
