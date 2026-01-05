@@ -1,7 +1,6 @@
 "use client";
 
 import type { ComponentProps, JSX } from "react";
-import { useEffect, useRef } from "react";
 import {
   ChevronDownIcon,
   ChevronLeftIcon,
@@ -10,6 +9,7 @@ import {
 import { DayPicker, getDefaultClassNames } from "react-day-picker";
 
 import { IconButton } from "../button";
+import { CalendarDayButton } from "./calendar-day-button";
 import {
   calendarVariants,
   type CalendarVariantsProps,
@@ -112,33 +112,7 @@ export function Calendar({
             />
           );
         },
-        DayButton: ({ className, day, modifiers, ...props }) => {
-          const ref = useRef<HTMLButtonElement>(null);
-
-          useEffect(() => {
-            if (modifiers.focused) ref.current?.focus();
-          }, [modifiers.focused]);
-
-          return (
-            <IconButton
-              ref={ref}
-              variant="ghost"
-              size="xs"
-              className={styles.dayButton({ className })}
-              data-day={day.date.toLocaleDateString()}
-              data-selected-single={
-                modifiers.selected &&
-                !modifiers.range_start &&
-                !modifiers.range_end &&
-                !modifiers.range_middle
-              }
-              data-range-start={modifiers.range_start}
-              data-range-end={modifiers.range_end}
-              data-range-middle={modifiers.range_middle}
-              {...props}
-            />
-          );
-        },
+        DayButton: CalendarDayButton,
         WeekNumber: ({ children, ...weekNumberProps }) => (
           <td {...weekNumberProps}>
             <div className={styles.weekNumberCell()}>{children}</div>
