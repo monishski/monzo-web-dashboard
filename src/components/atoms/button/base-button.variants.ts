@@ -20,7 +20,7 @@ export const baseButtonVariants = tv({
       true: "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
     },
     active: {
-      true: "ring-brand",
+      true: "",
     },
   },
   compoundVariants: [
